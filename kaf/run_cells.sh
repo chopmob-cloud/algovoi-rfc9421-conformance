@@ -78,7 +78,9 @@ echo "================================================================"
 results="[]"
 for cell in $CELLS; do
   image="$(image_for "$cell")"
-  lang="$(echo "$cell" | sed -E 's/-.*//')"
+  # authoritative language comes from cells.json, NOT the cell-id prefix
+  # (temurin-17-java and temurin-17-kotlin share a prefix but are java / kotlin).
+  lang="$(python3 -c "import json; print(next(c['lang'] for c in json.load(open('$HERE/kaf/cells.json'))['cells'] if c['id']=='$cell'))")"
   printf "  %-20s %-32s " "$cell" "$image"
   # shellcheck disable=SC2046
   if docker run --rm -v "$REPO":/work:ro $(mounts_for "$cell") "$image" \

@@ -99,7 +99,10 @@ echo "----------------------------------------------------------------"
 # and its signing bases must match independent, hand-derived anchors, so a
 # systematic error shared by the generator and every runner cannot pass as
 # consensus. Runs before the runners; a KAT failure is NOT GREEN on its own.
-if have python3; then
+# SKIP_KAT=1 is used only by tools/mutation_test.sh, which feeds a deliberately
+# mutated corpus to prove the RUNNERS catch it (the KAT gate would otherwise mask
+# the runner-level signal by rejecting any corpus edit first).
+if [ "${SKIP_KAT:-0}" != 1 ] && have python3; then
   if ! python3 "$HERE/tools/check_kat.py"; then
     echo "RESULT: NOT GREEN -- KAT integrity gate failed"
     exit 1

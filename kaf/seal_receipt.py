@@ -23,6 +23,8 @@ import base64
 import hashlib
 import json
 import os
+import subprocess
+import sys
 
 from nacl.signing import SigningKey
 
@@ -35,13 +37,12 @@ def _b64u(b: bytes) -> str:
 
 
 def canonical(obj) -> bytes:
-    """Deterministic canonical JSON preimage. Prefers RFC 8785 (JCS), the AlgoVoi
-    canonicalization standard; falls back to sorted-compact if rfc8785 is absent."""
-    try:
-        import rfc8785
-        return rfc8785.dumps(obj)
-    except Exception:
-        return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    """Canonical seal preimage: RFC 8785 (JCS), the AlgoVoi canonicalization
+    standard, REQUIRED on both the seal and verify sides. No silent fallback: a
+    divergent canonicalizer would let a valid receipt fail to verify or mask a
+    canonicalization split, so we pin one and fail loudly if it is absent."""
+    import rfc8785
+    return rfc8785.dumps(obj)
 
 
 def main() -> int:
@@ -67,6 +68,22 @@ def main() -> int:
         "keygate", "ed25519_verify", "ecdsa_verify"))
     cells_pass = [c for c in cells if c["verdict"] == "PASS"]
 
+    # Hardening: a seal must never lend cryptographic confidence to an unverified
+    # or partial result. Refuse to produce a receipt unless (a) the KAT integrity
+    # gate passes (corpus is the exact signed artifact and its signing bases match
+    # the independent anchors) and (b) every cell passed. The agreement claim is
+    # then DERIVED from the distinct languages that actually passed, never asserted.
+    kat = subprocess.run([sys.executable, os.path.join(HERE, "tools", "check_kat.py")],
+                         capture_output=True, text=True)
+    if kat.returncode != 0:
+        print("refusing to seal: KAT integrity gate failed\n" + kat.stdout + kat.stderr, file=sys.stderr)
+        return 1
+    if not cells or len(cells_pass) != len(cells):
+        print(f"refusing to seal: {len(cells_pass)}/{len(cells)} cells passed "
+              "(a receipt must attest a complete, all-pass run)", file=sys.stderr)
+        return 1
+    independent_langs = sorted({c["lang"] for c in cells_pass})
+
     sk = SigningKey(bytes.fromhex(open(args.secret).read().strip()))
     vk = sk.verify_key
     kid = hashlib.sha256(bytes(vk)).hexdigest()[:32]
@@ -87,8 +104,9 @@ def main() -> int:
         },
         "axes": {
             "agreement": {
-                "independent_runners": 10,
-                "result": "full 10-way byte-for-byte consensus",
+                "independent_runners": len(independent_langs),
+                "languages": independent_langs,
+                "result": f"full {len(independent_langs)}-way byte-for-byte consensus",
                 "cases": total_cases,
             },
             "kat": {

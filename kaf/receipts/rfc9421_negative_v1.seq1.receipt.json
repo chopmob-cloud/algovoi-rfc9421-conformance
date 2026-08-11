@@ -16,6 +16,18 @@
     "axes": {
       "agreement": {
         "independent_runners": 10,
+        "languages": [
+          "dotnet",
+          "elixir",
+          "go",
+          "java",
+          "kotlin",
+          "php",
+          "python",
+          "ruby",
+          "rust",
+          "typescript"
+        ],
         "result": "full 10-way byte-for-byte consensus",
         "cases": 78
       },
@@ -33,7 +45,7 @@
         },
         {
           "cell": "node-20-slim",
-          "lang": "node",
+          "lang": "typescript",
           "image": "node:20-slim",
           "image_digest": "node@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0",
           "verdict": "PASS"
@@ -54,14 +66,14 @@
         },
         {
           "cell": "temurin-17-java",
-          "lang": "temurin",
+          "lang": "java",
           "image": "eclipse-temurin:17",
           "image_digest": "eclipse-temurin@sha256:abb3826b404269a005829b63e2e7bd48a7be32115ab7ba9fa0d8cba834360eef",
           "verdict": "PASS"
         },
         {
           "cell": "temurin-17-kotlin",
-          "lang": "temurin",
+          "lang": "kotlin",
           "image": "eclipse-temurin:17",
           "image_digest": "eclipse-temurin@sha256:abb3826b404269a005829b63e2e7bd48a7be32115ab7ba9fa0d8cba834360eef",
           "verdict": "PASS"
@@ -109,6 +121,6 @@
       "x": "xrHz4BWRsQTQry-L1t8wWI70S7F81M4G2yLwKnPmKAQ",
       "kid": "4bbcedc71692d3dc9491239d2fff1ea2"
     },
-    "sig_b64": "P+3z/bNhcnUYAuQWFdM/wbAxqpWYg5VjKqYRDkH1ULIrh1yTQnslYkMyFQwQumibm74NgPF5uC90tsQuSt9KDQ=="
+    "sig_b64": "//GaM3o6WZHrC1XBF0phUSQg509qHrBtHmDVLjHs24g0fAnrsT6QUnZ1HQpZT3Ll6N92V1qiFNJOdHfwSr1JAQ=="
   }
 }

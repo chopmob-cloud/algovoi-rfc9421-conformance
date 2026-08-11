@@ -34,11 +34,9 @@ def _b64u_dec(s: str) -> bytes:
 
 
 def canonical(obj) -> bytes:
-    try:
-        import rfc8785
-        return rfc8785.dumps(obj)
-    except Exception:
-        return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    # RFC 8785 (JCS) is required on both sides; no silent fallback (see seal_receipt.py).
+    import rfc8785
+    return rfc8785.dumps(obj)
 
 
 def main() -> int:
