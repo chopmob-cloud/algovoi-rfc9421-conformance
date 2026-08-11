@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+node_modules/
+runners/typescript/package-lock.json
+.DS_Store

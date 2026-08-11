@@ -1,0 +1,11 @@
+algovoi-rfc9421-conformance
+Copyright 2026 Christopher Hopley / AlgoVoi (chopmob-cloud)
+
+This product is part of the AlgoVoi agentic-payments substrate, authored by
+Christopher Hopley (AlgoVoi) and licensed under the Apache License, Version 2.0.
+
+It contains a signed, cross-language conformance battery (rfc9421_negative_v1)
+for RFC 9421 HTTP Message Signatures, exercised by four independent verifier
+implementations (Python, TypeScript, Rust, Go). The signing and provenance
+backbone is provided by algovoi-corpus-cm (JCS RFC 8785 canonicalisation, EdDSA
+compact JWS, hash-chained provenance).

@@ -1,0 +1,14 @@
+{
+  "name": "algovoi-rfc9421-conformance-runner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TypeScript runner for the rfc9421_negative_v1 conformance battery",
+  "scripts": {
+    "verify": "node verify_ts.mjs"
+  },
+  "dependencies": {
+    "@algovoi/rfc9421-verifier": ">=0.4.2",
+    "@algovoi/rfc9421-ecdsa": ">=0.1.0"
+  }
+}

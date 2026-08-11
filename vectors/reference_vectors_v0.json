@@ -1,0 +1,272 @@
+{
+ "note": "FROZEN reference vectors from py verifier 0.4.2. Ports must reproduce byte-for-byte.",
+ "signing_base": [
+  {
+   "in": {
+    "covered_components": [
+     "@method",
+     "@authority",
+     "@path"
+    ],
+    "method": "POST",
+    "authority": "Api.AlgoVoi.co.uk",
+    "path": "/pay"
+   },
+   "mode": "algovoi-v0",
+   "ok": true,
+   "signing_base_b64": "IkBtZXRob2QiOiBwb3N0CiJAYXV0aG9yaXR5IjogYXBpLmFsZ292b2kuY28udWsKIkBwYXRoIjogL3BheQ=="
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@method",
+     "@authority",
+     "@path"
+    ],
+    "method": "POST",
+    "authority": "Api.AlgoVoi.co.uk",
+    "path": "/pay"
+   },
+   "mode": "rfc9421",
+   "ok": true,
+   "signing_base_b64": "IkBtZXRob2QiOiBQT1NUCiJAYXV0aG9yaXR5IjogYXBpLmFsZ292b2kuY28udWsKIkBwYXRoIjogL3BheQoiQHNpZ25hdHVyZS1wYXJhbXMiOiAoIkBtZXRob2QiICJAYXV0aG9yaXR5IiAiQHBhdGgiKTtjcmVhdGVkPTE3Nzg5NTU1MjA7a2V5aWQ9ImRpZDp3ZWI6YXBpIjthbGc9ImVkMjU1MTki",
+   "signature_params_raw": "(\"@method\" \"@authority\" \"@path\");created=1778955520;keyid=\"did:web:api\";alg=\"ed25519\""
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@method",
+     "@path",
+     "content-digest",
+     "created"
+    ],
+    "method": "GET",
+    "path": "/x",
+    "headers": {
+     "Content-Digest": "sha-256=:abc:"
+    },
+    "parameters": {
+     "created": 1778955520
+    }
+   },
+   "mode": "algovoi-v0",
+   "ok": true,
+   "signing_base_b64": "IkBtZXRob2QiOiBnZXQKIkBwYXRoIjogL3gKImNvbnRlbnQtZGlnZXN0Ijogc2hhLTI1Nj06YWJjOgoiY3JlYXRlZCI6IDE3Nzg5NTU1MjA="
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@method",
+     "@path",
+     "content-digest",
+     "created"
+    ],
+    "method": "GET",
+    "path": "/x",
+    "headers": {
+     "Content-Digest": "sha-256=:abc:"
+    },
+    "parameters": {
+     "created": 1778955520
+    }
+   },
+   "mode": "rfc9421",
+   "ok": true,
+   "signing_base_b64": "IkBtZXRob2QiOiBHRVQKIkBwYXRoIjogL3gKImNvbnRlbnQtZGlnZXN0Ijogc2hhLTI1Nj06YWJjOgoiY3JlYXRlZCI6IDE3Nzg5NTU1MjAKIkBzaWduYXR1cmUtcGFyYW1zIjogKCJAbWV0aG9kIiAiQGF1dGhvcml0eSIgIkBwYXRoIik7Y3JlYXRlZD0xNzc4OTU1NTIwO2tleWlkPSJkaWQ6d2ViOmFwaSI7YWxnPSJlZDI1NTE5Ig==",
+   "signature_params_raw": "(\"@method\" \"@authority\" \"@path\");created=1778955520;keyid=\"did:web:api\";alg=\"ed25519\""
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@scheme",
+     "@target-uri",
+     "@authority"
+    ],
+    "scheme": "HTTPS",
+    "target_uri": "https://h/x?q=1",
+    "authority": "H"
+   },
+   "mode": "algovoi-v0",
+   "ok": true,
+   "signing_base_b64": "IkBzY2hlbWUiOiBodHRwcwoiQHRhcmdldC11cmkiOiBodHRwczovL2gveD9xPTEKIkBhdXRob3JpdHkiOiBo"
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@scheme",
+     "@target-uri",
+     "@authority"
+    ],
+    "scheme": "HTTPS",
+    "target_uri": "https://h/x?q=1",
+    "authority": "H"
+   },
+   "mode": "rfc9421",
+   "ok": true,
+   "signing_base_b64": "IkBzY2hlbWUiOiBodHRwcwoiQHRhcmdldC11cmkiOiBodHRwczovL2gveD9xPTEKIkBhdXRob3JpdHkiOiBoCiJAc2lnbmF0dXJlLXBhcmFtcyI6ICgiQG1ldGhvZCIgIkBhdXRob3JpdHkiICJAcGF0aCIpO2NyZWF0ZWQ9MTc3ODk1NTUyMDtrZXlpZD0iZGlkOndlYjphcGkiO2FsZz0iZWQyNTUxOSI=",
+   "signature_params_raw": "(\"@method\" \"@authority\" \"@path\");created=1778955520;keyid=\"did:web:api\";alg=\"ed25519\""
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@status"
+    ],
+    "status": 200
+   },
+   "mode": "algovoi-v0",
+   "ok": true,
+   "signing_base_b64": "IkBzdGF0dXMiOiAyMDA="
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@status"
+    ],
+    "status": 200
+   },
+   "mode": "rfc9421",
+   "ok": true,
+   "signing_base_b64": "IkBzdGF0dXMiOiAyMDAKIkBzaWduYXR1cmUtcGFyYW1zIjogKCJAbWV0aG9kIiAiQGF1dGhvcml0eSIgIkBwYXRoIik7Y3JlYXRlZD0xNzc4OTU1NTIwO2tleWlkPSJkaWQ6d2ViOmFwaSI7YWxnPSJlZDI1NTE5Ig==",
+   "signature_params_raw": "(\"@method\" \"@authority\" \"@path\");created=1778955520;keyid=\"did:web:api\";alg=\"ed25519\""
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@method",
+     "expires"
+    ],
+    "method": "put",
+    "parameters": {
+     "expires": 42
+    }
+   },
+   "mode": "algovoi-v0",
+   "ok": true,
+   "signing_base_b64": "IkBtZXRob2QiOiBwdXQKImV4cGlyZXMiOiA0Mg=="
+  },
+  {
+   "in": {
+    "covered_components": [
+     "@method",
+     "expires"
+    ],
+    "method": "put",
+    "parameters": {
+     "expires": 42
+    }
+   },
+   "mode": "rfc9421",
+   "ok": true,
+   "signing_base_b64": "IkBtZXRob2QiOiBwdXQKImV4cGlyZXMiOiA0MgoiQHNpZ25hdHVyZS1wYXJhbXMiOiAoIkBtZXRob2QiICJAYXV0aG9yaXR5IiAiQHBhdGgiKTtjcmVhdGVkPTE3Nzg5NTU1MjA7a2V5aWQ9ImRpZDp3ZWI6YXBpIjthbGc9ImVkMjU1MTki",
+   "signature_params_raw": "(\"@method\" \"@authority\" \"@path\");created=1778955520;keyid=\"did:web:api\";alg=\"ed25519\""
+  },
+  {
+   "in": {
+    "covered_components": [
+     "x-custom",
+     "@method"
+    ],
+    "method": "POST",
+    "headers": {
+     "X-Custom": "Value With Spaces"
+    }
+   },
+   "mode": "algovoi-v0",
+   "ok": true,
+   "signing_base_b64": "IngtY3VzdG9tIjogVmFsdWUgV2l0aCBTcGFjZXMKIkBtZXRob2QiOiBwb3N0"
+  },
+  {
+   "in": {
+    "covered_components": [
+     "x-custom",
+     "@method"
+    ],
+    "method": "POST",
+    "headers": {
+     "X-Custom": "Value With Spaces"
+    }
+   },
+   "mode": "rfc9421",
+   "ok": true,
+   "signing_base_b64": "IngtY3VzdG9tIjogVmFsdWUgV2l0aCBTcGFjZXMKIkBtZXRob2QiOiBQT1NUCiJAc2lnbmF0dXJlLXBhcmFtcyI6ICgiQG1ldGhvZCIgIkBhdXRob3JpdHkiICJAcGF0aCIpO2NyZWF0ZWQ9MTc3ODk1NTUyMDtrZXlpZD0iZGlkOndlYjphcGkiO2FsZz0iZWQyNTUxOSI=",
+   "signature_params_raw": "(\"@method\" \"@authority\" \"@path\");created=1778955520;keyid=\"did:web:api\";alg=\"ed25519\""
+  }
+ ],
+ "keygate": [
+  {
+   "pk_hex": "8a88e3dd7409f195fd52db2d3cba5d72ca6709bf1d94121bf3748801b40f6f5c",
+   "small_order": false,
+   "rejected": null
+  },
+  {
+   "pk_hex": "8139770ea87d175f56a35466c34c7ecccb8d8a91b4ee37a25df60f5b8fc9b394",
+   "small_order": false,
+   "rejected": null
+  },
+  {
+   "pk_hex": "ed4928c628d1c2c6eae90338905995612959273a5c63f93636c14614ac8737d1",
+   "small_order": false,
+   "rejected": null
+  },
+  {
+   "pk_hex": "ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+   "small_order": false,
+   "rejected": null
+  },
+  {
+   "pk_hex": "6e7a1cdd29b0b78fd13af4c5598feff4ef2a97166e3ca6f2e4fbfccd80505bf1",
+   "small_order": false,
+   "rejected": null
+  },
+  {
+   "pk_hex": "8a875fff1eb38451577acd5afee405456568dd7c89e090863a0557bc7af49f17",
+   "small_order": false,
+   "rejected": null
+  },
+  {
+   "pk_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+   "small_order": true,
+   "rejected": "WeakKeyError"
+  },
+  {
+   "pk_hex": "0100000000000000000000000000000000000000000000000000000000000000",
+   "small_order": true,
+   "rejected": "WeakKeyError"
+  },
+  {
+   "pk_hex": "0000000000000000000000000000000000000000000000000000000000000080",
+   "small_order": true,
+   "rejected": "WeakKeyError"
+  },
+  {
+   "pk_hex": "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+   "small_order": true,
+   "rejected": "WeakKeyError"
+  },
+  {
+   "pk_hex": "26e8958fc2b227b045c3f489f2ef98f0d5dfac05d3c63339b13802886d53fc05",
+   "small_order": true,
+   "rejected": "WeakKeyError"
+  }
+ ],
+ "ed25519_verify": [
+  {
+   "signing_base_b64": "IkBtZXRob2QiOiBQT1NUCiJAcGF0aCI6IC94CiJAc2lnbmF0dXJlLXBhcmFtcyI6ICgiQG1ldGhvZCIgIkBhdXRob3JpdHkiICJAcGF0aCIpO2NyZWF0ZWQ9MTc3ODk1NTUyMDtrZXlpZD0iZGlkOndlYjphcGkiO2FsZz0iZWQyNTUxOSI=",
+   "sig_hex": "ed2eb5dd8d8c341c0b97285e61b145d239c0f6e6d26b64e9cd266b59e702d90b80560ee6c66cbc3f12dff164aff4c6de4a14409a196b96810a82b0be5c986904",
+   "pk_hex": "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8",
+   "expect_valid": true
+  },
+  {
+   "signing_base_b64": "IkBtZXRob2QiOiBQT1NUCiJAcGF0aCI6IC94CiJAc2lnbmF0dXJlLXBhcmFtcyI6ICgiQG1ldGhvZCIgIkBhdXRob3JpdHkiICJAcGF0aCIpO2NyZWF0ZWQ9MTc3ODk1NTUyMDtrZXlpZD0iZGlkOndlYjphcGkiO2FsZz0iZWQyNTUxOSJY",
+   "sig_hex": "ed2eb5dd8d8c341c0b97285e61b145d239c0f6e6d26b64e9cd266b59e702d90b80560ee6c66cbc3f12dff164aff4c6de4a14409a196b96810a82b0be5c986904",
+   "pk_hex": "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8",
+   "expect_valid": false
+  },
+  {
+   "signing_base_b64": "IkBtZXRob2QiOiBQT1NUCiJAcGF0aCI6IC94CiJAc2lnbmF0dXJlLXBhcmFtcyI6ICgiQG1ldGhvZCIgIkBhdXRob3JpdHkiICJAcGF0aCIpO2NyZWF0ZWQ9MTc3ODk1NTUyMDtrZXlpZD0iZGlkOndlYjphcGkiO2FsZz0iZWQyNTUxOSI=",
+   "sig_hex": "ed2eb5dd8d8c341c0b97285e61b145d239c0f6e6d26b64e9cd266b59e702d90b80560ee6c66cbc3f12dff164aff4c6de4a14409a196b96810a82b0be5c986904",
+   "pk_hex": "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
+   "expect_valid": false
+  }
+ ]
+}

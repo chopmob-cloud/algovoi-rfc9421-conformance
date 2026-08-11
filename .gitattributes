@@ -1,0 +1,9 @@
+# General normalisation first; the specific rule below overrides it (last match
+# wins in gitattributes).
+* text=auto eol=lf
+
+# Keep JSON artifacts byte-exact everywhere: the signed corpus, manifest,
+# provenance and reference vectors are content-addressed and signature-bound, so
+# git must never rewrite their bytes (that would break file_sha256 and
+# cross-platform byte-for-byte reproducibility).
+*.json -text
