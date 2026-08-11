@@ -3,3 +3,12 @@ __pycache__/
 node_modules/
 runners/typescript/package-lock.json
 .DS_Store
+
+# runner build artifacts (deps fetched in CI / locally, never committed)
+runners/**/libs/
+*.class
+*.jar
+runners/dotnet/bin/
+runners/dotnet/obj/
+runners/elixir/_build/
+runners/elixir/deps/
