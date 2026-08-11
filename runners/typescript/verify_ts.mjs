@@ -64,7 +64,9 @@ async function run(corpus) {
 
   for (const c of corpus.signing_base) {
     let ok;
-    try { ok = c.ok && buildSigningBase(buildInput(c)) === b64ToStr(c.signing_base_b64); }
+    // build FIRST; `c.ok && buildSigningBase(...)` would short-circuit for
+    // negative cases and never verify that the build actually fails.
+    try { const built = buildSigningBase(buildInput(c)); ok = c.ok && built === b64ToStr(c.signing_base_b64); }
     catch { ok = !c.ok; }
     rec("signing_base", c.note, ok);
   }

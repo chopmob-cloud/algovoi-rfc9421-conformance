@@ -249,7 +249,10 @@ corpus["signing_base"].each do |c|
   want = Base64.decode64(c["signing_base_b64"]).force_encoding("UTF-8")
   ok =
     begin
-      c["ok"] && build_signing_base(c["in"], c["mode"], c["signature_params_raw"]) == want
+      # build FIRST; `c["ok"] && build(...)` would short-circuit for negative
+      # cases and never verify that the build actually fails.
+      built = build_signing_base(c["in"], c["mode"], c["signature_params_raw"])
+      c["ok"] && built == want
     rescue StandardError
       !c["ok"]
     end

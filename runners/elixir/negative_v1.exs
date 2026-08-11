@@ -255,7 +255,10 @@ defmodule NegativeV1 do
     results = results ++ Enum.map(corpus["signing_base"], fn c ->
       want = Base.decode64!(c["signing_base_b64"])
       ok = try do
-        c["ok"] and build_signing_base(c["in"], c["mode"], c["signature_params_raw"]) == want
+        # build FIRST; `c["ok"] and build(...)` would short-circuit for negative
+        # cases and never verify that the build actually fails.
+        built = build_signing_base(c["in"], c["mode"], c["signature_params_raw"])
+        c["ok"] and built == want
       rescue _ -> not c["ok"] end
       {ok, "signing_base", c["note"]}
     end)

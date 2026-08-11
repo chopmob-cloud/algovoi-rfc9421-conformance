@@ -66,7 +66,10 @@ def run(corpus):
     for c in corpus["signing_base"]:
         want = base64.b64decode(c["signing_base_b64"]).decode("utf-8")
         try:
-            ok = c["ok"] and _build(c) == want
+            # attempt the build FIRST; `c["ok"] and _build(c)` would short-circuit
+            # for negative cases and never verify that the build actually fails.
+            built = _build(c)
+            ok = c["ok"] and built == want
         except Exception:
             ok = not c["ok"]
         results.append(("signing_base", c.get("note", ""), ok))

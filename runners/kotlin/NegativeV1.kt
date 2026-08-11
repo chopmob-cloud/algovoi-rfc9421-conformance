@@ -254,7 +254,10 @@ fun main(args: Array<String>) {
         val want = String(Base64.getDecoder().decode(c.get("signing_base_b64").asText()), Charsets.UTF_8)
         val spr = if (c.hasNonNull("signature_params_raw")) c.get("signature_params_raw").asText() else null
         val ok = try {
-            c.get("ok").asBoolean() && buildSigningBase(c.get("in"), c.get("mode").asText(), spr) == want
+            // build FIRST; `ok && build(...)` would short-circuit for negative
+            // cases and never verify that the build actually fails.
+            val built = buildSigningBase(c.get("in"), c.get("mode").asText(), spr)
+            c.get("ok").asBoolean() && built == want
         } catch (e: RuntimeException) { !c.get("ok").asBoolean() }
         record(ok, "signing_base", c)
     }

@@ -241,8 +241,12 @@ $record = function (bool $ok, string $section, array $c) use (&$total, &$matched
 
 foreach ($corpus["signing_base"] as $c) {
     $want = base64_decode($c["signing_base_b64"]);
-    try { $ok = $c["ok"] && build_signing_base($c["in"], $c["mode"], $c["signature_params_raw"] ?? null) === $want; }
-    catch (\Throwable) { $ok = !$c["ok"]; }
+    try {
+        // build FIRST; `$c["ok"] && build(...)` would short-circuit for negative
+        // cases and never verify that the build actually fails.
+        $built = build_signing_base($c["in"], $c["mode"], $c["signature_params_raw"] ?? null);
+        $ok = $c["ok"] && $built === $want;
+    } catch (\Throwable) { $ok = !$c["ok"]; }
     $record($ok, "signing_base", $c);
 }
 foreach ($corpus["signature_input_parse"] as $c) {
