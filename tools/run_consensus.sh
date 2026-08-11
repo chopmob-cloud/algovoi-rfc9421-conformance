@@ -130,5 +130,5 @@ if [ "$present" -lt "$REQUIRE" ]; then
   echo "RESULT: NOT GREEN -- only ${present} implementations present, require ${REQUIRE}"
   exit 1
 fi
-echo "RESULT: FULL ${present}-WAY CONSENSUS -- every implementation reproduces all 78 cases"
+echo "RESULT: FULL ${present}-WAY CONSENSUS -- every implementation reproduces every case in the corpus"
 exit 0
