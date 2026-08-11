@@ -1,0 +1,27 @@
+{
+  "name": "rfc9421_negative_v1.kat_anchors",
+  "description": "Independent known-answer anchors for the signing_base section. Each expected value is hand-derived by applying RFC 9421 Section 2.5 to the case inputs WITHOUT the reference build_signing_base implementation, so a systematic error baked into corpus generation (and faithfully reproduced by all ten runners) is caught here. Referenced by index into the frozen corpus's signing_base array; the signed corpus itself is never modified. Analogous to the JCS differential substrate's no-library expected_hash anchors.",
+  "corpus": "rfc9421_negative_v1.json",
+  "anchors": [
+    {
+      "signing_base_index": 0,
+      "rule": "algovoi-v0: @method lowercased; @authority lowercased; @path verbatim; no @signature-params line",
+      "expected_signing_base": "\"@method\": post\n\"@authority\": api.algovoi.co.uk\n\"@path\": /pay"
+    },
+    {
+      "signing_base_index": 1,
+      "rule": "rfc9421: @method case-preserved; @authority lowercased; trailing @signature-params carries signature_params_raw verbatim",
+      "expected_signing_base": "\"@method\": POST\n\"@authority\": api.algovoi.co.uk\n\"@path\": /pay\n\"@signature-params\": (\"@method\" \"@authority\" \"@path\");created=1778955520;keyid=\"did:web:api\";alg=\"ed25519\""
+    },
+    {
+      "signing_base_index": 2,
+      "rule": "algovoi-v0: header component (content-digest) carried verbatim; 'created' derived component resolves to the integer parameter as an exact integer, not a float",
+      "expected_signing_base": "\"@method\": get\n\"@path\": /x\n\"content-digest\": sha-256=:abc:\n\"created\": 1778955520"
+    },
+    {
+      "signing_base_index": 4,
+      "rule": "algovoi-v0: @scheme lowercased; @target-uri verbatim; @authority lowercased",
+      "expected_signing_base": "\"@scheme\": https\n\"@target-uri\": https://h/x?q=1\n\"@authority\": h"
+    }
+  ]
+}
