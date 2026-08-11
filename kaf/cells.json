@@ -1,0 +1,19 @@
+{
+  "catalog_version": "1",
+  "framework": "KAF",
+  "layer": "L2",
+  "suite": "rfc9421_negative_v1",
+  "notes": "Hermetic runtime cell catalog for the RFC 9421 negative battery. A cell is (language, pinned runtime image). Each cell runs that language's runner against the one frozen, signed corpus inside its pinned image, building/installing deps fresh in-container so the verdict is shown to hold in a clean, independent runtime, not just on the build host. Images are pinned by tag here; the exact repo digest is resolved at run time and embedded in the sealed receipt (kaf/run_cells.sh -> cells.results.json -> seal_receipt.py). This is the KAF 'Cells' axis for L2; the 'Agreement' axis is the 10-way consensus in tools/run_consensus.sh.",
+  "cells": [
+    { "id": "python-3.12-slim",  "lang": "python",     "image": "python:3.12-slim",                    "status": "active" },
+    { "id": "node-20-slim",      "lang": "typescript", "image": "node:20-slim",                        "status": "active" },
+    { "id": "go-1.26-bookworm",  "lang": "go",         "image": "golang:1.26-bookworm",                "status": "active" },
+    { "id": "rust-1-slim",       "lang": "rust",       "image": "rust:1-slim-bookworm",                "status": "active" },
+    { "id": "temurin-17-java",   "lang": "java",       "image": "eclipse-temurin:17",                  "status": "active" },
+    { "id": "temurin-17-kotlin", "lang": "kotlin",     "image": "eclipse-temurin:17",                  "status": "active" },
+    { "id": "dotnet-sdk-9.0",    "lang": "dotnet",     "image": "mcr.microsoft.com/dotnet/sdk:9.0",    "status": "active" },
+    { "id": "ruby-3.2-slim",     "lang": "ruby",       "image": "ruby:3.2-slim",                       "status": "active" },
+    { "id": "php-8.3-cli",       "lang": "php",        "image": "php:8.3-cli",                         "status": "active" },
+    { "id": "elixir-1.16-otp26", "lang": "elixir",     "image": "elixir:1.16-otp-26",                  "status": "active" }
+  ]
+}
