@@ -1,0 +1,111 @@
+# 10-way RFC 9421 consensus — enforce byte-for-byte parity on every push.
+#
+# Runs all ten independent language runners against the one frozen, signed
+# corpus via tools/run_consensus.sh --require 10. The job fails unless every
+# runner reproduces all 78 cases (each exits 0 iff it matched the frozen
+# oracle, so all-pass = all-agree byte-for-byte) and all ten are present
+# (a missing toolchain shrinks N below --require and fails closed).
+#
+# Ten stacks: python/ts/go/rust verifiers + java, kotlin, dotnet, ruby, php,
+# elixir self-contained runners. Go and Rust run their vendored conformance
+# tests from the sibling verifier repos, checked out alongside.
+
+name: 10-way consensus
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: consensus-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consensus:
+    name: rfc9421_negative_v1 (require 10)
+    runs-on: ubuntu-latest
+    env:
+      VGO_DIR: ${{ github.workspace }}/_siblings/verifier-go
+      VRS_DIR: ${{ github.workspace }}/_siblings/verifier-rs
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      GOTOOLCHAIN: local
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- sibling verifier repos for the go / rust runners ---
+      - uses: actions/checkout@v4
+        with:
+          repository: chopmob-cloud/algovoi-rfc9421-verifier-go
+          path: _siblings/verifier-go
+      - uses: actions/checkout@v4
+        with:
+          repository: chopmob-cloud/algovoi-rfc9421-verifier-rs
+          path: _siblings/verifier-rs
+
+      # --- ten toolchains ---
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install --quiet algovoi-rfc9421-verifier algovoi-rfc9421-ecdsa
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm install --no-audit --no-fund --loglevel=error
+        working-directory: runners/typescript
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: _siblings/verifier-go/go.mod
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: sodium, gmp, openssl
+
+      - uses: ruby/setup-ruby@v1
+        with: { ruby-version: "3.2" }
+
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "9.0.x" }
+
+      - uses: erlef/setup-beam@v1
+        with: { otp-version: "26", elixir-version: "1.16" }
+
+      - name: Kotlin compiler
+        run: |
+          set -euo pipefail
+          KV=2.0.20
+          curl -fsSL -o /tmp/kotlin.zip "https://github.com/JetBrains/kotlin/releases/download/v${KV}/kotlin-compiler-${KV}.zip"
+          sudo unzip -q /tmp/kotlin.zip -d /opt
+          echo "/opt/kotlinc/bin" >> "$GITHUB_PATH"
+
+      # --- jars for the JVM runners (gitignored; fetched from Maven Central) ---
+      - name: Fetch Java/Kotlin jars
+        run: |
+          set -euo pipefail
+          B=https://repo1.maven.org/maven2
+          jars=(
+            io/github/erdtman/java-json-canonicalization/1.1/java-json-canonicalization-1.1.jar
+            com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar
+            com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar
+            com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar
+            org/bouncycastle/bcprov-jdk18on/1.78.1/bcprov-jdk18on-1.78.1.jar
+          )
+          for d in runners/java/libs runners/kotlin/libs; do
+            mkdir -p "$d"
+            for j in "${jars[@]}"; do curl -fsSL "$B/$j" -o "$d/$(basename "$j")"; done
+          done
+
+      # --- the invariant: full 10-way consensus, or the job fails ---
+      - name: Run N-way consensus
+        run: bash tools/run_consensus.sh --require 10

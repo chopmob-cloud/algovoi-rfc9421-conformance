@@ -1,0 +1,126 @@
+{
+  "payload": {
+    "framework": "KAF",
+    "layer": "L2",
+    "suite": "rfc9421_negative_v1",
+    "sealed_at": "2026-08-11T00:00:00Z",
+    "seq": 1,
+    "corpus": {
+      "id": "rfc9421_negative_v1",
+      "file_sha256": "sha256:384e89b39d699301584f593237d5ccc6f2110ee91fb80fcdefb7f74c947d1d8a",
+      "manifest_file_sha256": "sha256:384e89b39d699301584f593237d5ccc6f2110ee91fb80fcdefb7f74c947d1d8a",
+      "manifest_corpus_digest": "sha256:a30caf2fe93c425b0fb1eb8ae4214e0430563ec8f14e9a5d490105f07b234ab4",
+      "signed_head": true,
+      "total_cases": 78
+    },
+    "axes": {
+      "agreement": {
+        "independent_runners": 10,
+        "languages": [
+          "dotnet",
+          "elixir",
+          "go",
+          "java",
+          "kotlin",
+          "php",
+          "python",
+          "ruby",
+          "rust",
+          "typescript"
+        ],
+        "result": "full 10-way byte-for-byte consensus",
+        "cases": 78
+      },
+      "kat": {
+        "independent_anchors": 4,
+        "corpus_integrity": "matches signed manifest head"
+      },
+      "cells": [
+        {
+          "cell": "python-3.12-slim",
+          "lang": "python",
+          "image": "python:3.12-slim",
+          "image_digest": "python@sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "node-20-slim",
+          "lang": "typescript",
+          "image": "node:20-slim",
+          "image_digest": "node@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "go-1.26-bookworm",
+          "lang": "go",
+          "image": "golang:1.26-bookworm",
+          "image_digest": "golang@sha256:53eeac89074db483fdf0ab3be1df32bf6e47562263d2d0d6baa7f26acb4957dd",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "rust-1-slim",
+          "lang": "rust",
+          "image": "rust:1-slim-bookworm",
+          "image_digest": "rust@sha256:2775a09d208ff0d7c1f50490c45b62db929e87ba1dcbc3f2132ac71a704bcdd3",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "temurin-17-java",
+          "lang": "java",
+          "image": "eclipse-temurin:17",
+          "image_digest": "eclipse-temurin@sha256:abb3826b404269a005829b63e2e7bd48a7be32115ab7ba9fa0d8cba834360eef",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "temurin-17-kotlin",
+          "lang": "kotlin",
+          "image": "eclipse-temurin:17",
+          "image_digest": "eclipse-temurin@sha256:abb3826b404269a005829b63e2e7bd48a7be32115ab7ba9fa0d8cba834360eef",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "dotnet-sdk-9.0",
+          "lang": "dotnet",
+          "image": "mcr.microsoft.com/dotnet/sdk:9.0",
+          "image_digest": "mcr.microsoft.com/dotnet/sdk@sha256:35048e3a81e6a07c316e7bbbd80d80d2ba705fe5f23a8ed42b6638c8f4c20d30",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "ruby-3.2-slim",
+          "lang": "ruby",
+          "image": "ruby:3.2-slim",
+          "image_digest": "ruby@sha256:84184c9e2c368885a1d0c93ad1953c33d81081058d274b87b4aa6f3e209e5d16",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "php-8.3-cli",
+          "lang": "php",
+          "image": "php:8.3-cli",
+          "image_digest": "php@sha256:f62df9916bc05ae3c5120b41a115938f22623b0c98c815cbe2c67bc73cec21ef",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "elixir-1.16-otp26",
+          "lang": "elixir",
+          "image": "elixir:1.16-otp-26",
+          "image_digest": "elixir@sha256:ca587e096fcf7f1f8f80122705dd6e7ed17dc8b963210af525a4cc07cdbb19b1",
+          "verdict": "PASS"
+        }
+      ],
+      "cells_passed": 10,
+      "cells_total": 10
+    }
+  },
+  "seal": {
+    "alg": "Ed25519",
+    "canonicalization": "JCS(RFC8785)",
+    "kid": "4bbcedc71692d3dc9491239d2fff1ea2",
+    "jwk": {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "xrHz4BWRsQTQry-L1t8wWI70S7F81M4G2yLwKnPmKAQ",
+      "kid": "4bbcedc71692d3dc9491239d2fff1ea2"
+    },
+    "sig_b64": "//GaM3o6WZHrC1XBF0phUSQg509qHrBtHmDVLjHs24g0fAnrsT6QUnZ1HQpZT3Ll6N92V1qiFNJOdHfwSr1JAQ=="
+  }
+}
