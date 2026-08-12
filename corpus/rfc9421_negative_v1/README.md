@@ -1,8 +1,8 @@
 # rfc9421_negative_v1
 
 Signed, cross-language CORE conformance battery for RFC 9421 HTTP Message
-Signatures. Every one of the eleven independent runners (python, typescript, go,
-rust, c, java, kotlin, dotnet, ruby, php, elixir) consumes this one JSON corpus and
+Signatures. Every one of the twelve independent runners (python, typescript, go,
+rust, c, java, kotlin, scala, dotnet, ruby, php, elixir) consumes this one JSON corpus and
 must produce byte-identical verdicts: reject every negative, accept every
 positive control. The strict superset `rfc9421_negative_v2` adds the fail-closed
 signing-base error paths and additional Ed25519/ECDSA range negatives.
@@ -89,16 +89,14 @@ signed corpus plus its hash-chained provenance, not a bare JSON.
 
 ## Runners
 
-Ten independent runners; run them all through the fail-closed consensus gate with
-`bash tools/run_consensus.sh --require 10` (see the root README for the full
+Twelve independent runners; run them all through the fail-closed consensus gate with
+`bash tools/run_consensus.sh --require 12` (see the root README for the full
 assurance stack: KAT, hermetic cells, sealed receipt, mutation test).
 
 - Python: `runners/python/verify_py.py`
 - TypeScript: `runners/typescript/verify_ts.mjs`
 - Rust: integration test in `algovoi-rfc9421-verifier-rs`
 - Go: `_test.go` in `algovoi-rfc9421-verifier-go`, env override `ALGOVOI_NEGATIVE_V1`
-- C / Java / Kotlin / .NET / Ruby / PHP / Elixir: self-contained under `runners/<lang>/`
+- C / Java / Kotlin / Scala / .NET / Ruby / PHP / Elixir: self-contained under `runners/<lang>/`
 
-Each exits 0 iff every case matches. N-way parity = all eleven agree per case.
-
-Each exits 0 iff every case matches. 4-way parity = all four agree per case.
+Each exits 0 iff every case matches. N-way parity = all twelve agree per case.
