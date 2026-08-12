@@ -37,7 +37,8 @@ each backed by that language's own crypto stack.
 ```
 corpus/
   rfc9421_negative_v1/   frozen CORE battery, 78 cases, 6 sections (signed)
-  rfc9421_negative_v2/   strict superset, 89 cases (default corpus)
+  rfc9421_negative_v2/   strict superset, 89 cases (signing-base + ecdsa/ed25519 edges)
+  rfc9421_negative_v3/   strict superset, 96 cases, 7 sections (default corpus; adds rsa_verify)
     *.json               the battery
     *.manifest.json      signed corpus head (JCS + EdDSA compact JWS)
     *.provenance.json    hash-chained provenance log
@@ -47,8 +48,8 @@ tools/
   run_consensus.sh       N-way consensus gate (fail-closed --require)
   check_kat.py           KAT integrity gate (signed-head signature + anchors)
   mutation_test.sh       proves the gate is not vacuous
-  gen_negative_v1/v2.py  regenerate the corpus from the reference
-  sign_negative_v1/v2.py  sign + version via algovoi-corpus-cm
+  gen_negative_v1/v2/v3.py   regenerate the corpus from the reference
+  sign_negative_v1/v2/v3.py  sign + version via algovoi-corpus-cm
 kaf/                     hermetic runtime cells + EdDSA sealed assurance receipt
 assets/  LICENSE  NOTICE  CONTRIBUTING.md
 ```
@@ -98,7 +99,7 @@ bash tools/run_consensus.sh --require 12
 ```
 
 Set `ALGOVOI_NEGATIVE_V1` (or pass a path) to run any runner or gate against a
-specific corpus; the default is the v2 superset. Individual runners live under
+specific corpus; the default is the v3 superset. Individual runners live under
 `runners/<lang>/` and each exits 0 iff every case matches.
 
 ## Cross-implementation validation matrix
@@ -199,7 +200,7 @@ by Simon Josefsson and Ilari Liusvaara.
 
 ## Citing this corpus
 
-> AlgoVoi RFC 9421 Conformance, <https://github.com/chopmob-cloud/algovoi-rfc9421-conformance>. 78 (v1) / 89 (v2) cases across 6 sections, byte-for-byte reproduced by twelve independent implementations (python, typescript, go, rust, c, java, kotlin, scala, dotnet, ruby, php, elixir), sealed across twelve hermetic runtime cells.
+> AlgoVoi RFC 9421 Conformance, <https://github.com/chopmob-cloud/algovoi-rfc9421-conformance>. 78 (v1) / 89 (v2) / 96 (v3) cases across 7 sections, byte-for-byte reproduced by twelve independent implementations (python, typescript, go, rust, c, java, kotlin, scala, dotnet, ruby, php, elixir), sealed across twelve hermetic runtime cells.
 
 ## Licence
 

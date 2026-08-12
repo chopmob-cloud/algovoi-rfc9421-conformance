@@ -26,7 +26,6 @@ from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CORPUS_DIR = os.path.join(HERE, "corpus", "rfc9421_negative_v1")
 
 
 def _b64u_dec(s: str) -> bytes:

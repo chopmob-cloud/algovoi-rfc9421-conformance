@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Seal a KAF assurance receipt for rfc9421_negative_v1.
+"""Seal a KAF assurance receipt for an rfc9421 negative battery (default: v3).
 
 Binds the three KAF axes that this repo proves into one signed, re-verifiable
 receipt:
 
-  - Agreement : the 10-way byte-for-byte consensus (tools/run_consensus.sh).
+  - Agreement : the N-way byte-for-byte consensus (tools/run_consensus.sh),
+                derived from the distinct languages whose cells actually passed.
   - Cells     : the per-runtime verdicts from kaf/run_cells.sh (image digests).
   - Seal      : this receipt, EdDSA-signed over the canonical payload, bound to
                 the corpus's signed manifest head (corpus_digest / file_sha256).
@@ -29,7 +30,6 @@ import sys
 from nacl.signing import SigningKey
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CORPUS_DIR = os.path.join(HERE, "corpus", "rfc9421_negative_v1")
 
 
 def _b64u(b: bytes) -> str:
@@ -51,8 +51,8 @@ def main() -> int:
     ap.add_argument("--sealed-at", required=True, help="ISO-8601 timestamp (passed in; the script does not read the clock)")
     ap.add_argument("--seq", type=int, default=1)
     ap.add_argument("--corpus", default=os.path.join(
-        HERE, "corpus", "rfc9421_negative_v2", "rfc9421_negative_v2.json"),
-        help="corpus path to seal (defaults to the v2 superset)")
+        HERE, "corpus", "rfc9421_negative_v3", "rfc9421_negative_v3.json"),
+        help="corpus path to seal (defaults to the current v3 superset)")
     args = ap.parse_args()
 
     corpus_path = args.corpus
