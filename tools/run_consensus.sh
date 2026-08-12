@@ -29,7 +29,7 @@ VGO_DIR="${VGO_DIR:-$HERE/../algovoi-rfc9421-verifier-go}"
 VRS_DIR="${VRS_DIR:-$HERE/../algovoi-rfc9421-verifier-rs}"
 
 # ordered: the ten independent implementations
-LANGS=(python typescript go rust java kotlin dotnet ruby php elixir)
+LANGS=(python typescript go rust c java kotlin dotnet ruby php elixir)
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -56,6 +56,12 @@ run_lang() {
       [ -f "$VRS_DIR/Cargo.toml" ] || { echo "ABSENT: VRS_DIR not a verifier-rs checkout"; return; }
       ( cd "$VRS_DIR" && ALGOVOI_NEGATIVE_V1="$CORPUS" \
           cargo test -q -p algovoi-rfc9421-ecdsa --test negative_v1 ) >/dev/null 2>&1 \
+        && echo PASS || echo FAIL ;;
+    c)
+      { have cc && pkg-config --exists jansson 2>/dev/null; } || { echo "ABSENT: no cc/jansson"; return; }
+      ( cd "$HERE/runners/c" \
+          && cc -O2 -w -o negative_v1 negative_v1.c $(pkg-config --cflags --libs jansson) -lcrypto \
+          && ./negative_v1 "$CORPUS" ) >/dev/null 2>&1 \
         && echo PASS || echo FAIL ;;
     java)
       have javac && have java || { echo "ABSENT: no jdk"; return; }

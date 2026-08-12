@@ -23,7 +23,7 @@ CORPUS="${CORPUS:-corpus/rfc9421_negative_v2/rfc9421_negative_v2.json}"
 CORPUS_IN="/work/$CORPUS"
 RESULTS="$HERE/kaf/cells.results.json"
 
-ALL_CELLS="python-3.12-slim node-20-slim go-1.26-bookworm rust-1-slim temurin-17-java temurin-17-kotlin dotnet-sdk-9.0 ruby-3.2-slim php-8.3-cli elixir-1.16-otp26"
+ALL_CELLS="python-3.12-slim node-20-slim go-1.26-bookworm rust-1-slim gcc-14-c temurin-17-java temurin-17-kotlin dotnet-sdk-9.0 ruby-3.2-slim php-8.3-cli elixir-1.16-otp26"
 CELLS="${CELLS:-$ALL_CELLS}"
 
 image_for() {
@@ -32,6 +32,7 @@ image_for() {
     node-20-slim)      echo "node:20-slim" ;;
     go-1.26-bookworm)  echo "golang:1.26-bookworm" ;;
     rust-1-slim)       echo "rust:1-slim-bookworm" ;;
+    gcc-14-c)          echo "gcc:14-bookworm" ;;
     temurin-17-java|temurin-17-kotlin) echo "eclipse-temurin:17" ;;
     dotnet-sdk-9.0)    echo "mcr.microsoft.com/dotnet/sdk:9.0" ;;
     ruby-3.2-slim)     echo "ruby:3.2-slim" ;;
@@ -51,6 +52,8 @@ cmd_for() {
       echo 'export GOCACHE=/tmp/gc GOPATH=/tmp/gp HOME=/tmp && cd /vgo && GOTOOLCHAIN=local ALGOVOI_NEGATIVE_V1='"$CORPUS_IN"' go test ./ecdsa -run TestNegativeV1' ;;
     rust-1-slim)
       echo 'export CARGO_HOME=/tmp/ch CARGO_TARGET_DIR=/tmp/tgt && cd /vrs && ALGOVOI_NEGATIVE_V1='"$CORPUS_IN"' cargo test -q -p algovoi-rfc9421-ecdsa --test negative_v1' ;;
+    gcc-14-c)
+      echo 'apt-get update -q >/dev/null && apt-get install -y -q libjansson-dev libssl-dev pkg-config >/dev/null && cd /tmp && cp /work/runners/c/negative_v1.c . && cc -O2 -w -o nv negative_v1.c $(pkg-config --cflags --libs jansson) -lcrypto && ./nv '"$CORPUS_IN" ;;
     temurin-17-java)
       echo 'cd /tmp && cp /work/runners/java/NegativeV1.java . && mkdir -p libs && cp /work/runners/java/libs/*.jar libs/ && javac -cp "libs/*" NegativeV1.java && java -cp ".:libs/*" NegativeV1 '"$CORPUS_IN" ;;
     temurin-17-kotlin)
