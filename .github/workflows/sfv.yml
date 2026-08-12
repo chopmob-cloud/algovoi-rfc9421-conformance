@@ -1,0 +1,116 @@
+# 12-way Structured Field Values consensus: enforce byte-for-byte parity on every push.
+#
+# Runs all twelve independent language runners against the one frozen, signed
+# sfv_v0 corpus (RFC 8941 Structured Field Values, 67 cases across six sections)
+# via tools/run_consensus_sfv.sh --require 12. The job fails unless every runner
+# reproduces every case (each exits 0 iff it matched the frozen oracle, so
+# all-pass = all-agree byte-for-byte) and all twelve are present: a missing
+# toolchain shrinks N below --require and fails closed.
+#
+# The KAT integrity gate (tools/check_kat_sfv.py) runs first inside the driver and
+# re-derives every verdict with a separate third-party implementation (http_sfv),
+# so a systematic error shared by the generator and every runner cannot pass. The
+# go/typescript/php runners install their native RFC 8941 library in a scratch dir
+# inside the driver; ruby needs the starry gem and the JVM runners need a JSON jar,
+# which this workflow provides.
+
+name: 12-way Structured Field Values consensus
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sfv-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consensus:
+    name: sfv_v0 (require 12)
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      GOTOOLCHAIN: local
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- twelve toolchains ---
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+        # http_sfv (Mark Nottingham's RFC 8941 implementation) re-derives every
+        # verdict in the KAT gate independently of our oracle; PyNaCl verifies the
+        # signed corpus head.
+      - run: python -m pip install --quiet http-sfv pynacl
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }   # driver installs `structured-headers` per run
+
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.22" }   # driver installs `github.com/dunglas/httpsfv`
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"           # driver installs `bakame/http-structured-fields` via composer
+
+      - uses: ruby/setup-ruby@v1
+        with: { ruby-version: "3.2" }
+      - name: Ruby SFV library (starry)
+        run: gem install starry
+
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "9.0.x" }
+
+      - uses: erlef/setup-beam@v1
+        with: { otp-version: "26", elixir-version: "1.16" }
+
+      - name: Kotlin compiler
+        run: |
+          set -euo pipefail
+          KV=2.0.20
+          curl -fsSL -o /tmp/kotlin.zip "https://github.com/JetBrains/kotlin/releases/download/v${KV}/kotlin-compiler-${KV}.zip"
+          sudo unzip -q /tmp/kotlin.zip -d /opt
+          echo "/opt/kotlinc/bin" >> "$GITHUB_PATH"
+
+      # --- JSON jars for the JVM runners (gitignored; fetched from Maven Central).
+      #     sfv_v0 has no crypto, so java uses org.json and kotlin uses Jackson;
+      #     no Bouncy Castle is needed. ---
+      - name: Fetch JVM jars
+        run: |
+          set -euo pipefail
+          B=https://repo1.maven.org/maven2
+          J=2.17.0
+          mkdir -p runners/java/libs runners/kotlin/libs
+          curl -fsSL "$B/org/json/json/20240303/json-20240303.jar" -o runners/java/libs/json-20240303.jar
+          for j in \
+            com/fasterxml/jackson/core/jackson-core/$J/jackson-core-$J.jar \
+            com/fasterxml/jackson/core/jackson-databind/$J/jackson-databind-$J.jar \
+            com/fasterxml/jackson/core/jackson-annotations/$J/jackson-annotations-$J.jar; do
+            curl -fsSL "$B/$j" -o "runners/kotlin/libs/$(basename "$j")"
+          done
+
+      - name: C deps (jansson)
+        run: sudo apt-get update -q && sudo apt-get install -y -q libjansson-dev pkg-config
+
+      - name: Scala CLI
+        run: |
+          set -euo pipefail
+          curl -fsLo /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz
+          gzip -df /tmp/scala-cli.gz
+          chmod +x /tmp/scala-cli
+          sudo mv /tmp/scala-cli /usr/local/bin/scala-cli
+          scala-cli version
+
+      # --- the invariant: full 12-way consensus (KAT-gated), or the job fails ---
+      - name: Run N-way consensus
+        run: bash tools/run_consensus_sfv.sh --require 12

@@ -1,0 +1,421 @@
+{
+  "name": "jws_v0",
+  "description": "Signed cross-language conformance battery for JSON Web Signature (RFC 7515) with the RFC 7518 RS256 / ES256 and RFC 8037 EdDSA algorithms: compact-serialization parsing, and the JOSE security rejections that lenient verifiers get wrong (alg:none, key/alg confusion such as HS256 keyed with an RSA public key, unknown crit, kid selection), plus the RS256 / ES256 / EdDSA signature verdicts. This is the JOSE sign/verify stage of the signing-flow bridge, the JWS sibling of the RFC 9421 HTTP Message Signatures corpora.",
+  "profile": "json-web-signature",
+  "policy": {
+    "specs": [
+      "RFC7515",
+      "RFC7518",
+      "RFC8037"
+    ],
+    "algorithms": [
+      "RS256",
+      "ES256",
+      "EdDSA"
+    ],
+    "compact_signing_input": "ASCII(BASE64URL(protected)) + '.' + ASCII(BASE64URL(payload))",
+    "security_rules": [
+      "alg:none is always rejected",
+      "header alg must match the held key type (key/alg confusion rejected)",
+      "an unknown or unsupported crit parameter is rejected",
+      "a kid that selects no held key is rejected"
+    ],
+    "low_s": "NOT enforced. Plain JOSE (RFC 7518 Section 3.4) permits a high-s ECDSA signature; low-s is a FAPI profile rule (fapi_messagesigning_v0), not a JWS rule, so it is deliberately out of jws_v0 scope.",
+    "documented_divergences": []
+  },
+  "keys": {
+    "rsa": {
+      "kty": "RSA",
+      "n": "us4-x37fFqcmPz3hU8BBS39p2x_34hK9su4_7IQ3AXwV0gBEJ9XS-L5UWas7RgoLTBdk6PVDdftCLLuWWLRBAOUO6Wm97GOrGd0ovDm18lV4WXbaymefai35mQGUUdmQspV8-rIkvvVY6dw5rRvWrqf9TV_sqS2A8WgQhp1T3kpW_gpYsejHmm6rnlHABGOc2N0eMYF9zGVfJPw78nIuHJjQtVhTwfH8pLR2zbjsOXIMUWrTOTld1pxpNrHQzgAnVwLLc1VVavyeXyyjBGXubSnKc3MeIdaEk7G51UekGbUHJ2ujHWWvN3z7x5lFC_i3Sk0pjbx5sEBm2opULWQ86w",
+      "e": "AQAB",
+      "kid": "jws-rsa-1",
+      "alg": "RS256"
+    },
+    "ec": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "DZ6zPZTTphrUaIOXLh2dgfmdaZQ-GOnIalKu9NQh7dU",
+      "y": "X2EkreqGkol-uS2njUbcCmeE-ls5ztUqry3_sXA0OdE",
+      "kid": "jws-ec-1",
+      "alg": "ES256"
+    },
+    "ed25519": {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "M3pHYgsA5wroYJvcVCzIv511flqL3YzxXWF4YylP7P8",
+      "kid": "jws-ed25519-1",
+      "alg": "EdDSA"
+    },
+    "wrong_rsa": {
+      "kty": "RSA",
+      "n": "6gYiywXrk7WxpU8DQrtEEjkAJfCB5Huq-55PMW0wbp-OxSbwxCH7guP5uO3ozTyrwmLPgVNhJtWsFF9h4dD-QkLgiTY2p6iOx0b1F-vOJYojczPOfNL-yrzWGA73XLvtFoi_T9AE8KMYWvBk09js1rhUmHqmjwvIMfgkRboBjfJKZFa_FKtHkgmFC28BDCfA_6WtFyiMs9r9F-6gE46tr7IZ7ikBEOBfMQTHmckPMSE9A2AR1OHcaCTOwCbHbuZJfQ6GSOyV7cDpDWUTSofpX8N1uqEacu_HrxJU1bmQ3KkIMUmKFTPnoIeGPiwYid0ddrsghXUY3zpKdKr6QXGLow",
+      "e": "AQAB",
+      "kid": "jws-rsa-1",
+      "alg": "RS256"
+    },
+    "wrong_ec": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "R7vIiAHSN6bg7vG0dq3sUHFfQSOd1i1fCqPvADv3Wmk",
+      "y": "R21qEi9ME_vRN_ClWy4Jw-ygxHiPc3AL3I609lErn3c",
+      "kid": "jws-ec-1",
+      "alg": "ES256"
+    },
+    "wrong_ed25519": {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "UJJpZt4OEygYpGpu5RR8KsKHhSvqeB1gDqprP-abXp4",
+      "kid": "jws-ed25519-1",
+      "alg": "EdDSA"
+    },
+    "offcurve_ec": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "DZ6zPZTTphrUaIOXLh2dgfmdaZQ-GOnIalKu9NQh7dU",
+      "y": "X2EkreqGkol-uS2njUbcCmeE-ls5ztUqry3_sXA0OdI",
+      "kid": "jws-ec-1",
+      "alg": "ES256"
+    }
+  },
+  "jws_compact_parse": [
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": true,
+      "note": "valid 3-segment compact JWS (RS256), parses and verifies"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "only 2 segments (missing signature segment)"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA.extra",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "4 segments (a compact JWS has exactly 3; 5 would be a JWE)"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn!.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "non-base64url character in the payload segment"
+    },
+    {
+      "jws": "bm90LWpzb257.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.AA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "protected header is valid base64url but not valid JSON"
+    },
+    {
+      "jws": "eyJraWQiOiJqd3MtcnNhLTEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.AA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "protected header is valid JSON but is missing the alg parameter"
+    }
+  ],
+  "jws_alg_none": [
+    {
+      "jws": "eyJhbGciOiJub25lIiwia2lkIjoiandzLXJzYS0xIn0.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "alg:none carrying a (bogus) signature segment"
+    },
+    {
+      "jws": "eyJhbGciOiJub25lIiwia2lkIjoiandzLXJzYS0xIn0.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "alg:none with an empty signature segment (the unsecured JWS)"
+    }
+  ],
+  "jws_alg_confusion": [
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": true,
+      "note": "genuine RS256 verified with the RSA key (the accept control)"
+    },
+    {
+      "jws": "eyJhbGciOiJIUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.wUJ635-fagNixWAL7kq7U0YWIxjSdBTANnJYJoeSNl0",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "HS256 forged with the RSA public-key bytes as the HMAC secret; held key is RSA (classic key/alg confusion), rejected on kty mismatch"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "ec"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "RS256 token verified while holding an EC key (alg/key mismatch)"
+    },
+    {
+      "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6Imp3cy1lYy0xIn0.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.GWYJkIRZBHUesWT-bPTSrwfwUZ4vo2Z9T-A1L0F9r0Y4vv_plz5B-7QiXwB06PcYeuOGMAP16I2aayWErtexxw",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "ES256 token verified while holding the RSA key (alg/key mismatch)"
+    }
+  ],
+  "jws_rs256_verify": [
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": true,
+      "note": "valid RS256 control"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.o61BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "one-byte-tampered RS256 signature"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0g.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "tampered payload (signature no longer covers the signing input)"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "wrong_rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "valid RS256 token verified under a different (wrong) RSA key"
+    }
+  ],
+  "jws_es256_verify": [
+    {
+      "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6Imp3cy1lYy0xIn0.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.GWYJkIRZBHUesWT-bPTSrwfwUZ4vo2Z9T-A1L0F9r0Y4vv_plz5B-7QiXwB06PcYeuOGMAP16I2aayWErtexxw",
+      "verify": {
+        "key_names": [
+          "ec"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": true,
+      "note": "valid ES256 control (high-s permitted; low-s not enforced in jws_v0)"
+    },
+    {
+      "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6Imp3cy1lYy0xIn0.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.GGYJkIRZBHUesWT-bPTSrwfwUZ4vo2Z9T-A1L0F9r0Y4vv_plz5B-7QiXwB06PcYeuOGMAP16I2aayWErtexxw",
+      "verify": {
+        "key_names": [
+          "ec"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "one-byte-tampered ES256 signature"
+    },
+    {
+      "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6Imp3cy1lYy0xIn0.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.GWYJkIRZBHUesWT-bPTSrwfwUZ4vo2Z9T-A1L0F9r0Y4vv_plz5B-7QiXwB06PcYeuOGMAP16I2aayWErtex",
+      "verify": {
+        "key_names": [
+          "ec"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "wrong-width R||S (63 bytes; a JOSE ES256 signature is exactly 64)"
+    },
+    {
+      "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6Imp3cy1lYy0xIn0.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.GWYJkIRZBHUesWT-bPTSrwfwUZ4vo2Z9T-A1L0F9r0Y4vv_plz5B-7QiXwB06PcYeuOGMAP16I2aayWErtexxw",
+      "verify": {
+        "key_names": [
+          "offcurve_ec"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "public key point is not on secp256r1 (rejected before trust)"
+    },
+    {
+      "jws": "eyJhbGciOiJFUzI1NiIsImtpZCI6Imp3cy1lYy0xIn0.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.GWYJkIRZBHUesWT-bPTSrwfwUZ4vo2Z9T-A1L0F9r0Y4vv_plz5B-7QiXwB06PcYeuOGMAP16I2aayWErtexxw",
+      "verify": {
+        "key_names": [
+          "wrong_ec"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "valid ES256 token verified under a different (wrong) EC key"
+    }
+  ],
+  "jws_eddsa_verify": [
+    {
+      "jws": "eyJhbGciOiJFZERTQSIsImtpZCI6Imp3cy1lZDI1NTE5LTEifQ.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.hnHHGcXSMng6aqyxR7l1IeRYXLpcBMkfoeDMwexK2-WLEcawn1nzmlQk9DcF1b-9YmZtKIJh9S97igcuEmNTCw",
+      "verify": {
+        "key_names": [
+          "ed25519"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": true,
+      "note": "valid EdDSA (Ed25519) control"
+    },
+    {
+      "jws": "eyJhbGciOiJFZERTQSIsImtpZCI6Imp3cy1lZDI1NTE5LTEifQ.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.h3HHGcXSMng6aqyxR7l1IeRYXLpcBMkfoeDMwexK2-WLEcawn1nzmlQk9DcF1b-9YmZtKIJh9S97igcuEmNTCw",
+      "verify": {
+        "key_names": [
+          "ed25519"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "one-byte-tampered EdDSA signature"
+    },
+    {
+      "jws": "eyJhbGciOiJFZERTQSIsImtpZCI6Imp3cy1lZDI1NTE5LTEifQ.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.hnHHGcXSMng6aqyxR7l1IeRYXLpcBMkfoeDMwexK2-WLEcawn1nzmlQk9DcF1b-9YmZtKIJh9S97igcuEmNTCw",
+      "verify": {
+        "key_names": [
+          "wrong_ed25519"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "valid EdDSA token verified under a different (wrong) Ed25519 key"
+    }
+  ],
+  "jws_crit": [
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSIsImNyaXQiOlsidXJuOmV4YW1wbGU6dW5rbm93biJdLCJ1cm46ZXhhbXBsZTp1bmtub3duIjp0cnVlfQ.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "crit lists an extension the verifier does not understand"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa"
+        ],
+        "select_by_kid": false
+      },
+      "expect_valid": false,
+      "note": "crit:[\"b64\"] (RFC 7797) is not understood by a base JWS verifier"
+    }
+  ],
+  "jws_kid": [
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy1yc2EtMSJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa",
+          "ec",
+          "ed25519"
+        ],
+        "select_by_kid": true
+      },
+      "expect_valid": true,
+      "note": "kid selects the correct RSA key from the keyset"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiIsImtpZCI6Imp3cy11bmtub3duLTkifQ.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa",
+          "ec",
+          "ed25519"
+        ],
+        "select_by_kid": true
+      },
+      "expect_valid": false,
+      "note": "kid names a key not in the keyset (selects nothing)"
+    },
+    {
+      "jws": "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJkaWQ6d2ViOmFsZ292b2kuY28udWsiLCJzdWIiOiJhZ2VudC0wMSIsImh0bSI6IlBPU1QiLCJodHUiOiJodHRwczovL2FwaS5leGFtcGxlL3Jlc291cmNlIn0.oq1BGcOHve8X9-sbdJ2h19si8BPpeChM85GjtinZsuINlemGgD5PSVhr80CNrtiqm3E8emOPwY3vcoIRNDNT3279RjZ4lB5EFXudNrePLXEwsD4RirQsxX-wG2Waf7QWwE6cIsfAdBqVdHzI9WVSMoiDnBX_Bypon25NUbeke2ObUvG44aBJWszBOXGr5A_qly7b-Y1a3RaLRWENTprgMmMpfVCp7m1IuwkAcZUgSGguTP3-UkceYJm8SHsX6jbIINclgR20NUjuaEGBIWAtvevRcZJ9LgwXO9jGhTyLQ4S1IHFV1MLcCS0-C7HFZtIhMSQEbuaZrP4oVfMIJUSgrA",
+      "verify": {
+        "key_names": [
+          "rsa",
+          "ec",
+          "ed25519"
+        ],
+        "select_by_kid": true
+      },
+      "expect_valid": false,
+      "note": "no kid, so a keyset verifier can select no key"
+    }
+  ]
+}

@@ -35,3 +35,16 @@ runners/scala/.scala-build/
 runners/rust/target/
 runners/rust-wba/target/
 runners/rust-fapi/target/
+runners/rust-sfv/target/
+runners/rust-jws/target/
+
+# sfv_v0 / jws_v0 runner + cell artifacts (built in CI / cells, never committed;
+# only the sealed receipts under kaf/receipts/ are committed)
+runners/dotnet-sfv/bin/
+runners/dotnet-sfv/obj/
+runners/dotnet-jws/bin/
+runners/dotnet-jws/obj/
+runners/c/verify_sfv
+runners/c/verify_jws
+kaf/cells_sfv.results.json
+kaf/cells_jws.results.json

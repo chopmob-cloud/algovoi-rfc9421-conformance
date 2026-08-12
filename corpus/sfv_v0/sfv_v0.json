@@ -1,0 +1,498 @@
+{
+  "name": "sfv_v0",
+  "description": "Signed cross-language conformance battery for RFC 8941 Structured Field Values: parsing of Items, Lists and Dictionaries across every bare-item type, parameters, inner lists, canonical serialization (normalization), and the strict-reject negatives where lenient parsers silently diverge. This is the parse/serialize stage of the signing flow, underneath RFC 9421 Signature-Input and RFC 9530 Content-Digest.",
+  "profile": "structured-field-values",
+  "policy": {
+    "spec": "RFC8941",
+    "field_types": [
+      "item",
+      "list",
+      "dictionary"
+    ],
+    "integer_range": [
+      -999999999999999,
+      999999999999999
+    ],
+    "excluded": [
+      "Date (RFC9651)",
+      "Display String (RFC9651)"
+    ],
+    "note": "Scope is the RFC 8941 core that RFC 9651 keeps byte-identical, so the corpus is version-neutral. Date and Display String are a later sfv_v1 section.",
+    "documented_divergences": [
+      {
+        "input": "",
+        "field_types": [
+          "list",
+          "dictionary"
+        ],
+        "reason": "The RFC parse algorithm yields an empty structure, but mature implementations (including http_sfv, the spec author's) reject an empty field. Genuinely ambiguous across implementations, so it is excluded from the agreement battery rather than asserted."
+      },
+      {
+        "input": "1.",
+        "field_type": "item",
+        "reason": "RFC 8941 Section 4.2.4 rejects a decimal ending in '.', but lenient parsers (http_sfv accepts it as 1.0) do not, so it is not a portable agreement vector. Reserved for a future strictness profile."
+      }
+    ]
+  },
+  "sfv_item": [
+    {
+      "field_type": "item",
+      "input": "1",
+      "expect_parse_ok": true,
+      "note": "bare integer",
+      "canonical": "1"
+    },
+    {
+      "field_type": "item",
+      "input": "-42",
+      "expect_parse_ok": true,
+      "note": "negative integer",
+      "canonical": "-42"
+    },
+    {
+      "field_type": "item",
+      "input": "4.5",
+      "expect_parse_ok": true,
+      "note": "decimal",
+      "canonical": "4.5"
+    },
+    {
+      "field_type": "item",
+      "input": "-0.001",
+      "expect_parse_ok": true,
+      "note": "small negative decimal",
+      "canonical": "-0.001"
+    },
+    {
+      "field_type": "item",
+      "input": "\"hello world\"",
+      "expect_parse_ok": true,
+      "note": "string with a space",
+      "canonical": "\"hello world\""
+    },
+    {
+      "field_type": "item",
+      "input": "\"escaped \\\" quote\"",
+      "expect_parse_ok": true,
+      "note": "string with an escaped quote",
+      "canonical": "\"escaped \\\" quote\""
+    },
+    {
+      "field_type": "item",
+      "input": "foo123",
+      "expect_parse_ok": true,
+      "note": "token",
+      "canonical": "foo123"
+    },
+    {
+      "field_type": "item",
+      "input": "*special",
+      "expect_parse_ok": true,
+      "note": "token starting with star",
+      "canonical": "*special"
+    },
+    {
+      "field_type": "item",
+      "input": "a/b:c",
+      "expect_parse_ok": true,
+      "note": "token containing slash and colon",
+      "canonical": "a/b:c"
+    },
+    {
+      "field_type": "item",
+      "input": ":aGVsbG8=:",
+      "expect_parse_ok": true,
+      "note": "byte sequence (base64 of hello)",
+      "canonical": ":aGVsbG8=:"
+    },
+    {
+      "field_type": "item",
+      "input": "::",
+      "expect_parse_ok": true,
+      "note": "empty byte sequence",
+      "canonical": "::"
+    },
+    {
+      "field_type": "item",
+      "input": "?1",
+      "expect_parse_ok": true,
+      "note": "boolean true",
+      "canonical": "?1"
+    },
+    {
+      "field_type": "item",
+      "input": "?0",
+      "expect_parse_ok": true,
+      "note": "boolean false",
+      "canonical": "?0"
+    },
+    {
+      "field_type": "item",
+      "input": "5;foo=bar",
+      "expect_parse_ok": true,
+      "note": "integer with a token parameter",
+      "canonical": "5;foo=bar"
+    },
+    {
+      "field_type": "item",
+      "input": "sugar;a;b=?0",
+      "expect_parse_ok": true,
+      "note": "token with boolean parameters",
+      "canonical": "sugar;a;b=?0"
+    }
+  ],
+  "sfv_list": [
+    {
+      "field_type": "list",
+      "input": "1, 2, 3",
+      "expect_parse_ok": true,
+      "note": "list of integers",
+      "canonical": "1, 2, 3"
+    },
+    {
+      "field_type": "list",
+      "input": "foo, bar",
+      "expect_parse_ok": true,
+      "note": "list of tokens",
+      "canonical": "foo, bar"
+    },
+    {
+      "field_type": "list",
+      "input": "\"a\", \"b\"",
+      "expect_parse_ok": true,
+      "note": "list of strings",
+      "canonical": "\"a\", \"b\""
+    },
+    {
+      "field_type": "list",
+      "input": "(1 2 3)",
+      "expect_parse_ok": true,
+      "note": "single inner list",
+      "canonical": "(1 2 3)"
+    },
+    {
+      "field_type": "list",
+      "input": "(a b c);x=1",
+      "expect_parse_ok": true,
+      "note": "inner list with a parameter",
+      "canonical": "(a b c);x=1"
+    },
+    {
+      "field_type": "list",
+      "input": "sugar, tea, rum",
+      "expect_parse_ok": true,
+      "note": "list of tokens (spec example)",
+      "canonical": "sugar, tea, rum"
+    },
+    {
+      "field_type": "list",
+      "input": "1, (2 3), 4",
+      "expect_parse_ok": true,
+      "note": "item, inner list, item",
+      "canonical": "1, (2 3), 4"
+    },
+    {
+      "field_type": "list",
+      "input": "()",
+      "expect_parse_ok": true,
+      "note": "empty inner list member",
+      "canonical": "()"
+    },
+    {
+      "field_type": "list",
+      "input": "(1)",
+      "expect_parse_ok": true,
+      "note": "one-element inner list",
+      "canonical": "(1)"
+    },
+    {
+      "field_type": "list",
+      "input": "a;b=1, c",
+      "expect_parse_ok": true,
+      "note": "member with a parameter then a bare member",
+      "canonical": "a;b=1, c"
+    }
+  ],
+  "sfv_dictionary": [
+    {
+      "field_type": "dictionary",
+      "input": "a=1, b=2",
+      "expect_parse_ok": true,
+      "note": "two integer entries",
+      "canonical": "a=1, b=2"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "en=\"Applepie\", da=:aGVsbG8=:",
+      "expect_parse_ok": true,
+      "note": "string and byte-sequence entries",
+      "canonical": "en=\"Applepie\", da=:aGVsbG8=:"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "a=?0, b, c=?1",
+      "expect_parse_ok": true,
+      "note": "boolean values incl an omitted-true key",
+      "canonical": "a=?0, b, c"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "rating=1.5, feature=(a b)",
+      "expect_parse_ok": true,
+      "note": "decimal and inner-list values",
+      "canonical": "rating=1.5, feature=(a b)"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "a=(1 2), b=3",
+      "expect_parse_ok": true,
+      "note": "inner-list value then integer",
+      "canonical": "a=(1 2), b=3"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "foo=bar;x=1",
+      "expect_parse_ok": true,
+      "note": "entry value carrying a parameter",
+      "canonical": "foo=bar;x=1"
+    }
+  ],
+  "sfv_parameters": [
+    {
+      "field_type": "item",
+      "input": "1;a=1;b=2",
+      "expect_parse_ok": true,
+      "note": "two parameters",
+      "canonical": "1;a=1;b=2"
+    },
+    {
+      "field_type": "item",
+      "input": "1;a;b",
+      "expect_parse_ok": true,
+      "note": "two boolean-true parameters",
+      "canonical": "1;a;b"
+    },
+    {
+      "field_type": "item",
+      "input": "\"x\";key=\"val\"",
+      "expect_parse_ok": true,
+      "note": "string item with a string parameter",
+      "canonical": "\"x\";key=\"val\""
+    },
+    {
+      "field_type": "item",
+      "input": "tok;*=1",
+      "expect_parse_ok": true,
+      "note": "star is a valid parameter key",
+      "canonical": "tok;*=1"
+    },
+    {
+      "field_type": "item",
+      "input": "1;a=1;a=2",
+      "expect_parse_ok": true,
+      "note": "duplicate parameter key, last value wins",
+      "canonical": "1;a=2"
+    },
+    {
+      "field_type": "item",
+      "input": "5; foo=bar",
+      "expect_parse_ok": true,
+      "note": "space after semicolon is allowed and normalized away",
+      "canonical": "5;foo=bar"
+    }
+  ],
+  "sfv_canonical": [
+    {
+      "field_type": "item",
+      "input": "01",
+      "expect_parse_ok": true,
+      "note": "leading zeros stripped",
+      "canonical": "1"
+    },
+    {
+      "field_type": "item",
+      "input": "-0",
+      "expect_parse_ok": true,
+      "note": "negative zero normalizes to 0",
+      "canonical": "0"
+    },
+    {
+      "field_type": "item",
+      "input": "1.50",
+      "expect_parse_ok": true,
+      "note": "trailing fractional zero stripped",
+      "canonical": "1.5"
+    },
+    {
+      "field_type": "item",
+      "input": "1.230",
+      "expect_parse_ok": true,
+      "note": "trailing fractional zero stripped (to 1.23)",
+      "canonical": "1.23"
+    },
+    {
+      "field_type": "item",
+      "input": " 5 ",
+      "expect_parse_ok": true,
+      "note": "leading and trailing spaces stripped",
+      "canonical": "5"
+    },
+    {
+      "field_type": "list",
+      "input": "1 , 2",
+      "expect_parse_ok": true,
+      "note": "whitespace around list comma normalized",
+      "canonical": "1, 2"
+    },
+    {
+      "field_type": "list",
+      "input": "a;b=1,  c",
+      "expect_parse_ok": true,
+      "note": "extra spaces after comma normalized",
+      "canonical": "a;b=1, c"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "a=1, a=2",
+      "expect_parse_ok": true,
+      "note": "duplicate dictionary key, last wins",
+      "canonical": "a=2"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "a=1,  b=2",
+      "expect_parse_ok": true,
+      "note": "extra space after comma normalized",
+      "canonical": "a=1, b=2"
+    },
+    {
+      "field_type": "item",
+      "input": "1;a=1;a=2",
+      "expect_parse_ok": true,
+      "note": "duplicate parameter collapses to the last value",
+      "canonical": "1;a=2"
+    }
+  ],
+  "sfv_reject": [
+    {
+      "field_type": "item",
+      "input": "",
+      "expect_parse_ok": false,
+      "note": "empty item"
+    },
+    {
+      "field_type": "item",
+      "input": "1.0000",
+      "expect_parse_ok": false,
+      "note": "too many fractional digits"
+    },
+    {
+      "field_type": "item",
+      "input": "1000000000000000",
+      "expect_parse_ok": false,
+      "note": "integer too long (16 digits)"
+    },
+    {
+      "field_type": "item",
+      "input": "?2",
+      "expect_parse_ok": false,
+      "note": "boolean must be 0 or 1"
+    },
+    {
+      "field_type": "item",
+      "input": "?",
+      "expect_parse_ok": false,
+      "note": "incomplete boolean"
+    },
+    {
+      "field_type": "item",
+      "input": "\"unterminated",
+      "expect_parse_ok": false,
+      "note": "unterminated string"
+    },
+    {
+      "field_type": "item",
+      "input": "\"bad\\x\"",
+      "expect_parse_ok": false,
+      "note": "invalid string escape"
+    },
+    {
+      "field_type": "item",
+      "input": ":not_base64:",
+      "expect_parse_ok": false,
+      "note": "non-base64 character in byte sequence"
+    },
+    {
+      "field_type": "item",
+      "input": ":aGVsbG8:",
+      "expect_parse_ok": false,
+      "note": "non-canonical (unpadded) base64 rejected"
+    },
+    {
+      "field_type": "item",
+      "input": "1;A=2",
+      "expect_parse_ok": false,
+      "note": "uppercase parameter key rejected"
+    },
+    {
+      "field_type": "item",
+      "input": "1 2",
+      "expect_parse_ok": false,
+      "note": "trailing content after the item"
+    },
+    {
+      "field_type": "item",
+      "input": "@nope",
+      "expect_parse_ok": false,
+      "note": "invalid character starting a bare item"
+    },
+    {
+      "field_type": "item",
+      "input": "9abc",
+      "expect_parse_ok": false,
+      "note": "token-like input starting with a digit"
+    },
+    {
+      "field_type": "item",
+      "input": "é",
+      "expect_parse_ok": false,
+      "note": "non-ASCII byte in a field value"
+    },
+    {
+      "field_type": "item",
+      "input": "\"tab\there\"",
+      "expect_parse_ok": false,
+      "note": "raw control character inside a string"
+    },
+    {
+      "field_type": "list",
+      "input": "1, 2,",
+      "expect_parse_ok": false,
+      "note": "trailing comma in a list"
+    },
+    {
+      "field_type": "list",
+      "input": "1,,2",
+      "expect_parse_ok": false,
+      "note": "empty member in a list"
+    },
+    {
+      "field_type": "list",
+      "input": "(1 2",
+      "expect_parse_ok": false,
+      "note": "unterminated inner list"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "=1",
+      "expect_parse_ok": false,
+      "note": "dictionary member with no key"
+    },
+    {
+      "field_type": "dictionary",
+      "input": "a=1,,b=2",
+      "expect_parse_ok": false,
+      "note": "double comma in a dictionary"
+    }
+  ]
+}

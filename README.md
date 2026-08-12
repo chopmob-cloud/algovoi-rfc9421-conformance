@@ -7,6 +7,8 @@
 [![12-way consensus](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/consensus.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/consensus.yml)
 [![Web Bot Auth](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/webbotauth.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/webbotauth.yml)
 [![FAPI 2.0](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/fapi.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/fapi.yml)
+[![Structured Fields](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml)
+[![JWS](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml)
 [![RFC 9421](./assets/badges/rfc9421.svg)](https://www.rfc-editor.org/rfc/rfc9421.html)
 [![Cross-validated](./assets/badges/languages.svg)](#cross-implementation-validation-matrix)
 [![Cases](./assets/badges/cases.svg)](#the-seven-sections)
@@ -46,6 +48,18 @@ completeness, freshness/replay, Content-Digest body binding, Signature-Agent SSR
 algorithm restriction), not just whether one signature is valid. See the Profile
 sections below.
 
+The same twelve-language substrate is a bridge across the whole signing flow, not
+only RFC 9421. Two standard-stage corpora extend it to the neighbouring stages,
+each frozen, signed, 12-way and sealed like the rest:
+**[Structured Field Values](#corpus-structured-field-values-sfv_v0)**
+(`sfv_v0`, RFC 8941, the parse and canonical-serialization stage that sits
+underneath Signature-Input and Content-Digest) and
+**[JSON Web Signature](#corpus-json-web-signature-jws_v0)**
+(`jws_v0`, RFC 7515 / 7518 / 8037, the JOSE sign-and-verify stage, carrying the
+`alg=none`, algorithm-confusion and `crit` negatives). Each is independence-checked
+against a separate third-party implementation of its own standard (`http_sfv` and
+`jwcrypto`) before the language fan-out. See the Corpus sections below.
+
 ## The battery
 
 ```
@@ -59,18 +73,20 @@ corpus/
     kat_anchors_v1.json  independent, no-library known-answer anchors
   webbotauth_v0/         Web Bot Auth profile, 31 cases, 6 sections (signed + sealed)
   fapi_messagesigning_v0/  FAPI 2.0 Message Signing profile, 27 cases, 6 sections (signed + sealed)
-vectors/                 frozen public test material (incl. fapi_material_v0.json: public keys + signatures)
+  sfv_v0/                Structured Field Values, RFC 8941, 67 cases, 6 sections (signed + sealed)
+  jws_v0/                JSON Web Signature, RFC 7515/7518/8037, 29 cases, 8 sections (signed + sealed)
+vectors/                 frozen public test material (fapi_material_v0.json, jws_material_v0.json: public keys + signatures only)
 runners/{python,typescript,go,rust,c,java,kotlin,scala,dotnet,ruby,php,elixir}/
-  verify_{wba,fapi}.*    the two profiles' per-language runners (rust-wba/, rust-fapi/, dotnet-wba/, dotnet-fapi/)
+  verify_{wba,fapi,sfv,jws}.*  the profiles' and standard corpora's per-language runners (rust-{wba,fapi,sfv,jws}/, dotnet-{wba,fapi,sfv,jws}/)
 tools/
   run_consensus.sh       N-way consensus gate (fail-closed --require)
   check_kat.py           KAT integrity gate (signed-head signature + anchors)
   mutation_test.sh       proves the gate is not vacuous
   gen_negative_v1/v2/v3.py   regenerate the corpus from the reference
   sign_negative_v1/v2/v3.py  sign + version via algovoi-corpus-cm
-  {oracle,gen,sign,check_kat,run_consensus}_{wba,fapi}*  the two profiles' oracle / generator / signer / KAT gate / driver
+  {oracle,gen,sign,check_kat,run_consensus}_{wba,fapi,sfv,jws}*  each corpus's oracle / generator / signer / KAT gate / driver
 kaf/                     hermetic runtime cells + EdDSA sealed assurance receipts
-  run_cells_{wba,fapi}.sh, seal_receipt_{wba,fapi}.py, receipts/  per-profile cells + seals
+  run_cells_{wba,fapi,sfv,jws}.sh, seal_receipt_{wba,fapi,sfv,jws}.py, receipts/  per-corpus cells + seals
 assets/  LICENSE  NOTICE  CONTRIBUTING.md
 ```
 
@@ -276,6 +292,80 @@ KAF seal identity as the negative-battery and Web Bot Auth receipts.
 Where Web Bot Auth secures agentic-web traffic, FAPI 2.0 secures the RSA/ECDSA
 financial-grade world, so the two profiles reach the two industries RFC 9421
 signatures matter most in today, on one shared, signed assurance substrate.
+
+## Corpus: Structured Field Values (`sfv_v0`)
+
+RFC 8941 Structured Field Values is the parse and serialize stage that sits
+underneath the signing flow: `Signature-Input`, `Signature` and `Content-Digest`
+are all structured fields, and every modern HTTP header is one. `sfv_v0` is a
+frozen, signed corpus of 67 cases across six sections covering Items, Lists and
+Dictionaries, every bare-item type (Integer, Decimal, String, Token, Byte
+Sequence, Boolean), parameters, inner lists, canonical serialization and the
+strict-reject negatives.
+
+| Section | Each case | Verdict |
+|---|---|---|
+| `sfv_item` | a bare item of each type, with parameters | does it parse, and to what canonical bytes? |
+| `sfv_list` | a List, including inner lists | parse plus canonical serialization |
+| `sfv_dictionary` | a Dictionary, including boolean-true keys | parse plus canonical serialization |
+| `sfv_parameters` | parameter ordering, types and duplicate-key rules | parse plus canonical serialization |
+| `sfv_canonical` | an input whose canonical form differs from it | the normalized serialization (leading zeros, trailing decimal zeros, whitespace, duplicate keys) |
+| `sfv_reject` | a malformed field (bad base64, too many digits, control chars, trailing garbage) | rejected |
+
+The adversarial focus is exactly where lenient parsers silently diverge, and the
+12-way fan-out found real bugs in shipping libraries: several native RFC 8941
+implementations quietly repair a non-canonically padded Byte Sequence that the
+spec requires rejected, and one crate does not strip trailing decimal zeros on
+serialization. Each runner is made to match the frozen canonical bytes. Two
+genuinely ambiguous corners (an empty List/Dictionary, and a trailing-dot decimal
+that only strict parsers reject) are excluded from the agreement battery and
+recorded in `policy.documented_divergences`, not silently dropped.
+
+Assurance matches the other batteries: the corpus is JCS+EdDSA signed (`sfv_v0`),
+`tools/check_kat_sfv.py` re-derives every verdict with a separate third-party
+implementation (`http_sfv`, Mark Nottingham's), `tools/run_consensus_sfv.sh
+--require 12` runs the twelve runners fail-closed, and `kaf/run_cells_sfv.sh`
+re-runs each in its pinned Docker image. Latest sealed run
+(`kaf/receipts/sfv_v0.seq1.receipt.json`) binds **full 12-way byte-for-byte
+consensus over 67 cases, 12/12 hermetic cells PASS**, under the same KAF seal
+identity as the other receipts.
+
+## Corpus: JSON Web Signature (`jws_v0`)
+
+RFC 7515 JSON Web Signature is the JOSE sign-and-verify stage, the same signing
+role RFC 9421 plays for HTTP but for the token world (OIDC, OAuth, wallets).
+`jws_v0` is a frozen, signed corpus of 29 cases across eight sections that verifies
+the compact serialization and enforces the JOSE security rules lenient verifiers
+get wrong. Scope is RFC 7515 + RFC 7518 (RS256, ES256) + RFC 8037 (EdDSA);
+ECDSA low-s is deliberately not enforced here (plain JOSE permits high-s, so low-s
+stays a FAPI-profile rule), which keeps `jws_v0` the version-neutral base.
+
+| Section | Each case | Verdict |
+|---|---|---|
+| `jws_compact_parse` | a compact JWS (three base64url segments) | parses, or is rejected (wrong segment count, non-base64url, non-JSON header, missing `alg`) |
+| `jws_alg_none` | a token whose header `alg` is `none` | rejected before any key is touched |
+| `jws_alg_confusion` | HS256 with the RSA public key as the MAC secret, RS256 vs an EC key, ES256 vs an RSA key | rejected on the alg / key-type mismatch |
+| `jws_rs256_verify` | RSASSA-PKCS1v1.5 SHA-256, valid and tampered | the RSA verdict |
+| `jws_es256_verify` | ECDSA P-256 SHA-256, incl. wrong-width R\|\|S and off-curve key | the ECDSA verdict |
+| `jws_eddsa_verify` | Ed25519 (RFC 8037), valid and tampered | the EdDSA verdict |
+| `jws_crit` | a `crit` header parameter the verifier does not understand | rejected |
+| `jws_kid` | a `kid` that selects the right key, a wrong one, an absent one | key selection verdict |
+
+The adversarial focus is the classic JOSE attacks: **`alg=none`** acceptance,
+**key/algorithm confusion** (a forger MACs the signing input with the RSA public
+key bytes every verifier already holds), an unhandled **`crit`** parameter, and
+`kid` selection. All keys are fixed test material and the signed tokens are frozen
+once (`vectors/jws_material_v0.json`, public keys and crafted tokens only, the RSA
+and EC and Ed25519 private keys held off-repo), so the battery is fully
+deterministic.
+
+Assurance matches the other batteries: the corpus is JCS+EdDSA signed (`jws_v0`),
+`tools/check_kat_jws.py` re-derives every verdict with a separate third-party JOSE
+implementation (`jwcrypto`), `tools/run_consensus_jws.sh --require 12` runs the
+twelve runners fail-closed, and `kaf/run_cells_jws.sh` re-runs each in its pinned
+Docker image. Latest sealed run (`kaf/receipts/jws_v0.seq1.receipt.json`) binds
+**full 12-way byte-for-byte consensus over 29 cases, 12/12 hermetic cells PASS**,
+under the same KAF seal identity as the other receipts.
 
 ## Adding a language
 

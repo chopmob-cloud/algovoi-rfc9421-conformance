@@ -1,0 +1,20 @@
+[package]
+name = "sfv-runner"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["AlgoVoi <chopmob@gmail.com>"]
+description = "Rust runner for the Structured Field Values RFC 8941 corpus (sfv_v0). Self-contained hand-rolled RFC 8941 parser and canonical serializer that reproduces every verdict in the frozen corpus."
+
+[[bin]]
+name = "verify_sfv"
+path = "src/main.rs"
+
+[dependencies]
+# A hand-rolled RFC 8941 parser + canonical serializer (ported from
+# tools/oracle_sfv.py), because the `sfv` crate does not strip trailing decimal
+# zeros (1.50 -> "1.50") and repairs non-canonical base64, neither of which
+# matches the frozen corpus. serde_json parses the corpus; base64 encodes byte
+# sequences (strict decode is hand-rolled to reject non-canonical padding).
+serde_json = "1"
+base64 = "0.22"
