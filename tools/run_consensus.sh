@@ -21,7 +21,7 @@
 set -u
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"          # repo root
-CORPUS="${ALGOVOI_NEGATIVE_V1:-$HERE/corpus/rfc9421_negative_v2/rfc9421_negative_v2.json}"
+CORPUS="${ALGOVOI_NEGATIVE_V1:-$HERE/corpus/rfc9421_negative_v3/rfc9421_negative_v3.json}"
 REQUIRE=10
 [ "${1:-}" = "--require" ] && REQUIRE="${2:-10}"
 
@@ -113,7 +113,7 @@ echo "----------------------------------------------------------------"
 # mutated corpus to prove the RUNNERS catch it (the KAT gate would otherwise mask
 # the runner-level signal by rejecting any corpus edit first).
 if [ "${SKIP_KAT:-0}" != 1 ] && have python3; then
-  if ! python3 "$HERE/tools/check_kat.py"; then
+  if ! python3 "$HERE/tools/check_kat.py" "$CORPUS"; then
     echo "RESULT: NOT GREEN -- KAT integrity gate failed"
     exit 1
   fi

@@ -117,7 +117,32 @@ def run(corpus):
             set_strict_low_s(False)
         results.append(("ecdsa_verify", c["note"], valid == c["expect_valid"]))
 
+    # RSA (rsa-pss-sha512 / rsa-v1_5-sha256) is not part of the Ed25519/ECDSA
+    # verifier; verify it here with the language's own crypto so the rsa_verify
+    # section is genuine cross-language consensus, not a shared library.
+    for c in corpus.get("rsa_verify", []):
+        base = base64.b64decode(c["signing_base_b64"])
+        results.append(("rsa_verify", c["note"],
+                        _rsa_verify(c["alg"], base, bytes.fromhex(c["sig_hex"]),
+                                    bytes.fromhex(c["pub_spki_hex"])) == c["expect_valid"]))
+
     return results
+
+
+def _rsa_verify(alg, base, sig, spki_der):
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding
+    try:
+        pub = serialization.load_der_public_key(spki_der)
+        if alg == "rsa-pss-sha512":
+            pub.verify(sig, base, padding.PSS(mgf=padding.MGF1(hashes.SHA512()), salt_length=64), hashes.SHA512())
+        elif alg == "rsa-v1_5-sha256":
+            pub.verify(sig, base, padding.PKCS1v15(), hashes.SHA256())
+        else:
+            return False
+        return True
+    except Exception:
+        return False
 
 
 def main():

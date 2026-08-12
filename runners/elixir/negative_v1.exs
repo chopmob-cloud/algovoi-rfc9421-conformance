@@ -244,6 +244,24 @@ defmodule NegativeV1 do
     end
   end
 
+  # ================= RSA verify (rsa-pss-sha512 / rsa-v1_5-sha256) =================
+  def rsa_verify(alg, base, sig, spki) do
+    try do
+      spki_info = :public_key.der_decode(:SubjectPublicKeyInfo, spki)
+      {:RSAPublicKey, n, e} = :public_key.der_decode(:RSAPublicKey, elem(spki_info, 2))
+      case alg do
+        "rsa-pss-sha512" ->
+          :crypto.verify(:rsa, :sha512, base, sig, [e, n],
+            [{:rsa_padding, :rsa_pkcs1_pss_padding}, {:rsa_pss_saltlen, 64}, {:rsa_mgf1_md, :sha512}])
+        "rsa-v1_5-sha256" ->
+          :crypto.verify(:rsa, :sha256, base, sig, [e, n])
+        _ -> false
+      end
+    rescue
+      _ -> false
+    end
+  end
+
   # ================= driver =================
   defp hexb(s), do: Base.decode16!(s, case: :lower)
 
@@ -289,6 +307,12 @@ defmodule NegativeV1 do
       valid = ecdsa_verify(c["curve"], hexb(c["msg_hex"]), hexb(c["sig_raw_hex"]),
                            hexb(c["pub_uncompressed_hex"]), c["strict_low_s"] == true)
       {valid == c["expect_valid"], "ecdsa_verify", c["note"]}
+    end)
+
+    results = results ++ Enum.map(corpus["rsa_verify"] || [], fn c ->
+      base = Base.decode64!(c["signing_base_b64"])
+      valid = rsa_verify(c["alg"], base, hexb(c["sig_hex"]), hexb(c["pub_spki_hex"]))
+      {valid == c["expect_valid"], "rsa_verify", c["note"]}
     end)
 
     fails = Enum.filter(results, fn {ok, _, _} -> not ok end)

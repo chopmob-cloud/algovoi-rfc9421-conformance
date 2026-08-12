@@ -25,6 +25,7 @@ import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.security.{AlgorithmParameters, KeyFactory, Signature}
 import java.security.spec.{ECFieldFp, ECGenParameterSpec, ECParameterSpec, ECPoint, ECPublicKeySpec}
+import java.security.spec.{MGF1ParameterSpec, PSSParameterSpec, X509EncodedKeySpec}
 import java.util.Base64
 import scala.jdk.CollectionConverters.*
 
@@ -187,6 +188,19 @@ object NegativeV1:
       verifier.verify(der)
     catch case _: Exception => false
 
+  // ================= RSA verify (rsa-pss-sha512 / rsa-v1_5-sha256) =================
+  def rsaVerify(alg: String, base: Array[Byte], sig: Array[Byte], spki: Array[Byte]): Boolean =
+    try
+      val key = KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(spki))
+      val s = alg match
+        case "rsa-pss-sha512" =>
+          val sg = Signature.getInstance("RSASSA-PSS")
+          sg.setParameter(PSSParameterSpec("SHA-512", "MGF1", MGF1ParameterSpec.SHA512, 64, 1)); sg
+        case "rsa-v1_5-sha256" => Signature.getInstance("SHA256withRSA")
+        case _ => return false
+      s.initVerify(key); s.update(base); s.verify(sig)
+    catch case _: Exception => false
+
   def hex(s: String): Array[Byte] =
     val out = new Array[Byte](s.length / 2)
     var i = 0
@@ -236,6 +250,12 @@ object NegativeV1:
       val valid = ecdsaVerify(c.get("curve").asText(), hex(c.get("msg_hex").asText()),
         hex(c.get("sig_raw_hex").asText()), hex(c.get("pub_uncompressed_hex").asText()), strict)
       rec(valid == c.get("expect_valid").asBoolean(), "ecdsa_verify", c)
+    }
+
+    if corpus.has("rsa_verify") then corpus.get("rsa_verify").elements().asScala.foreach { c =>
+      val base = Base64.getDecoder.decode(c.get("signing_base_b64").asText())
+      val valid = rsaVerify(c.get("alg").asText(), base, hex(c.get("sig_hex").asText()), hex(c.get("pub_spki_hex").asText()))
+      rec(valid == c.get("expect_valid").asBoolean(), "rsa_verify", c)
     }
 
     fails.foreach(f => println(s"FAIL  $f"))

@@ -24,3 +24,6 @@ runners/c/*.o
 
 # Scala runner build artifacts
 runners/scala/.scala-build/
+
+# rust runner build artifacts
+runners/rust/target/

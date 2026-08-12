@@ -32,7 +32,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # gate validates v1 and any later superset (v2, ...) without code changes.
 CORPUS = (sys.argv[1] if len(sys.argv) > 1
           else os.environ.get("ALGOVOI_NEGATIVE_V1")
-          or os.path.join(ROOT, "corpus", "rfc9421_negative_v2", "rfc9421_negative_v2.json"))
+          or os.path.join(ROOT, "corpus", "rfc9421_negative_v3", "rfc9421_negative_v3.json"))
 CORPUS_DIR = os.path.dirname(CORPUS)
 MANIFEST = CORPUS[:-len(".json")] + ".manifest.json"
 ANCHORS = os.path.join(CORPUS_DIR, "kat_anchors_v1.json")

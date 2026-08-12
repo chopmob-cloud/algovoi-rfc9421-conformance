@@ -1,0 +1,21 @@
+{
+  "issuer_id": "did:web:algovoi.co.uk",
+  "records": [
+    {
+      "chain_seq": 0,
+      "issuer_id": "did:web:algovoi.co.uk",
+      "prev_receipt_hash": "",
+      "receipt_hash": "sha256:cdf6c9ca9752d613303d39e6bb10980e280804c564e60ac5c7366cbb0484004d",
+      "chain_ref": "sha256:32ca925217c1bc4ad9727b6be429cc601a8e49490de6fb5b2d07a68a6f12a849",
+      "payload": {
+        "event": "sign_corpus_head",
+        "corpus_id": "rfc9421_negative_v3",
+        "version": "0.3.0",
+        "corpus_digest": "sha256:ac1f91a0b4863830c0ec8971f050499527e678a994adc8b0be498c7b6351ebc1",
+        "signer_kid": "f4eb6faab8bc35c728eb6c1ac4cc90fa",
+        "ts": "2026-08-12T00:00:00Z",
+        "note": "local dev-key signing; foundation/KMS custody and publish are gated"
+      }
+    }
+  ]
+}

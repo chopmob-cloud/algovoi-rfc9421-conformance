@@ -19,7 +19,7 @@ REPO="${REPO:-$HERE}"
 VGO="${VGO:-$HERE/../algovoi-rfc9421-verifier-go}"
 VRS="${VRS:-$HERE/../algovoi-rfc9421-verifier-rs}"
 # repo-relative corpus path (mounted at /work); defaults to the v2 superset.
-CORPUS="${CORPUS:-corpus/rfc9421_negative_v2/rfc9421_negative_v2.json}"
+CORPUS="${CORPUS:-corpus/rfc9421_negative_v3/rfc9421_negative_v3.json}"
 CORPUS_IN="/work/$CORPUS"
 RESULTS="$HERE/kaf/cells.results.json"
 

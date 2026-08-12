@@ -230,6 +230,50 @@ function ecdsa_verify(string $curve, string $msg, string $sig, string $pub, bool
     return openssl_verify($msg, $der, $key, $cfg["digest"]) === 1;
 }
 
+// ================= RSA verify (rsa-pss-sha512 / rsa-v1_5-sha256) =================
+// PHP's openssl_verify has no RSA-PSS mode, so rsa-pss-sha512 is verified with a
+// self-contained EMSA-PSS-VERIFY (RFC 8017) over the RSA public op (ext-gmp);
+// rsa-v1_5-sha256 uses openssl_verify (PKCS#1 v1.5).
+function mgf1_sha512(string $seed, int $len): string {
+    $out = ""; $c = 0;
+    while (strlen($out) < $len) { $out .= hash("sha512", $seed . pack("N", $c), true); $c++; }
+    return substr($out, 0, $len);
+}
+function emsa_pss_verify_sha512(string $M, string $EM, int $emBits, int $sLen): bool {
+    $hLen = 64; $emLen = intdiv($emBits + 7, 8);
+    if ($emLen < $hLen + $sLen + 2) return false;
+    if (substr($EM, -1) !== "\xbc") return false;
+    $maskedDB = substr($EM, 0, $emLen - $hLen - 1);
+    $H = substr($EM, $emLen - $hLen - 1, $hLen);
+    $topBits = 8 * $emLen - $emBits;
+    if ((ord($maskedDB[0]) & ((0xFF << (8 - $topBits)) & 0xFF)) !== 0) return false;
+    $DB = $maskedDB ^ mgf1_sha512($H, $emLen - $hLen - 1);
+    $DB[0] = chr(ord($DB[0]) & (0xFF >> $topBits));
+    $psLen = $emLen - $hLen - $sLen - 2;
+    for ($i = 0; $i < $psLen; $i++) if ($DB[$i] !== "\x00") return false;
+    if ($DB[$psLen] !== "\x01") return false;
+    $salt = $sLen > 0 ? substr($DB, -$sLen) : "";
+    $mHash = hash("sha512", $M, true);
+    $Hprime = hash("sha512", str_repeat("\x00", 8) . $mHash . $salt, true);
+    return hash_equals($H, $Hprime);
+}
+function rsa_verify(string $alg, string $base, string $sig, string $spki): bool {
+    $pem = "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($spki), 64, "\n") . "-----END PUBLIC KEY-----\n";
+    $key = openssl_pkey_get_public($pem);
+    if ($key === false) return false;
+    if ($alg === "rsa-v1_5-sha256") return openssl_verify($base, $sig, $key, OPENSSL_ALGO_SHA256) === 1;
+    if ($alg !== "rsa-pss-sha512") return false;
+    $det = openssl_pkey_get_details($key);
+    if (!isset($det["rsa"])) return false;
+    $n = gmp_import($det["rsa"]["n"]); $e = gmp_import($det["rsa"]["e"]);
+    $s = gmp_import($sig);
+    if (gmp_cmp($s, $n) >= 0) return false;
+    $modBits = strlen(gmp_strval($n, 2));
+    $emBits = $modBits - 1; $emLen = intdiv($emBits + 7, 8);
+    $EM = str_pad(gmp_export(gmp_powm($s, $e, $n)), $emLen, "\x00", STR_PAD_LEFT);
+    return emsa_pss_verify_sha512($base, $EM, $emBits, 64);
+}
+
 // ================= driver =================
 $path = $argv[1] ?? getenv("ALGOVOI_NEGATIVE_V1") ?: DEFAULT_PATH;
 $corpus = json_decode(file_get_contents($path), true);
@@ -271,6 +315,11 @@ foreach ($corpus["ecdsa_verify"] as $c) {
     $valid = ecdsa_verify($c["curve"], hex2bin($c["msg_hex"]), hex2bin($c["sig_raw_hex"]),
                           hex2bin($c["pub_uncompressed_hex"]), ($c["strict_low_s"] ?? false) === true);
     $record($valid === $c["expect_valid"], "ecdsa_verify", $c);
+}
+foreach ($corpus["rsa_verify"] ?? [] as $c) {
+    $base = base64_decode($c["signing_base_b64"]);
+    $valid = rsa_verify($c["alg"], $base, hex2bin($c["sig_hex"]), hex2bin($c["pub_spki_hex"]));
+    $record($valid === $c["expect_valid"], "rsa_verify", $c);
 }
 
 foreach ($fails as $f) echo "FAIL  $f\n";

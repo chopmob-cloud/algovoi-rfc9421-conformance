@@ -170,3 +170,30 @@ fn ecdsa_verify_cases() {
         assert_eq!(valid, case["expect_valid"].as_bool().unwrap(), "ecdsa_verify case {idx}");
     }
 }
+
+// RSA is not part of the Ed25519/ECDSA verifier; verify it with the `rsa` crate
+// so the rsa_verify section is genuine cross-language consensus. Requires the
+// `rsa` and `sha2` dev-dependencies.
+#[test]
+fn rsa_verify_cases() {
+    use rsa::pkcs8::DecodePublicKey;
+    use rsa::sha2::{Digest, Sha256, Sha512};
+    use rsa::{Pkcs1v15Sign, Pss, RsaPublicKey};
+    let corpus = load_corpus();
+    let empty = vec![];
+    let cases = corpus["rsa_verify"].as_array().unwrap_or(&empty);
+    for (idx, case) in cases.iter().enumerate() {
+        let base = b64_decode(case["signing_base_b64"].as_str().unwrap());
+        let sig = hex::decode(case["sig_hex"].as_str().unwrap()).expect("hex sig");
+        let spki = hex::decode(case["pub_spki_hex"].as_str().unwrap()).expect("hex spki");
+        let valid = match RsaPublicKey::from_public_key_der(&spki) {
+            Ok(key) => match case["alg"].as_str().unwrap() {
+                "rsa-pss-sha512" => key.verify(Pss::new::<Sha512>(), &Sha512::digest(&base), &sig).is_ok(),
+                "rsa-v1_5-sha256" => key.verify(Pkcs1v15Sign::new::<Sha256>(), &Sha256::digest(&base), &sig).is_ok(),
+                _ => false,
+            },
+            Err(_) => false,
+        };
+        assert_eq!(valid, case["expect_valid"].as_bool().unwrap(), "rsa_verify case {idx}");
+    }
+}

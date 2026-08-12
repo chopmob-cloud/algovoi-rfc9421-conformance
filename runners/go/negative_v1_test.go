@@ -9,6 +9,11 @@ package ecdsa
 
 import (
 	"bytes"
+	"crypto"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/sha512"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -75,6 +80,14 @@ type nv1Corpus struct {
 		StrictLowS        bool   `json:"strict_low_s"`
 		Note              string `json:"note"`
 	} `json:"ecdsa_verify"`
+	RsaVerify []struct {
+		Alg            string `json:"alg"`
+		SigningBaseB64 string `json:"signing_base_b64"`
+		SigHex         string `json:"sig_hex"`
+		PubSpkiHex     string `json:"pub_spki_hex"`
+		ExpectValid    bool   `json:"expect_valid"`
+		Note           string `json:"note"`
+	} `json:"rsa_verify"`
 }
 
 func loadNegativeV1(t *testing.T) *nv1Corpus {
@@ -191,6 +204,33 @@ func TestNegativeV1EcdsaVerify(t *testing.T) {
 		valid := err == nil && ok
 		if valid != sc.ExpectValid {
 			t.Errorf("ecdsa_verify [%s/%s]: valid=%v want %v (err=%v)", sc.Curve, sc.Note, valid, sc.ExpectValid, err)
+		}
+	}
+}
+
+// RSA is not part of the Ed25519/ECDSA verifier; verify it with the Go standard
+// library so the rsa_verify section is genuine cross-language consensus.
+func TestNegativeV1RsaVerify(t *testing.T) {
+	c := loadNegativeV1(t)
+	for _, sc := range c.RsaVerify {
+		base, _ := base64.StdEncoding.DecodeString(sc.SigningBaseB64)
+		sig, _ := hex.DecodeString(sc.SigHex)
+		spki, _ := hex.DecodeString(sc.PubSpkiHex)
+		valid := false
+		if pub, err := x509.ParsePKIXPublicKey(spki); err == nil {
+			if rsaPub, ok := pub.(*rsa.PublicKey); ok {
+				switch sc.Alg {
+				case "rsa-pss-sha512":
+					h := sha512.Sum512(base)
+					valid = rsa.VerifyPSS(rsaPub, crypto.SHA512, h[:], sig, &rsa.PSSOptions{SaltLength: 64}) == nil
+				case "rsa-v1_5-sha256":
+					h := sha256.Sum256(base)
+					valid = rsa.VerifyPKCS1v15(rsaPub, crypto.SHA256, h[:], sig) == nil
+				}
+			}
+		}
+		if valid != sc.ExpectValid {
+			t.Errorf("rsa_verify [%s/%s]: valid=%v want %v", sc.Alg, sc.Note, valid, sc.ExpectValid)
 		}
 	}
 }

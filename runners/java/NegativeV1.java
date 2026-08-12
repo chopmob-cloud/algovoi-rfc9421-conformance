@@ -37,6 +37,9 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
@@ -325,6 +328,27 @@ public class NegativeV1 {
     }
 
     // ================= driver =================
+    // ================= RSA verify (rsa-pss-sha512 / rsa-v1_5-sha256) =================
+    static boolean rsaVerify(String alg, byte[] base, byte[] sig, byte[] spki) {
+        try {
+            java.security.PublicKey key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(spki));
+            Signature s;
+            if (alg.equals("rsa-pss-sha512")) {
+                s = Signature.getInstance("RSASSA-PSS");
+                s.setParameter(new PSSParameterSpec("SHA-512", "MGF1", MGF1ParameterSpec.SHA512, 64, 1));
+            } else if (alg.equals("rsa-v1_5-sha256")) {
+                s = Signature.getInstance("SHA256withRSA");
+            } else {
+                return false;
+            }
+            s.initVerify(key);
+            s.update(base);
+            return s.verify(sig);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     static byte[] hex(String s) {
         int n = s.length();
         byte[] out = new byte[n / 2];
@@ -397,6 +421,14 @@ public class NegativeV1 {
                 hex(c.get("sig_raw_hex").asText()), hex(c.get("pub_uncompressed_hex").asText()), strict);
             boolean ok = valid == c.get("expect_valid").asBoolean();
             record(ok, "ecdsa_verify", c, fails); if (ok) matched++;
+        }
+
+        if (corpus.has("rsa_verify")) for (JsonNode c : corpus.get("rsa_verify")) {
+            total++;
+            byte[] base = Base64.getDecoder().decode(c.get("signing_base_b64").asText());
+            boolean valid = rsaVerify(c.get("alg").asText(), base, hex(c.get("sig_hex").asText()), hex(c.get("pub_spki_hex").asText()));
+            boolean ok = valid == c.get("expect_valid").asBoolean();
+            record(ok, "rsa_verify", c, fails); if (ok) matched++;
         }
 
         for (String f : fails) System.out.println("FAIL  " + f);
