@@ -15,7 +15,7 @@
     },
     "axes": {
       "agreement": {
-        "independent_runners": 11,
+        "independent_runners": 12,
         "languages": [
           "c",
           "dotnet",
@@ -27,9 +27,10 @@
           "python",
           "ruby",
           "rust",
+          "scala",
           "typescript"
         ],
-        "result": "full 11-way byte-for-byte consensus",
+        "result": "full 12-way byte-for-byte consensus",
         "cases": 89
       },
       "kat": {
@@ -87,6 +88,13 @@
           "verdict": "PASS"
         },
         {
+          "cell": "temurin-17-scala",
+          "lang": "scala",
+          "image": "eclipse-temurin:17",
+          "image_digest": "eclipse-temurin@sha256:abb3826b404269a005829b63e2e7bd48a7be32115ab7ba9fa0d8cba834360eef",
+          "verdict": "PASS"
+        },
+        {
           "cell": "dotnet-sdk-9.0",
           "lang": "dotnet",
           "image": "mcr.microsoft.com/dotnet/sdk:9.0",
@@ -115,8 +123,8 @@
           "verdict": "PASS"
         }
       ],
-      "cells_passed": 11,
-      "cells_total": 11
+      "cells_passed": 12,
+      "cells_total": 12
     }
   },
   "seal": {
@@ -129,6 +137,6 @@
       "x": "xrHz4BWRsQTQry-L1t8wWI70S7F81M4G2yLwKnPmKAQ",
       "kid": "4bbcedc71692d3dc9491239d2fff1ea2"
     },
-    "sig_b64": "0p06W1KyFBtHg3r0WTGVNvRpsWsmdUGBlKcja2z5t065agKcstf26DQGpF41pyEjvkatPYy2FRLQoEqLBhV6Cg=="
+    "sig_b64": "zhPpP+uOk+prxVHrjdw9yYEOopUFZ8EuJZY4hj5ranhwp80j+akODT3bIejchPqL4+mE769Q4bnZ2Ch/brzBAQ=="
   }
 }
