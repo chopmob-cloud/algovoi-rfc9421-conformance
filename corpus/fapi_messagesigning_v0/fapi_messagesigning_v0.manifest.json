@@ -1,0 +1,48 @@
+{
+  "manifest_version": 1,
+  "corpus_id": "fapi_messagesigning_v0",
+  "version": "0.1.0",
+  "canonicalizer": "JCS(RFC8785)+EdDSA",
+  "signers": [
+    {
+      "kid": "055237bb2e38d0233f1f235b4a2aaa80",
+      "jwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "Iw6OnZ8on4mkgtRfYmFrJ3d2djmM9dtf6o2K7bZPmgo",
+        "kid": "055237bb2e38d0233f1f235b4a2aaa80"
+      },
+      "signer_did": "did:web:algovoi.co.uk"
+    }
+  ],
+  "vectors": [],
+  "changelog": [],
+  "custody": "local secret Ed25519 key held off-repo; rotate to KMS/foundation before publish (gated)",
+  "head": {
+    "corpus_id": "fapi_messagesigning_v0",
+    "version": "0.1.0",
+    "canonicalizer": "JCS(RFC8785)+EdDSA",
+    "corpus_digest": "sha256:d7555c37a43199fde06b9207a33fb303d723183d7aba199e84dad6a7cc1a60ce",
+    "file_sha256": "sha256:5f5a3e5bd6049b6a571cc396587eb9e0a102a7b80db711b17983d3a2ac2b7d86",
+    "section_counts": {
+      "fapi_signing_base": 2,
+      "fapi_required_coverage": 6,
+      "fapi_content_digest": 5,
+      "fapi_alg": 6,
+      "fapi_ps256_verify": 4,
+      "fapi_es256_verify": 4
+    },
+    "section_digests": {
+      "fapi_signing_base": "sha256:e04bbbb0ca4ffe43e58926fb521233c0d1f182ed763de1f1cf01e2ec060fe4b7",
+      "fapi_required_coverage": "sha256:42d55e00d7dc698f0daa45e7bf6b93b5ab9625cf44a071da2cf69a86d008038b",
+      "fapi_content_digest": "sha256:767ca893e7e964f2e36a23b5a22d80dd6044305a9f9e3a6259078d07a65362dd",
+      "fapi_alg": "sha256:a08a4ec5ed0b714fc914716f73a668aef8b87b9eb7ba1d29fdaa841243e4a712",
+      "fapi_ps256_verify": "sha256:b806396b7ef33707d7ee89aa60ad9b3e4c511e1a055bc6eea33172864d4749ff",
+      "fapi_es256_verify": "sha256:9feb4551348bf16b00e4007abef1c2f0ec7ea047824d586bf91713439dc68621"
+    },
+    "total_cases": 27
+  },
+  "head_jws": "eyJhbGciOiJFZERTQSIsImtpZCI6IjA1NTIzN2JiMmUzOGQwMjMzZjFmMjM1YjRhMmFhYTgwIiwidHlwIjoiY29ycHVzLWhlYWQrandzIn0.eyJjYW5vbmljYWxpemVyIjoiSkNTKFJGQzg3ODUpK0VkRFNBIiwiY29ycHVzX2RpZ2VzdCI6InNoYTI1NjpkNzU1NWMzN2E0MzE5OWZkZTA2YjkyMDdhMzNmYjMwM2Q3MjMxODNkN2FiYTE5OWU4NGRhZDZhN2NjMWE2MGNlIiwiY29ycHVzX2lkIjoiZmFwaV9tZXNzYWdlc2lnbmluZ192MCIsImZpbGVfc2hhMjU2Ijoic2hhMjU2OjVmNWEzZTViZDYwNDliNmE1NzFjYzM5NjU4N2ViOWUwYTEwMmE3YjgwZGI3MTFiMTc5ODNkM2EyYWMyYjdkODYiLCJzZWN0aW9uX2NvdW50cyI6eyJmYXBpX2FsZyI6NiwiZmFwaV9jb250ZW50X2RpZ2VzdCI6NSwiZmFwaV9lczI1Nl92ZXJpZnkiOjQsImZhcGlfcHMyNTZfdmVyaWZ5Ijo0LCJmYXBpX3JlcXVpcmVkX2NvdmVyYWdlIjo2LCJmYXBpX3NpZ25pbmdfYmFzZSI6Mn0sInNlY3Rpb25fZGlnZXN0cyI6eyJmYXBpX2FsZyI6InNoYTI1NjphMDhhNGVjNWVkMGI3MTRmYzkxNDcxNmY3M2E2NjhhZWY4Yjg3YjllYjdiYTFkMjlmZGFhODQxMjQzZTRhNzEyIiwiZmFwaV9jb250ZW50X2RpZ2VzdCI6InNoYTI1Njo3NjdjYTg5M2U3ZTk2NGYyZTM2YTIzYjVhMjJkODBkZDYwNDQzMDVhOWY5ZTNhNjI1OTA3OGQwN2E2NTM2MmRkIiwiZmFwaV9lczI1Nl92ZXJpZnkiOiJzaGEyNTY6OWZlYjQ1NTEzNDhiZjE2YjAwZTQwMDdhYmVmMWMyZjBlYzdlYTA0NzgyNGQ1ODZiZjkxNzEzNDM5ZGM2ODYyMSIsImZhcGlfcHMyNTZfdmVyaWZ5Ijoic2hhMjU2OmI4MDYzOTZiN2VmMzM3MDdkN2VlODlhYTYwYWQ5YjNlNGM1MTFlMWEwNTViYzZlZWEzMzE3Mjg2NGQ0NzQ5ZmYiLCJmYXBpX3JlcXVpcmVkX2NvdmVyYWdlIjoic2hhMjU2OjQyZDU1ZTAwZDdkYzY5OGYwZGFhNDVlN2JmNmI5M2I1YWI5NjI1Y2Y0NGEwNzFkYTJjZjY5YTg2ZDAwODAzOGIiLCJmYXBpX3NpZ25pbmdfYmFzZSI6InNoYTI1NjplMDRiYmJiMGNhNGZmZTQzZTU4OTI2ZmI1MjEyMzNjMGQxZjE4MmVkNzYzZGUxZjFjZjAxZTJlYzA2MGZlNGI3In0sInRvdGFsX2Nhc2VzIjoyNywidmVyc2lvbiI6IjAuMS4wIn0.FEvWLcVIsLML4PoTZiodLA7C6I37eY3BHTzdsCqP6v2LRldCyWrAJZajqIOm3JKWjNpk96GNNyM-LilxRvwKBw",
+  "head_typ": "corpus-head+jws",
+  "signed_at": "2026-08-12T00:00:00Z"
+}
