@@ -143,7 +143,7 @@ This corpus and [algovoi-jcs-conformance-vectors](https://github.com/chopmob-clo
 are complementary layers of the same deterministic-interop vertical, built to the
 same assurance discipline. JCS is **L1** - the RFC 8785 canonicalisation that a
 signing base and a receipt are canonicalised with; this repo is **L2** - the RFC
-9421 HTTP-signature verdict over those bytes. Canonicalise (L1) → sign → verify (L2).
+9421 HTTP-signature verdict over those bytes. Beneath both sits **L0**, [algovoi-keyhygiene-conformance](https://github.com/chopmob-cloud/algovoi-keyhygiene-conformance), the RSA/EC key-hygiene and primality soundness floor (is the key or prime sound at all, before you sign with it). The three read: is the key sound (L0) → canonicalise (L1) → sign → verify (L2).
 
 | | [JCS conformance vectors](https://github.com/chopmob-cloud/algovoi-jcs-conformance-vectors) (L1) | rfc9421-conformance (L2, this repo) |
 |---|---|---|
@@ -229,4 +229,5 @@ https://github.com/chopmob-cloud/algovoi-rfc9421-conformance
 
 - [AlgoVoi substrate hub](https://chopmob-cloud.github.io/): the open canonicalisation + HTTP-signature substrate for agentic payments
 - [algovoi-jcs-conformance-vectors](https://github.com/chopmob-cloud/algovoi-jcs-conformance-vectors): the L1 RFC 8785 (JCS) canonicalisation conformance corpus
+- [algovoi-keyhygiene-conformance](https://github.com/chopmob-cloud/algovoi-keyhygiene-conformance): the L0 RSA/EC key-hygiene and primality soundness conformance corpus
 - [algovoi-corpus-cm](https://github.com/chopmob-cloud/algovoi-corpus-cm): the change-management backbone that signs and versions these corpora
