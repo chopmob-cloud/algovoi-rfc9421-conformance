@@ -40,7 +40,9 @@ jobs:
       # --- twelve toolchains ---
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: python -m pip install --quiet algovoi-rfc9421-verifier
+        # `cryptography` is used by the KAT gate (tools/check_kat_wba.py) to verify
+        # Ed25519 independently of the verifier's PyNaCl backend.
+      - run: python -m pip install --quiet algovoi-rfc9421-verifier cryptography
 
       - uses: actions/setup-node@v4
         with: { node-version: "20" }   # the wba runner uses only node built-ins
