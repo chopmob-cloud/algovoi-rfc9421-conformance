@@ -23,6 +23,8 @@
 #include <openssl/bn.h>
 #include <openssl/ecdsa.h>
 #include <openssl/obj_mac.h>
+#include <openssl/rsa.h>
+#include <openssl/x509.h>
 
 static BN_CTX *CTX;
 static BIGNUM *P, *D, *SQRT_M1, *L_ORD, *PP3_8, *PM1_4, *PM2;
@@ -177,6 +179,23 @@ static int ecdsa_verify(const char *curve,const unsigned char *msg,size_t ml,con
 done: BN_free(r);BN_free(s);BN_free(n);EC_GROUP_free(grp); return rc;
 }
 
+/* ---------- RSA verify (rsa-pss-sha512 / rsa-v1_5-sha256) ---------- */
+static int rsa_verify(const char *alg, const unsigned char *base, size_t bl, const unsigned char *sig, size_t sl, const unsigned char *spki, size_t spkil){
+    const unsigned char *pp = spki;
+    EVP_PKEY *key = d2i_PUBKEY(NULL, &pp, (long)spkil);
+    if(!key) return 0;
+    const EVP_MD *md; int pss;
+    if(strcmp(alg,"rsa-pss-sha512")==0){ md=EVP_sha512(); pss=1; }
+    else if(strcmp(alg,"rsa-v1_5-sha256")==0){ md=EVP_sha256(); pss=0; }
+    else { EVP_PKEY_free(key); return 0; }
+    EVP_MD_CTX *ctx=EVP_MD_CTX_new(); EVP_PKEY_CTX *pctx=NULL; int ok=0;
+    if(EVP_DigestVerifyInit(ctx,&pctx,md,NULL,key)==1){
+        if(pss){ EVP_PKEY_CTX_set_rsa_padding(pctx,RSA_PKCS1_PSS_PADDING); EVP_PKEY_CTX_set_rsa_pss_saltlen(pctx,64); EVP_PKEY_CTX_set_rsa_mgf1_md(pctx,EVP_sha512()); }
+        ok = (EVP_DigestVerify(ctx,sig,sl,base,bl)==1);
+    }
+    EVP_MD_CTX_free(ctx); EVP_PKEY_free(key); return ok;
+}
+
 /* ---------- driver ---------- */
 static int total=0, matched=0;
 static void rec(int ok,const char *sec,json_t *c){ total++; if(ok)matched++; else { json_t *note=json_object_get(c,"note"); printf("FAIL  [%s] %s\n",sec, note&&json_is_string(note)?json_string_value(note):""); } }
@@ -208,6 +227,8 @@ int main(int argc,char**argv){
     sec=json_object_get(corpus,"keygate"); json_array_foreach(sec,i,c){ size_t pl; unsigned char *pk=hexdec(jstr(c,"pk_hex"),&pl); int rej=check_pubkey(pk)!=0; json_t *rv=json_object_get(c,"rejected"); int want_rej=rv&&json_is_string(rv); int so=is_small_order(pk); rec(rej==want_rej && so==jbool(c,"small_order"),"keygate",c); free(pk); }
     sec=json_object_get(corpus,"ed25519_verify"); json_array_foreach(sec,i,c){ unsigned char base[8192]; size_t bl=0; b64_decode(jstr(c,"signing_base_b64"),base,&bl); size_t sgl,pl; unsigned char *sg=hexdec(jstr(c,"sig_hex"),&sgl),*pk=hexdec(jstr(c,"pk_hex"),&pl); int v=ed25519_verify(base,bl,sg,sgl,pk,pl); rec(v==jbool(c,"expect_valid"),"ed25519_verify",c); free(sg);free(pk); }
     sec=json_object_get(corpus,"ecdsa_verify"); json_array_foreach(sec,i,c){ size_t ml,sgl,pl; unsigned char *msg=hexdec(jstr(c,"msg_hex"),&ml),*sg=hexdec(jstr(c,"sig_raw_hex"),&sgl),*pub=hexdec(jstr(c,"pub_uncompressed_hex"),&pl); int v=ecdsa_verify(jstr(c,"curve"),msg,ml,sg,sgl,pub,pl,jbool(c,"strict_low_s")); rec(v==jbool(c,"expect_valid"),"ecdsa_verify",c); free(msg);free(sg);free(pub); }
+
+    sec=json_object_get(corpus,"rsa_verify"); if(sec) json_array_foreach(sec,i,c){ unsigned char base[8192]; size_t bl=0; b64_decode(jstr(c,"signing_base_b64"),base,&bl); size_t sl,pl; unsigned char *sg=hexdec(jstr(c,"sig_hex"),&sl),*spki=hexdec(jstr(c,"pub_spki_hex"),&pl); int v=rsa_verify(jstr(c,"alg"),base,bl,sg,sl,spki,pl); rec(v==jbool(c,"expect_valid"),"rsa_verify",c); free(sg);free(spki); }
 
     printf("\nc: %d/%d cases matched\n",matched,total);
     return matched==total?0:1;

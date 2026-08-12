@@ -265,6 +265,22 @@ static class NegativeV1
         }
     }
 
+    // ================= RSA verify (rsa-pss-sha512 / rsa-v1_5-sha256) =================
+    static bool RsaVerify(string alg, byte[] baseBytes, byte[] sig, byte[] spki)
+    {
+        try
+        {
+            using var rsa = RSA.Create();
+            rsa.ImportSubjectPublicKeyInfo(spki, out _);
+            if (alg == "rsa-pss-sha512")
+                return rsa.VerifyData(baseBytes, sig, HashAlgorithmName.SHA512, RSASignaturePadding.Pss);
+            if (alg == "rsa-v1_5-sha256")
+                return rsa.VerifyData(baseBytes, sig, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            return false;
+        }
+        catch (Exception) { return false; }
+    }
+
     static byte[] Hex(string s)
     {
         var o = new byte[s.Length / 2];
@@ -337,6 +353,15 @@ static class NegativeV1
                 Hex(c.GetProperty("sig_raw_hex").GetString()), Hex(c.GetProperty("pub_uncompressed_hex").GetString()), strict);
             Record(valid == c.GetProperty("expect_valid").GetBoolean(), "ecdsa_verify", c);
         }
+
+        if (root.TryGetProperty("rsa_verify", out var rsaSec))
+            foreach (var c in rsaSec.EnumerateArray())
+            {
+                byte[] baseBytes = Convert.FromBase64String(c.GetProperty("signing_base_b64").GetString());
+                bool valid = RsaVerify(c.GetProperty("alg").GetString(), baseBytes,
+                    Hex(c.GetProperty("sig_hex").GetString()), Hex(c.GetProperty("pub_spki_hex").GetString()));
+                Record(valid == c.GetProperty("expect_valid").GetBoolean(), "rsa_verify", c);
+            }
 
         foreach (var f in fails) Console.WriteLine("FAIL  " + f);
         Console.WriteLine("\ndotnet: " + matched + "/" + total + " cases matched");

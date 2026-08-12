@@ -227,6 +227,21 @@ def ecdsa_verify(curve, msg, sig_raw, pub, strict_low_s)
   end
 end
 
+# ================= RSA verify (rsa-pss-sha512 / rsa-v1_5-sha256) =================
+def rsa_verify(alg, base, sig, spki)
+  key = OpenSSL::PKey.read(spki)
+  case alg
+  when "rsa-pss-sha512"
+    key.verify_pss("SHA512", sig, base, salt_length: 64, mgf1_hash: "SHA512")
+  when "rsa-v1_5-sha256"
+    key.verify(OpenSSL::Digest.new("SHA256"), sig, base)
+  else
+    false
+  end
+rescue StandardError
+  false
+end
+
 # ================= driver =================
 def hexb(s) = [s].pack("H*")
 
@@ -280,6 +295,11 @@ corpus["ecdsa_verify"].each do |c|
   valid = ecdsa_verify(c["curve"], hexb(c["msg_hex"]), hexb(c["sig_raw_hex"]),
                        hexb(c["pub_uncompressed_hex"]), c["strict_low_s"] == true)
   record.call(valid == c["expect_valid"], "ecdsa_verify", c)
+end
+(corpus["rsa_verify"] || []).each do |c|
+  base = Base64.decode64(c["signing_base_b64"])
+  valid = rsa_verify(c["alg"], base, hexb(c["sig_hex"]), hexb(c["pub_spki_hex"]))
+  record.call(valid == c["expect_valid"], "rsa_verify", c)
 end
 
 fails.each { |f| puts "FAIL  #{f}" }

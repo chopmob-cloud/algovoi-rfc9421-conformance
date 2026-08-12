@@ -15,6 +15,7 @@
 import { readFileSync } from "node:fs";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { createPublicKey, verify as nodeVerify, constants as cryptoConstants } from "node:crypto";
 
 async function load(pkg, distEnv) {
   const override = process.env[distEnv];
@@ -100,7 +101,25 @@ async function run(corpus) {
     finally { setStrictLowS(false); }
     rec("ecdsa_verify", c.note, valid === c.expect_valid);
   }
+  // RSA is not part of the Ed25519/ECDSA verifier; verify with node:crypto so
+  // the rsa_verify section is genuine cross-language consensus.
+  for (const c of corpus.rsa_verify ?? []) {
+    const base = Buffer.from(c.signing_base_b64, "base64");
+    const valid = rsaVerify(c.alg, base, Buffer.from(c.sig_hex, "hex"), c.pub_spki_hex);
+    rec("rsa_verify", c.note, valid === c.expect_valid);
+  }
   return results;
+}
+
+function rsaVerify(alg, base, sig, spkiHex) {
+  try {
+    const key = createPublicKey({ key: Buffer.from(spkiHex, "hex"), format: "der", type: "spki" });
+    if (alg === "rsa-pss-sha512")
+      return nodeVerify("sha512", base, { key, padding: cryptoConstants.RSA_PKCS1_PSS_PADDING, saltLength: 64 }, sig);
+    if (alg === "rsa-v1_5-sha256")
+      return nodeVerify("sha256", base, { key, padding: cryptoConstants.RSA_PKCS1_PADDING }, sig);
+    return false;
+  } catch { return false; }
 }
 
 const path = process.argv[2] || process.env.ALGOVOI_NEGATIVE_V1 || DEFAULT;

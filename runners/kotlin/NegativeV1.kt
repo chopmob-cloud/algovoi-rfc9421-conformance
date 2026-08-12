@@ -27,6 +27,9 @@ import java.security.spec.ECGenParameterSpec
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPoint
 import java.security.spec.ECPublicKeySpec
+import java.security.spec.MGF1ParameterSpec
+import java.security.spec.PSSParameterSpec
+import java.security.spec.X509EncodedKeySpec
 import java.util.Base64
 import kotlin.system.exitProcess
 
@@ -232,6 +235,21 @@ private fun ecdsaVerify(curve: String, msg: ByteArray, sigRaw: ByteArray, pub: B
     }
 }
 
+// ================= RSA verify (rsa-pss-sha512 / rsa-v1_5-sha256) =================
+private fun rsaVerify(alg: String, base: ByteArray, sig: ByteArray, spki: ByteArray): Boolean {
+    return try {
+        val key = KeyFactory.getInstance("RSA").generatePublic(X509EncodedKeySpec(spki))
+        val s = when (alg) {
+            "rsa-pss-sha512" -> Signature.getInstance("RSASSA-PSS").apply {
+                setParameter(PSSParameterSpec("SHA-512", "MGF1", MGF1ParameterSpec.SHA512, 64, 1))
+            }
+            "rsa-v1_5-sha256" -> Signature.getInstance("SHA256withRSA")
+            else -> return false
+        }
+        s.initVerify(key); s.update(base); s.verify(sig)
+    } catch (e: Exception) { false }
+}
+
 private fun hex(s: String): ByteArray {
     val out = ByteArray(s.length / 2)
     for (i in s.indices step 2) out[i / 2] = s.substring(i, i + 2).toInt(16).toByte()
@@ -285,6 +303,12 @@ fun main(args: Array<String>) {
         val valid = ecdsaVerify(c.get("curve").asText(), hex(c.get("msg_hex").asText()),
             hex(c.get("sig_raw_hex").asText()), hex(c.get("pub_uncompressed_hex").asText()), strict)
         record(valid == c.get("expect_valid").asBoolean(), "ecdsa_verify", c)
+    }
+
+    if (corpus.has("rsa_verify")) for (c in corpus.get("rsa_verify")) {
+        val base = Base64.getDecoder().decode(c.get("signing_base_b64").asText())
+        val valid = rsaVerify(c.get("alg").asText(), base, hex(c.get("sig_hex").asText()), hex(c.get("pub_spki_hex").asText()))
+        record(valid == c.get("expect_valid").asBoolean(), "rsa_verify", c)
     }
 
     fails.forEach { println("FAIL  $it") }
