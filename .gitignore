@@ -10,6 +10,8 @@ runners/**/libs/
 *.jar
 runners/dotnet/bin/
 runners/dotnet/obj/
+runners/dotnet-wba/bin/
+runners/dotnet-wba/obj/
 runners/elixir/_build/
 runners/elixir/deps/
 
