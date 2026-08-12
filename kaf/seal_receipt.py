@@ -50,17 +50,22 @@ def main() -> int:
     ap.add_argument("--secret", required=True, help="path to the Ed25519 seal secret (32-byte seed, hex)")
     ap.add_argument("--sealed-at", required=True, help="ISO-8601 timestamp (passed in; the script does not read the clock)")
     ap.add_argument("--seq", type=int, default=1)
+    ap.add_argument("--corpus", default=os.path.join(
+        HERE, "corpus", "rfc9421_negative_v2", "rfc9421_negative_v2.json"),
+        help="corpus path to seal (defaults to the v2 superset)")
     args = ap.parse_args()
 
-    with open(os.path.join(CORPUS_DIR, "rfc9421_negative_v1.json"), "rb") as fh:
+    corpus_path = args.corpus
+    corpus_dir = os.path.dirname(corpus_path)
+    with open(corpus_path, "rb") as fh:
         corpus_bytes = fh.read()
     corpus = json.loads(corpus_bytes)
-    with open(os.path.join(CORPUS_DIR, "rfc9421_negative_v1.manifest.json"), encoding="utf-8") as fh:
+    with open(corpus_path[:-len(".json")] + ".manifest.json", encoding="utf-8") as fh:
         manifest = json.load(fh)
     head = manifest["head"]
     with open(os.path.join(HERE, "kaf", "cells.results.json"), encoding="utf-8") as fh:
         cells = json.load(fh)
-    with open(os.path.join(CORPUS_DIR, "kat_anchors_v1.json"), encoding="utf-8") as fh:
+    with open(os.path.join(corpus_dir, "kat_anchors_v1.json"), encoding="utf-8") as fh:
         anchors = json.load(fh)["anchors"]
 
     total_cases = sum(len(corpus[s]) for s in (
@@ -73,7 +78,7 @@ def main() -> int:
     # gate passes (corpus is the exact signed artifact and its signing bases match
     # the independent anchors) and (b) every cell passed. The agreement claim is
     # then DERIVED from the distinct languages that actually passed, never asserted.
-    kat = subprocess.run([sys.executable, os.path.join(HERE, "tools", "check_kat.py")],
+    kat = subprocess.run([sys.executable, os.path.join(HERE, "tools", "check_kat.py"), corpus_path],
                          capture_output=True, text=True)
     if kat.returncode != 0:
         print("refusing to seal: KAT integrity gate failed\n" + kat.stdout + kat.stderr, file=sys.stderr)
@@ -91,7 +96,7 @@ def main() -> int:
     payload = {
         "framework": "KAF",
         "layer": "L2",
-        "suite": "rfc9421_negative_v1",
+        "suite": corpus["name"],
         "sealed_at": args.sealed_at,
         "seq": args.seq,
         "corpus": {
@@ -136,7 +141,7 @@ def main() -> int:
         },
     }
 
-    out = os.path.join(HERE, "kaf", "receipts", f"rfc9421_negative_v1.seq{args.seq}.receipt.json")
+    out = os.path.join(HERE, "kaf", "receipts", f"{corpus['name']}.seq{args.seq}.receipt.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8") as fh:
         json.dump(receipt, fh, indent=2)

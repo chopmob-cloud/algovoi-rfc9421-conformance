@@ -295,7 +295,13 @@ static class NegativeV1
             string spr = c.TryGetProperty("signature_params_raw", out var sprE) && sprE.ValueKind == JsonValueKind.String
                 ? sprE.GetString() : null;
             bool ok;
-            try { ok = c.GetProperty("ok").GetBoolean() && BuildSigningBase(c.GetProperty("in"), c.GetProperty("mode").GetString(), spr) == want; }
+            try
+            {
+                // build FIRST; `ok && Build(...)` would short-circuit for negative
+                // cases and never verify that the build actually fails.
+                string built = BuildSigningBase(c.GetProperty("in"), c.GetProperty("mode").GetString(), spr);
+                ok = c.GetProperty("ok").GetBoolean() && built == want;
+            }
             catch (Exception) { ok = !c.GetProperty("ok").GetBoolean(); }
             Record(ok, "signing_base", c);
         }

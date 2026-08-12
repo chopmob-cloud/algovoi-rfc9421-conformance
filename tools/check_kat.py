@@ -27,10 +27,52 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CORPUS_DIR = os.path.join(ROOT, "corpus", "rfc9421_negative_v1")
-CORPUS = os.path.join(CORPUS_DIR, "rfc9421_negative_v1.json")
-MANIFEST = os.path.join(CORPUS_DIR, "rfc9421_negative_v1.manifest.json")
+# The corpus under test: argv[1], else $ALGOVOI_NEGATIVE_V1, else the v1 default.
+# The signed manifest and the KAT anchors are resolved alongside it, so the same
+# gate validates v1 and any later superset (v2, ...) without code changes.
+CORPUS = (sys.argv[1] if len(sys.argv) > 1
+          else os.environ.get("ALGOVOI_NEGATIVE_V1")
+          or os.path.join(ROOT, "corpus", "rfc9421_negative_v2", "rfc9421_negative_v2.json"))
+CORPUS_DIR = os.path.dirname(CORPUS)
+MANIFEST = CORPUS[:-len(".json")] + ".manifest.json"
 ANCHORS = os.path.join(CORPUS_DIR, "kat_anchors_v1.json")
+
+
+def _b64u(s: str) -> bytes:
+    return base64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
+
+
+def verify_head_jws(manifest: dict, corpus_file_sha: str) -> list[str]:
+    """Verify the manifest's signed head: the EdDSA compact-JWS signature under
+    the signer's published Ed25519 JWK, and that the head's own file_sha256
+    binds the corpus on disk. This is strictly stronger than a digest compare --
+    it proves the manifest is the exact signed artifact, forgery-resistant."""
+    out: list[str] = []
+    jws = manifest.get("head_jws")
+    signers = manifest.get("signers") or []
+    if not jws or not signers:
+        return ["manifest is not signed (no head_jws / signer)"]
+    try:
+        from nacl.signing import VerifyKey
+        from nacl.exceptions import BadSignatureError
+    except ImportError:
+        return ["PyNaCl required to verify the signed head (pip install pynacl)"]
+    try:
+        h_b64, p_b64, s_b64 = jws.split(".")
+        pk = _b64u(signers[0]["jwk"]["x"])
+        VerifyKey(pk).verify(f"{h_b64}.{p_b64}".encode("ascii"), _b64u(s_b64))
+    except (ValueError, KeyError) as e:
+        return [f"head_jws is malformed: {e}"]
+    except BadSignatureError:
+        return ["head_jws EdDSA signature does not verify under the signer JWK"]
+    payload = json.loads(_b64u(p_b64))
+    # the signed JWS payload is the authoritative head; the manifest's displayed
+    # head object must equal it byte-for-byte-in-value, or a field was tampered.
+    if payload != manifest.get("head"):
+        out.append("manifest head object does not match the signed head_jws payload")
+    if payload.get("file_sha256") != corpus_file_sha:
+        out.append(f"signed head binds file_sha256 {payload.get('file_sha256')} != corpus {corpus_file_sha}")
+    return out
 
 
 def main() -> int:
@@ -44,12 +86,17 @@ def main() -> int:
     file_sha = "sha256:" + hashlib.sha256(corpus_bytes).hexdigest()
     try:
         with open(MANIFEST, encoding="utf-8") as fh:
-            head = json.load(fh)["head"]
+            manifest = json.load(fh)
+        head = manifest["head"]
         recorded = head.get("file_sha256")
         if not recorded:
             failures.append("manifest head has no file_sha256")
         elif recorded != file_sha:
             failures.append(f"corpus digest drift: manifest {recorded} != actual {file_sha}")
+        # 1b. verify the SIGNATURE on the head, not just the digest. A tampered
+        # manifest that recomputes file_sha256 to match a tampered corpus still
+        # fails here, because head_jws cannot be forged without the signing key.
+        failures.extend(verify_head_jws(manifest, file_sha))
     except (OSError, KeyError, json.JSONDecodeError) as e:
         failures.append(f"cannot read signed manifest head: {e}")
 
@@ -82,7 +129,8 @@ def main() -> int:
 
     print(
         "KAT: PASS\n"
-        f"  corpus integrity   {file_sha} (matches signed manifest head)\n"
+        f"  signed head        head_jws EdDSA signature verified under signer JWK\n"
+        f"  corpus integrity   {file_sha} (matches signed head)\n"
         f"  independent anchors {len(anchors)}/{len(anchors)} match the frozen corpus"
     )
     return 0

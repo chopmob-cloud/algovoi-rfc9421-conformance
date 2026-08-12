@@ -1,11 +1,13 @@
 # rfc9421_negative_v1
 
 Signed, cross-language CORE conformance battery for RFC 9421 HTTP Message
-Signatures as implemented by the four AlgoVoi verifiers (Python, TypeScript,
-Rust, Go). Every runner consumes this one JSON corpus and must produce
-byte-identical verdicts: reject every negative, accept every positive control.
+Signatures. Every one of the ten independent runners (python, typescript, go,
+rust, java, kotlin, dotnet, ruby, php, elixir) consumes this one JSON corpus and
+must produce byte-identical verdicts: reject every negative, accept every
+positive control. The strict superset `rfc9421_negative_v2` adds the fail-closed
+signing-base error paths and additional Ed25519/ECDSA range negatives.
 
-This is the CORE layer only. It exercises the primitive surface all four
+This is the CORE layer only. It exercises the primitive surface all the
 verifiers share (proven byte-for-byte by `reference_vectors_v0.json` and
 `reference_ecdsa_v0.json`):
 
@@ -87,10 +89,16 @@ signed corpus plus its hash-chained provenance, not a bare JSON.
 
 ## Runners
 
-- Python: `runners/verify_py.py`
-- TypeScript: `runners/verify_ts.mjs`
+Ten independent runners; run them all through the fail-closed consensus gate with
+`bash tools/run_consensus.sh --require 10` (see the root README for the full
+assurance stack: KAT, hermetic cells, sealed receipt, mutation test).
+
+- Python: `runners/python/verify_py.py`
+- TypeScript: `runners/typescript/verify_ts.mjs`
 - Rust: integration test in `algovoi-rfc9421-verifier-rs`
-- Go: `_test.go` in `algovoi-rfc9421-verifier-go`, env override
-  `ALGOVOI_NEGATIVE_V1` (mirrors the existing `ALGOVOI_REFERENCE_VECTORS`).
+- Go: `_test.go` in `algovoi-rfc9421-verifier-go`, env override `ALGOVOI_NEGATIVE_V1`
+- Java / Kotlin / .NET / Ruby / PHP / Elixir: self-contained under `runners/<lang>/`
+
+Each exits 0 iff every case matches. N-way parity = all ten agree per case.
 
 Each exits 0 iff every case matches. 4-way parity = all four agree per case.

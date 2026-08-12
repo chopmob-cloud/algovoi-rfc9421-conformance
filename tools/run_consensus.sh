@@ -21,7 +21,7 @@
 set -u
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"          # repo root
-CORPUS="${ALGOVOI_NEGATIVE_V1:-$HERE/corpus/rfc9421_negative_v1/rfc9421_negative_v1.json}"
+CORPUS="${ALGOVOI_NEGATIVE_V1:-$HERE/corpus/rfc9421_negative_v2/rfc9421_negative_v2.json}"
 REQUIRE=10
 [ "${1:-}" = "--require" ] && REQUIRE="${2:-10}"
 
@@ -130,5 +130,5 @@ if [ "$present" -lt "$REQUIRE" ]; then
   echo "RESULT: NOT GREEN -- only ${present} implementations present, require ${REQUIRE}"
   exit 1
 fi
-echo "RESULT: FULL ${present}-WAY CONSENSUS -- every implementation reproduces all 78 cases"
+echo "RESULT: FULL ${present}-WAY CONSENSUS -- every implementation reproduces every case in the corpus"
 exit 0

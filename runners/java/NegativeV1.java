@@ -346,7 +346,10 @@ public class NegativeV1 {
             String want = new String(Base64.getDecoder().decode(c.get("signing_base_b64").asText()), StandardCharsets.UTF_8);
             String spr = c.hasNonNull("signature_params_raw") ? c.get("signature_params_raw").asText() : null;
             try {
-                ok = c.get("ok").asBoolean() && buildSigningBase(c.get("in"), c.get("mode").asText(), spr).equals(want);
+                // build FIRST; `ok && build(...)` would short-circuit for negative
+                // cases and never verify that the build actually fails.
+                String built = buildSigningBase(c.get("in"), c.get("mode").asText(), spr);
+                ok = c.get("ok").asBoolean() && built.equals(want);
             } catch (RuntimeException e) {
                 ok = !c.get("ok").asBoolean();
             }
