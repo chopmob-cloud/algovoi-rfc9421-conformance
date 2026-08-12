@@ -162,6 +162,56 @@ The vector counts differ by design: canonicalisation has a broad input space
 set of primitives where the value is N-way agreement on each verdict, not count.
 Together the two corpora cover canonicalise → sign → verify end to end. And where JCS is one narrow primitive, RFC 9421 signatures are a general request/response authenticity primitive: adding algorithm families (RSA joined Ed25519/ECDSA in v3) is how this repo grows past payment rails into the RSA-dominant regulated industries — open banking, eIDAS/government, healthcare — without changing the assurance machinery.
 
+## Profile: Web Bot Auth (`webbotauth_v0`)
+
+The same machinery instantiates a named industry profile. **Web Bot Auth**
+(`draft-meunier-web-bot-auth-architecture` plus the HTTP Message Signatures
+directory draft) is how an automated agent authenticates itself to an origin: it
+signs its HTTP request with **Ed25519** under RFC 9421, carrying a
+`Signature-Agent` header (a URL to a directory of the agent's public keys), the
+`tag="web-bot-auth"` label, and `created`/`expires` bounds. The origin resolves
+the key from that directory by `keyid`, enforces freshness, and checks that the
+security-critical components are actually covered. This is the emerging standard
+for agentic-web traffic (Cloudflare, IETF), and it sits directly on AlgoVoi's
+agent-trust substrate.
+
+A valid signature is not enough: the profile is where the *enforcement semantics*
+live, and the battery tests exactly those.
+
+| Section | Each case | Verdict |
+|---|---|---|
+| `wba_signing_base` | a web-bot-auth request (`@authority`, `@method`, `signature-agent` covered; `created`/`expires`/`keyid`/`tag`) | the exact RFC 9421 Section 2.5 signing base, byte-for-byte |
+| `wba_coverage` | a set of covered components | are the required components (`@authority`, `signature-agent`) all covered? |
+| `wba_freshness` | `created`, `expires`, and a per-case `now` | is the signature inside its validity window? |
+| `wba_directory` | a JWKS directory plus a `keyid` | does the keyid resolve to a usable Ed25519 key? |
+| `wba_directory_ssrf` | a `Signature-Agent` URL (plus an optional resolved address) | may the directory be fetched, or is it an SSRF target? |
+| `wba_ed25519_verify` | a signing base, signature and key | the Ed25519 verdict over the profile signing base |
+
+The adversarial focus is the profile's real failure modes: **covered-component
+downgrade** (a valid signature that omits `@authority` or `signature-agent`, so it
+replays cross-origin or swaps the vouching directory), **replay** (an expired or
+not-yet-valid window), **wrong-algorithm keys** in the directory, and
+**Signature-Agent SSRF** (a directory URL pointing at loopback, RFC 1918, the
+`169.254.169.254` cloud-metadata address, IPv6 `::1`, a userinfo-bearing URL, or an
+unresolved host, all of which must be refused and never fetched). Freshness is
+decided against a per-case `now` and the directory bytes are carried in the
+corpus, so the battery is fully deterministic (no clock, no network) and the SSRF
+verdict is a pure denied-CIDR membership test that every language computes
+identically.
+
+Determinism and assurance match the negative battery: the corpus is JCS+EdDSA
+signed (`webbotauth_v0`), `tools/check_kat_wba.py` re-derives every verdict
+independently (hand-built signing base, `cryptography` Ed25519, first-principles
+profile rules), `tools/run_consensus_wba.sh --require 12` runs the twelve runners
+fail-closed, and `kaf/run_cells_wba.sh` re-runs each in its pinned Docker image.
+Latest sealed run (`kaf/receipts/webbotauth_v0.seq1.receipt.json`) binds **full
+12-way byte-for-byte consensus over 31 cases, 12/12 hermetic cells PASS**, under
+the same KAF seal identity as the negative-battery receipts.
+
+Where the negative battery asks "is this one signature valid?", the Web Bot Auth
+profile asks "does the verifier enforce the deployment rules?", which is what a
+real origin accepting agent traffic has to get right.
+
 ## Adding a language
 
 A runner is a self-contained probe: read the corpus JSON, and for every case
