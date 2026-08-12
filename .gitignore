@@ -17,3 +17,10 @@ runners/elixir/deps/
 # per-run results and any seal secret are not.
 kaf/cells.results.json
 kaf/**/*.secret
+
+# C runner build artifacts
+runners/c/negative_v1
+runners/c/*.o
+
+# Scala runner build artifacts
+runners/scala/.scala-build/

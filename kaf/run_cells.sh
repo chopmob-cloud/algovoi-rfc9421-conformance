@@ -23,7 +23,7 @@ CORPUS="${CORPUS:-corpus/rfc9421_negative_v2/rfc9421_negative_v2.json}"
 CORPUS_IN="/work/$CORPUS"
 RESULTS="$HERE/kaf/cells.results.json"
 
-ALL_CELLS="python-3.12-slim node-20-slim go-1.26-bookworm rust-1-slim temurin-17-java temurin-17-kotlin dotnet-sdk-9.0 ruby-3.2-slim php-8.3-cli elixir-1.16-otp26"
+ALL_CELLS="python-3.12-slim node-20-slim go-1.26-bookworm rust-1-slim gcc-14-c temurin-17-java temurin-17-kotlin temurin-17-scala dotnet-sdk-9.0 ruby-3.2-slim php-8.3-cli elixir-1.16-otp26"
 CELLS="${CELLS:-$ALL_CELLS}"
 
 image_for() {
@@ -32,7 +32,8 @@ image_for() {
     node-20-slim)      echo "node:20-slim" ;;
     go-1.26-bookworm)  echo "golang:1.26-bookworm" ;;
     rust-1-slim)       echo "rust:1-slim-bookworm" ;;
-    temurin-17-java|temurin-17-kotlin) echo "eclipse-temurin:17" ;;
+    gcc-14-c)          echo "gcc:14-bookworm" ;;
+    temurin-17-java|temurin-17-kotlin|temurin-17-scala) echo "eclipse-temurin:17" ;;
     dotnet-sdk-9.0)    echo "mcr.microsoft.com/dotnet/sdk:9.0" ;;
     ruby-3.2-slim)     echo "ruby:3.2-slim" ;;
     php-8.3-cli)       echo "php:8.3-cli" ;;
@@ -51,10 +52,14 @@ cmd_for() {
       echo 'export GOCACHE=/tmp/gc GOPATH=/tmp/gp HOME=/tmp && cd /vgo && GOTOOLCHAIN=local ALGOVOI_NEGATIVE_V1='"$CORPUS_IN"' go test ./ecdsa -run TestNegativeV1' ;;
     rust-1-slim)
       echo 'export CARGO_HOME=/tmp/ch CARGO_TARGET_DIR=/tmp/tgt && cd /vrs && ALGOVOI_NEGATIVE_V1='"$CORPUS_IN"' cargo test -q -p algovoi-rfc9421-ecdsa --test negative_v1' ;;
+    gcc-14-c)
+      echo 'apt-get update -q >/dev/null && apt-get install -y -q libjansson-dev libssl-dev pkg-config >/dev/null && cd /tmp && cp /work/runners/c/negative_v1.c . && cc -O2 -w -o nv negative_v1.c $(pkg-config --cflags --libs jansson) -lcrypto && ./nv '"$CORPUS_IN" ;;
     temurin-17-java)
       echo 'cd /tmp && cp /work/runners/java/NegativeV1.java . && mkdir -p libs && cp /work/runners/java/libs/*.jar libs/ && javac -cp "libs/*" NegativeV1.java && java -cp ".:libs/*" NegativeV1 '"$CORPUS_IN" ;;
     temurin-17-kotlin)
       echo 'apt-get update -q >/dev/null && apt-get install -y -q curl unzip >/dev/null && curl -fsSL -o /tmp/k.zip https://github.com/JetBrains/kotlin/releases/download/v2.0.20/kotlin-compiler-2.0.20.zip && unzip -q /tmp/k.zip -d /opt && cd /tmp && cp /work/runners/kotlin/NegativeV1.kt . && mkdir -p libs && cp /work/runners/kotlin/libs/*.jar libs/ && CP=$(ls libs/*.jar | tr "\n" ":") && /opt/kotlinc/bin/kotlinc NegativeV1.kt -cp "$CP" -include-runtime -d nv.jar >/dev/null 2>&1 && java -cp "nv.jar:$CP" NegativeV1Kt '"$CORPUS_IN" ;;
+    temurin-17-scala)
+      echo 'apt-get update -q >/dev/null && apt-get install -y -q curl >/dev/null && curl -fsLo /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz && gzip -df /tmp/scala-cli.gz && chmod +x /tmp/scala-cli && cp /work/runners/scala/negative_v1.scala /tmp/ && cd /tmp && HOME=/tmp /tmp/scala-cli run --server=false negative_v1.scala -- '"$CORPUS_IN" ;;
     dotnet-sdk-9.0)
       echo 'export HOME=/tmp DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 && cd /tmp && cp /work/runners/dotnet/Program.cs /work/runners/dotnet/negative_v1.csproj . && dotnet run -c Release --verbosity quiet -- '"$CORPUS_IN" ;;
     ruby-3.2-slim)
