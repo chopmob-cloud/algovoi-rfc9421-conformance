@@ -1,0 +1,50 @@
+{
+  "manifest_version": 1,
+  "corpus_id": "rfc9421_negative_v3",
+  "version": "0.3.0",
+  "canonicalizer": "JCS(RFC8785)+EdDSA",
+  "signers": [
+    {
+      "kid": "f4eb6faab8bc35c728eb6c1ac4cc90fa",
+      "jwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "-Foo1EZwtyka6apIIRd4fT61ZmukKLOu-t4JITtONmg",
+        "kid": "f4eb6faab8bc35c728eb6c1ac4cc90fa"
+      },
+      "signer_did": "did:web:algovoi.co.uk"
+    }
+  ],
+  "vectors": [],
+  "changelog": [],
+  "custody": "local secret Ed25519 key held off-repo; rotate to KMS/foundation before publish (gated)",
+  "head": {
+    "corpus_id": "rfc9421_negative_v3",
+    "version": "0.3.0",
+    "canonicalizer": "JCS(RFC8785)+EdDSA",
+    "corpus_digest": "sha256:ac1f91a0b4863830c0ec8971f050499527e678a994adc8b0be498c7b6351ebc1",
+    "file_sha256": "sha256:12ced78dbf2cf5e4301c3ddd8391aa77df08be9c102833cc1e3d0517952fd839",
+    "section_counts": {
+      "signing_base": 22,
+      "signature_input_parse": 8,
+      "signature_value_parse": 6,
+      "keygate": 11,
+      "ed25519_verify": 10,
+      "ecdsa_verify": 32,
+      "rsa_verify": 7
+    },
+    "section_digests": {
+      "signing_base": "sha256:6ddaaf95073e7e260eb468fbd19657822f5fd2ee3d833c0796b9914dff1e681d",
+      "signature_input_parse": "sha256:1ada37a40c680490f106229b35464b1e3d2ab6f238f2ab97c5e14bb7bf4648e4",
+      "signature_value_parse": "sha256:b5e7033bd7d5ba76e6c8b1341c7422e4d3e246b0a378829a4ec832c47618e7de",
+      "keygate": "sha256:7e35dae9a84e432e25b0a70268118da404ea81d10026f23e524b7f38a5de0d71",
+      "ed25519_verify": "sha256:b55ce622bede74ca04127e4fb39f8c8882ced491458adb564b9cfdcdc604e534",
+      "ecdsa_verify": "sha256:c4377ec6b16a6c17303b15021c6f0a6bdabd1a0827803e73f4b2f38d89629b5b",
+      "rsa_verify": "sha256:53055471454c4249336a0d8969aa06569bc6d093267ee08500e40d7762d6fad8"
+    },
+    "total_cases": 96
+  },
+  "head_jws": "eyJhbGciOiJFZERTQSIsImtpZCI6ImY0ZWI2ZmFhYjhiYzM1YzcyOGViNmMxYWM0Y2M5MGZhIiwidHlwIjoiY29ycHVzLWhlYWQrandzIn0.eyJjYW5vbmljYWxpemVyIjoiSkNTKFJGQzg3ODUpK0VkRFNBIiwiY29ycHVzX2RpZ2VzdCI6InNoYTI1NjphYzFmOTFhMGI0ODYzODMwYzBlYzg5NzFmMDUwNDk5NTI3ZTY3OGE5OTRhZGM4YjBiZTQ5OGM3YjYzNTFlYmMxIiwiY29ycHVzX2lkIjoicmZjOTQyMV9uZWdhdGl2ZV92MyIsImZpbGVfc2hhMjU2Ijoic2hhMjU2OjEyY2VkNzhkYmYyY2Y1ZTQzMDFjM2RkZDgzOTFhYTc3ZGYwOGJlOWMxMDI4MzNjYzFlM2QwNTE3OTUyZmQ4MzkiLCJzZWN0aW9uX2NvdW50cyI6eyJlY2RzYV92ZXJpZnkiOjMyLCJlZDI1NTE5X3ZlcmlmeSI6MTAsImtleWdhdGUiOjExLCJyc2FfdmVyaWZ5Ijo3LCJzaWduYXR1cmVfaW5wdXRfcGFyc2UiOjgsInNpZ25hdHVyZV92YWx1ZV9wYXJzZSI6Niwic2lnbmluZ19iYXNlIjoyMn0sInNlY3Rpb25fZGlnZXN0cyI6eyJlY2RzYV92ZXJpZnkiOiJzaGEyNTY6YzQzNzdlYzZiMTZhNmMxNzMwM2IxNTAyMWM2ZjBhNmJkYWJkMWEwODI3ODAzZTczZjRiMmYzOGQ4OTYyOWI1YiIsImVkMjU1MTlfdmVyaWZ5Ijoic2hhMjU2OmI1NWNlNjIyYmVkZTc0Y2EwNDEyN2U0ZmIzOWY4Yzg4ODJjZWQ0OTE0NThhZGI1NjRiOWNmZGNkYzYwNGU1MzQiLCJrZXlnYXRlIjoic2hhMjU2OjdlMzVkYWU5YTg0ZTQzMmUyNWIwYTcwMjY4MTE4ZGE0MDRlYTgxZDEwMDI2ZjIzZTUyNGI3ZjM4YTVkZTBkNzEiLCJyc2FfdmVyaWZ5Ijoic2hhMjU2OjUzMDU1NDcxNDU0YzQyNDkzMzZhMGQ4OTY5YWEwNjU2OWJjNmQwOTMyNjdlZTA4NTAwZTQwZDc3NjJkNmZhZDgiLCJzaWduYXR1cmVfaW5wdXRfcGFyc2UiOiJzaGEyNTY6MWFkYTM3YTQwYzY4MDQ5MGYxMDYyMjliMzU0NjRiMWUzZDJhYjZmMjM4ZjJhYjk3YzVlMTRiYjdiZjQ2NDhlNCIsInNpZ25hdHVyZV92YWx1ZV9wYXJzZSI6InNoYTI1NjpiNWU3MDMzYmQ3ZDViYTc2ZTZjOGIxMzQxYzc0MjJlNGQzZTI0NmIwYTM3ODgyOWE0ZWM4MzJjNDc2MThlN2RlIiwic2lnbmluZ19iYXNlIjoic2hhMjU2OjZkZGFhZjk1MDczZTdlMjYwZWI0NjhmYmQxOTY1NzgyMmY1ZmQyZWUzZDgzM2MwNzk2Yjk5MTRkZmYxZTY4MWQifSwidG90YWxfY2FzZXMiOjk2LCJ2ZXJzaW9uIjoiMC4zLjAifQ.BA-JzjbskFtBQ7w1C5XG7wavzuU9RiDUm0OFUnNTNOrfcum-FybS_DEmNxi-qWEDJTi1ZcSuxSP-Sy2pvW7MBw",
+  "head_typ": "corpus-head+jws",
+  "signed_at": "2026-08-12T00:00:00Z"
+}
