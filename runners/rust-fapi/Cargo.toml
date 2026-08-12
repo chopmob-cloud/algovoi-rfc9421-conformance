@@ -1,0 +1,25 @@
+[package]
+name = "fapi-runner"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["AlgoVoi <chopmob@gmail.com>"]
+description = "Rust runner for the FAPI 2.0 Message Signing RFC 9421 profile corpus (fapi_messagesigning_v0). Self-contained; reproduces every verdict in the frozen corpus."
+
+[[bin]]
+name = "verify_fapi"
+path = "src/main.rs"
+
+[dependencies]
+# Versions pinned to the sibling algovoi-rfc9421-verifier-rs workspace so the
+# already-cached crates resolve offline. `rsa` carries the `sha2` feature (as in
+# that workspace's ecdsa crate) so the PSS hashes resolve; `p256` carries
+# `ecdsa`+`arithmetic` for ECDSA P-256 verification; `num-bigint` does the
+# low-s (s > n/2) comparison against the corpus `policy.p256_n` by hand.
+serde_json = "1"
+base64 = "0.22"
+hex = "0.4"
+sha2 = "0.10"
+num-bigint = "0.4"
+rsa = { version = "0.9", features = ["sha2"] }
+p256 = { version = "0.13", features = ["ecdsa", "arithmetic"] }
