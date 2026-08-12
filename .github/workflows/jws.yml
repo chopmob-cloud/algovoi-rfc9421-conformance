@@ -76,7 +76,7 @@ jobs:
         run: |
           set -euo pipefail
           KV=2.0.20
-          curl -fsSL -o /tmp/kotlin.zip "https://github.com/JetBrains/kotlin/releases/download/v${KV}/kotlin-compiler-${KV}.zip"
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180 -o /tmp/kotlin.zip "https://github.com/JetBrains/kotlin/releases/download/v${KV}/kotlin-compiler-${KV}.zip"
           sudo unzip -q /tmp/kotlin.zip -d /opt
           echo "/opt/kotlinc/bin" >> "$GITHUB_PATH"
 
@@ -87,13 +87,14 @@ jobs:
           set -euo pipefail
           B=https://repo1.maven.org/maven2
           mkdir -p runners/java/libs runners/kotlin/libs
-          curl -fsSL "$B/org/json/json/20240303/json-20240303.jar" -o runners/java/libs/json-20240303.jar
+          RETRY="--retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180"
+          curl -fsSL $RETRY "$B/org/json/json/20240303/json-20240303.jar" -o runners/java/libs/json-20240303.jar
           for j in \
             com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar \
             com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar \
             com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar \
             org/bouncycastle/bcprov-jdk18on/1.78.1/bcprov-jdk18on-1.78.1.jar; do
-            curl -fsSL "$B/$j" -o "runners/kotlin/libs/$(basename "$j")"
+            curl -fsSL $RETRY "$B/$j" -o "runners/kotlin/libs/$(basename "$j")"
           done
 
       - name: C deps (jansson, libssl)
@@ -102,7 +103,7 @@ jobs:
       - name: Scala CLI
         run: |
           set -euo pipefail
-          curl -fsLo /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz
+          curl -fsL --retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180 -o /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz
           gzip -df /tmp/scala-cli.gz
           chmod +x /tmp/scala-cli
           sudo mv /tmp/scala-cli /usr/local/bin/scala-cli
