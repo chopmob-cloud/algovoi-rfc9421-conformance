@@ -29,7 +29,7 @@ VGO_DIR="${VGO_DIR:-$HERE/../algovoi-rfc9421-verifier-go}"
 VRS_DIR="${VRS_DIR:-$HERE/../algovoi-rfc9421-verifier-rs}"
 
 # ordered: the ten independent implementations
-LANGS=(python typescript go rust c java kotlin dotnet ruby php elixir)
+LANGS=(python typescript go rust c java kotlin scala dotnet ruby php elixir)
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
@@ -68,6 +68,10 @@ run_lang() {
       local d="$HERE/runners/java"
       ls "$d"/libs/*.jar >/dev/null 2>&1 || { echo "ABSENT: fetch jars into runners/java/libs"; return; }
       ( cd "$d" && javac -cp "libs/*" NegativeV1.java && java -cp ".:libs/*" NegativeV1 "$CORPUS" ) >/dev/null 2>&1 \
+        && echo PASS || echo FAIL ;;
+    scala)
+      have scala-cli || { echo "ABSENT: no scala-cli"; return; }
+      ( cd "$HERE/runners/scala" && scala-cli run negative_v1.scala -- "$CORPUS" ) >/dev/null 2>&1 \
         && echo PASS || echo FAIL ;;
     kotlin)
       have kotlinc && have java || { echo "ABSENT: no kotlinc/java"; return; }

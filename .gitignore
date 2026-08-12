@@ -21,3 +21,6 @@ kaf/**/*.secret
 # C runner build artifacts
 runners/c/negative_v1
 runners/c/*.o
+
+# Scala runner build artifacts
+runners/scala/.scala-build/
