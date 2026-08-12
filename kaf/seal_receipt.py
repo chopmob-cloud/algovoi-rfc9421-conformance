@@ -68,9 +68,8 @@ def main() -> int:
     with open(os.path.join(corpus_dir, "kat_anchors_v1.json"), encoding="utf-8") as fh:
         anchors = json.load(fh)["anchors"]
 
-    total_cases = sum(len(corpus[s]) for s in (
-        "signing_base", "signature_input_parse", "signature_value_parse",
-        "keygate", "ed25519_verify", "ecdsa_verify"))
+    # every list-valued section counts (so new sections like rsa_verify are included)
+    total_cases = sum(len(v) for v in corpus.values() if isinstance(v, list))
     cells_pass = [c for c in cells if c["verdict"] == "PASS"]
 
     # Hardening: a seal must never lend cryptographic confidence to an unverified

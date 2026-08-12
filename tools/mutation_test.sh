@@ -13,7 +13,7 @@
 set -u
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
-CORPUS="${ALGOVOI_NEGATIVE_V1:-$HERE/corpus/rfc9421_negative_v1/rfc9421_negative_v1.json}"
+CORPUS="${ALGOVOI_NEGATIVE_V1:-$HERE/corpus/rfc9421_negative_v3/rfc9421_negative_v3.json}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -25,6 +25,7 @@ MUTATIONS=(
   "keygate:0:small_order:flip"               # lie about small-order-ness
   "ed25519_verify:0:expect_valid:flip"       # lie about a signature verdict
   "ecdsa_verify:0:expect_valid:flip"         # lie about a signature verdict
+  "rsa_verify:0:expect_valid:flip"           # lie about an RSA verdict
 )
 
 mutate() { # <spec> -> writes mutated corpus to $TMP/mut.json, echoes a label
