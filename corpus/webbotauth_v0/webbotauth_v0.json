@@ -1,0 +1,422 @@
+{
+  "name": "webbotauth_v0",
+  "description": "Signed cross-language conformance battery for the Web Bot Auth RFC 9421 profile: covered-component completeness, freshness/replay windows, directory keyid resolution, Signature-Agent SSRF, and the Ed25519 signature verdict over the profile signing base.",
+  "profile": "web-bot-auth",
+  "policy": {
+    "profile": "web-bot-auth",
+    "tag": "web-bot-auth",
+    "alg": "ed25519",
+    "required_covered_components": [
+      "@authority",
+      "signature-agent"
+    ],
+    "clock_skew_seconds": 0,
+    "ssrf": {
+      "require_https": true,
+      "denied_cidrs": [
+        "0.0.0.0/8",
+        "10.0.0.0/8",
+        "100.64.0.0/10",
+        "127.0.0.0/8",
+        "169.254.0.0/16",
+        "172.16.0.0/12",
+        "192.0.0.0/24",
+        "192.0.2.0/24",
+        "192.88.99.0/24",
+        "192.168.0.0/16",
+        "198.18.0.0/15",
+        "198.51.100.0/24",
+        "203.0.113.0/24",
+        "224.0.0.0/4",
+        "240.0.0.0/4",
+        "::/128",
+        "::1/128",
+        "::ffff:0:0/96",
+        "64:ff9b::/96",
+        "100::/64",
+        "2001:db8::/32",
+        "fc00::/7",
+        "fe80::/10",
+        "ff00::/8"
+      ]
+    }
+  },
+  "wba_signing_base": [
+    {
+      "in": {
+        "covered_components": [
+          "@authority",
+          "@method",
+          "signature-agent"
+        ],
+        "method": "GET",
+        "authority": "bot.example",
+        "path": "/",
+        "headers": {
+          "signature-agent": "\"https://directory.example/keys\""
+        },
+        "created": 1000,
+        "expires": 2000,
+        "keyid": "58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI"
+      },
+      "mode": "rfc9421",
+      "signature_params_raw": "(\"@authority\" \"@method\" \"signature-agent\");created=1000;expires=2000;keyid=\"58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI\";alg=\"ed25519\";tag=\"web-bot-auth\"",
+      "signing_base_b64": "IkBhdXRob3JpdHkiOiBib3QuZXhhbXBsZQoiQG1ldGhvZCI6IEdFVAoic2lnbmF0dXJlLWFnZW50IjogImh0dHBzOi8vZGlyZWN0b3J5LmV4YW1wbGUva2V5cyIKIkBzaWduYXR1cmUtcGFyYW1zIjogKCJAYXV0aG9yaXR5IiAiQG1ldGhvZCIgInNpZ25hdHVyZS1hZ2VudCIpO2NyZWF0ZWQ9MTAwMDtleHBpcmVzPTIwMDA7a2V5aWQ9IjU4dWpqYjlVMWhSaHhYMGFRZTR1aUhMa0Q1MGw3NTRTeEoxRXBGLTJXVEkiO2FsZz0iZWQyNTUxOSI7dGFnPSJ3ZWItYm90LWF1dGgi",
+      "ok": true,
+      "note": "canonical web-bot-auth signing base (authority + method + signature-agent)"
+    },
+    {
+      "in": {
+        "covered_components": [
+          "@authority",
+          "@method",
+          "signature-agent"
+        ],
+        "method": "GET",
+        "authority": "bot.example",
+        "path": "/",
+        "headers": {
+          "signature-agent": "\"https://directory.example/keys\""
+        },
+        "created": 5000,
+        "expires": 6000,
+        "keyid": "58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI"
+      },
+      "mode": "rfc9421",
+      "signature_params_raw": "(\"@authority\" \"@method\" \"signature-agent\");created=5000;expires=6000;keyid=\"58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI\";alg=\"ed25519\";tag=\"web-bot-auth\"",
+      "signing_base_b64": "IkBhdXRob3JpdHkiOiBib3QuZXhhbXBsZQoiQG1ldGhvZCI6IEdFVAoic2lnbmF0dXJlLWFnZW50IjogImh0dHBzOi8vZGlyZWN0b3J5LmV4YW1wbGUva2V5cyIKIkBzaWduYXR1cmUtcGFyYW1zIjogKCJAYXV0aG9yaXR5IiAiQG1ldGhvZCIgInNpZ25hdHVyZS1hZ2VudCIpO2NyZWF0ZWQ9NTAwMDtleHBpcmVzPTYwMDA7a2V5aWQ9IjU4dWpqYjlVMWhSaHhYMGFRZTR1aUhMa0Q1MGw3NTRTeEoxRXBGLTJXVEkiO2FsZz0iZWQyNTUxOSI7dGFnPSJ3ZWItYm90LWF1dGgi",
+      "ok": true,
+      "note": "same profile, different created/expires window"
+    }
+  ],
+  "wba_coverage": [
+    {
+      "covered_components": [
+        "@authority",
+        "@method",
+        "signature-agent"
+      ],
+      "required": [
+        "@authority",
+        "signature-agent"
+      ],
+      "expect_accept": true,
+      "reason": "ok",
+      "note": "full coverage of the required components"
+    },
+    {
+      "covered_components": [
+        "@authority",
+        "signature-agent"
+      ],
+      "required": [
+        "@authority",
+        "signature-agent"
+      ],
+      "expect_accept": true,
+      "reason": "ok",
+      "note": "exactly the required components"
+    },
+    {
+      "covered_components": [
+        "@method",
+        "signature-agent"
+      ],
+      "required": [
+        "@authority",
+        "signature-agent"
+      ],
+      "expect_accept": false,
+      "reason": "missing_required_covered_component:@authority",
+      "note": "missing @authority (cross-origin replay)"
+    },
+    {
+      "covered_components": [
+        "@authority",
+        "@method"
+      ],
+      "required": [
+        "@authority",
+        "signature-agent"
+      ],
+      "expect_accept": false,
+      "reason": "missing_required_covered_component:signature-agent",
+      "note": "missing signature-agent (directory substitution)"
+    },
+    {
+      "covered_components": [
+        "@method"
+      ],
+      "required": [
+        "@authority",
+        "signature-agent"
+      ],
+      "expect_accept": false,
+      "reason": "missing_required_covered_component:@authority",
+      "note": "missing both required components"
+    }
+  ],
+  "wba_freshness": [
+    {
+      "created": 1000,
+      "expires": 2000,
+      "now": 1500,
+      "expect_accept": true,
+      "reason": "ok",
+      "note": "inside the validity window"
+    },
+    {
+      "created": 1000,
+      "expires": 2000,
+      "now": 1000,
+      "expect_accept": true,
+      "reason": "ok",
+      "note": "boundary: now == created (valid)"
+    },
+    {
+      "created": 1000,
+      "expires": 2000,
+      "now": 1999,
+      "expect_accept": true,
+      "reason": "ok",
+      "note": "boundary: last valid second"
+    },
+    {
+      "created": 1000,
+      "expires": 2000,
+      "now": 2000,
+      "expect_accept": false,
+      "reason": "expired",
+      "note": "boundary: now == expires (expired)"
+    },
+    {
+      "created": 1000,
+      "expires": 2000,
+      "now": 2500,
+      "expect_accept": false,
+      "reason": "expired",
+      "note": "past expiry"
+    },
+    {
+      "created": 1000,
+      "expires": 2000,
+      "now": 900,
+      "expect_accept": false,
+      "reason": "not_yet_valid",
+      "note": "before created (not yet valid)"
+    },
+    {
+      "created": 2000,
+      "expires": 1000,
+      "now": 1500,
+      "expect_accept": false,
+      "reason": "expires_not_after_created",
+      "note": "expires not after created (malformed window)"
+    }
+  ],
+  "wba_directory": [
+    {
+      "directory": [
+        {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "zfnh2KiE1D-eodDWtMcSxTXIqOlxP97cGE5yJlmun7U",
+          "kid": "58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI"
+        },
+        {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "a6_3VE8YnAtK3S9p8FnKgXhn8DociA1y0X5zyGuvLx8",
+          "kid": "i0UMhp2xPc9NmfmQfKwkxviiKSRJRtiSkW4-xqWv4Zg"
+        },
+        {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+          "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+          "kid": "ec-key-1"
+        }
+      ],
+      "keyid": "58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI",
+      "expect_accept": true,
+      "reason": "ok",
+      "note": "known Ed25519 key A"
+    },
+    {
+      "directory": [
+        {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "zfnh2KiE1D-eodDWtMcSxTXIqOlxP97cGE5yJlmun7U",
+          "kid": "58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI"
+        },
+        {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "a6_3VE8YnAtK3S9p8FnKgXhn8DociA1y0X5zyGuvLx8",
+          "kid": "i0UMhp2xPc9NmfmQfKwkxviiKSRJRtiSkW4-xqWv4Zg"
+        },
+        {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+          "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+          "kid": "ec-key-1"
+        }
+      ],
+      "keyid": "i0UMhp2xPc9NmfmQfKwkxviiKSRJRtiSkW4-xqWv4Zg",
+      "expect_accept": true,
+      "reason": "ok",
+      "note": "known Ed25519 key B"
+    },
+    {
+      "directory": [
+        {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "zfnh2KiE1D-eodDWtMcSxTXIqOlxP97cGE5yJlmun7U",
+          "kid": "58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI"
+        },
+        {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "a6_3VE8YnAtK3S9p8FnKgXhn8DociA1y0X5zyGuvLx8",
+          "kid": "i0UMhp2xPc9NmfmQfKwkxviiKSRJRtiSkW4-xqWv4Zg"
+        },
+        {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+          "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+          "kid": "ec-key-1"
+        }
+      ],
+      "keyid": "ec-key-1",
+      "expect_accept": false,
+      "reason": "key_algorithm_not_ed25519",
+      "note": "keyid resolves to a non-Ed25519 (EC) key"
+    },
+    {
+      "directory": [
+        {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "zfnh2KiE1D-eodDWtMcSxTXIqOlxP97cGE5yJlmun7U",
+          "kid": "58ujjb9U1hRhxX0aQe4uiHLkD50l754SxJ1EpF-2WTI"
+        },
+        {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "a6_3VE8YnAtK3S9p8FnKgXhn8DociA1y0X5zyGuvLx8",
+          "kid": "i0UMhp2xPc9NmfmQfKwkxviiKSRJRtiSkW4-xqWv4Zg"
+        },
+        {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+          "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+          "kid": "ec-key-1"
+        }
+      ],
+      "keyid": "unknown-thumbprint",
+      "expect_accept": false,
+      "reason": "keyid_not_in_directory",
+      "note": "keyid absent from the directory"
+    }
+  ],
+  "wba_directory_ssrf": [
+    {
+      "signature_agent_url": "https://93.184.216.34/keys",
+      "resolved_ip": null,
+      "expect_fetch_allowed": true,
+      "reason": "ok",
+      "note": "public https directory (allowed)"
+    },
+    {
+      "signature_agent_url": "http://93.184.216.34/keys",
+      "resolved_ip": null,
+      "expect_fetch_allowed": false,
+      "reason": "scheme_not_https",
+      "note": "http scheme rejected (must be https)"
+    },
+    {
+      "signature_agent_url": "https://127.0.0.1/keys",
+      "resolved_ip": null,
+      "expect_fetch_allowed": false,
+      "reason": "address_in_denied_range",
+      "note": "loopback rejected"
+    },
+    {
+      "signature_agent_url": "https://169.254.169.254/latest/meta-data/",
+      "resolved_ip": null,
+      "expect_fetch_allowed": false,
+      "reason": "address_in_denied_range",
+      "note": "cloud metadata address rejected"
+    },
+    {
+      "signature_agent_url": "https://10.1.2.3/keys",
+      "resolved_ip": null,
+      "expect_fetch_allowed": false,
+      "reason": "address_in_denied_range",
+      "note": "private RFC1918 address rejected"
+    },
+    {
+      "signature_agent_url": "https://[::1]/keys",
+      "resolved_ip": null,
+      "expect_fetch_allowed": false,
+      "reason": "address_in_denied_range",
+      "note": "IPv6 loopback rejected"
+    },
+    {
+      "signature_agent_url": "https://user@93.184.216.34/keys",
+      "resolved_ip": null,
+      "expect_fetch_allowed": false,
+      "reason": "url_contains_userinfo",
+      "note": "userinfo in URL rejected"
+    },
+    {
+      "signature_agent_url": "https://directory.example/keys",
+      "resolved_ip": "93.184.216.34",
+      "expect_fetch_allowed": true,
+      "reason": "ok",
+      "note": "hostname resolving to public address (allowed)"
+    },
+    {
+      "signature_agent_url": "https://internal.example/keys",
+      "resolved_ip": "192.168.1.10",
+      "expect_fetch_allowed": false,
+      "reason": "address_in_denied_range",
+      "note": "hostname resolving to private address rejected"
+    },
+    {
+      "signature_agent_url": "https://directory.example/keys",
+      "resolved_ip": null,
+      "expect_fetch_allowed": false,
+      "reason": "unresolved_host",
+      "note": "hostname with no resolution rejected"
+    }
+  ],
+  "wba_ed25519_verify": [
+    {
+      "signing_base_b64": "IkBhdXRob3JpdHkiOiBib3QuZXhhbXBsZQoiQG1ldGhvZCI6IEdFVAoic2lnbmF0dXJlLWFnZW50IjogImh0dHBzOi8vZGlyZWN0b3J5LmV4YW1wbGUva2V5cyIKIkBzaWduYXR1cmUtcGFyYW1zIjogKCJAYXV0aG9yaXR5IiAiQG1ldGhvZCIgInNpZ25hdHVyZS1hZ2VudCIpO2NyZWF0ZWQ9MTAwMDtleHBpcmVzPTIwMDA7a2V5aWQ9IjU4dWpqYjlVMWhSaHhYMGFRZTR1aUhMa0Q1MGw3NTRTeEoxRXBGLTJXVEkiO2FsZz0iZWQyNTUxOSI7dGFnPSJ3ZWItYm90LWF1dGgi",
+      "sig_hex": "2197f9d70c96b65695ee8c84af36088e97c16fdcff8d77ea0fa8e54503d8d0ebb077fb5b5bd2738fa432f728ada88d3d5be320bc9dba7ed102ea107786196f06",
+      "pk_hex": "cdf9e1d8a884d43f9ea1d0d6b4c712c535c8a8e9713fdedc184e722659ae9fb5",
+      "expect_valid": true,
+      "note": "valid Ed25519 signature over the web-bot-auth signing base"
+    },
+    {
+      "signing_base_b64": "IkBhdXRob3JpdHkiOiBib3QuZXhhbXBsZQoiQG1ldGhvZCI6IEdFVAoic2lnbmF0dXJlLWFnZW50IjogImh0dHBzOi8vZGlyZWN0b3J5LmV4YW1wbGUva2V5cyIKIkBzaWduYXR1cmUtcGFyYW1zIjogKCJAYXV0aG9yaXR5IiAiQG1ldGhvZCIgInNpZ25hdHVyZS1hZ2VudCIpO2NyZWF0ZWQ9MTAwMDtleHBpcmVzPTIwMDA7a2V5aWQ9IjU4dWpqYjlVMWhSaHhYMGFRZTR1aUhMa0Q1MGw3NTRTeEoxRXBGLTJXVEkiO2FsZz0iZWQyNTUxOSI7dGFnPSJ3ZWItYm90LWF1dGgi",
+      "sig_hex": "2097f9d70c96b65695ee8c84af36088e97c16fdcff8d77ea0fa8e54503d8d0ebb077fb5b5bd2738fa432f728ada88d3d5be320bc9dba7ed102ea107786196f06",
+      "pk_hex": "cdf9e1d8a884d43f9ea1d0d6b4c712c535c8a8e9713fdedc184e722659ae9fb5",
+      "expect_valid": false,
+      "note": "one signature byte flipped"
+    },
+    {
+      "signing_base_b64": "IkBhdXRob3JpdHkiOiBib3QuZXhhbXBsZQoiQG1ldGhvZCI6IEdFVAoic2lnbmF0dXJlLWFnZW50IjogImh0dHBzOi8vZGlyZWN0b3J5LmV4YW1wbGUva2V5cyIKIkBzaWduYXR1cmUtcGFyYW1zIjogKCJAYXV0aG9yaXR5IiAiQG1ldGhvZCIgInNpZ25hdHVyZS1hZ2VudCIpO2NyZWF0ZWQ9MTAwMDtleHBpcmVzPTIwMDA7a2V5aWQ9IjU4dWpqYjlVMWhSaHhYMGFRZTR1aUhMa0Q1MGw3NTRTeEoxRXBGLTJXVEkiO2FsZz0iZWQyNTUxOSI7dGFnPSJ3ZWItYm90LWF1dGgi",
+      "sig_hex": "2197f9d70c96b65695ee8c84af36088e97c16fdcff8d77ea0fa8e54503d8d0ebb077fb5b5bd2738fa432f728ada88d3d5be320bc9dba7ed102ea107786196f06",
+      "pk_hex": "6baff7544f189c0b4add2f69f059ca817867f03a1c880d72d17e73c86baf2f1f",
+      "expect_valid": false,
+      "note": "correct signature verified against the wrong public key"
+    }
+  ]
+}
