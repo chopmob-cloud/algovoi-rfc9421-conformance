@@ -1,16 +1,18 @@
-# 10-way RFC 9421 consensus — enforce byte-for-byte parity on every push.
+# 12-way RFC 9421 consensus — enforce byte-for-byte parity on every push.
 #
-# Runs all ten independent language runners against the one frozen, signed
-# corpus via tools/run_consensus.sh --require 10. The job fails unless every
-# runner reproduces all 78 cases (each exits 0 iff it matched the frozen
-# oracle, so all-pass = all-agree byte-for-byte) and all ten are present
-# (a missing toolchain shrinks N below --require and fails closed).
+# Runs all twelve independent language runners against the one frozen, signed
+# corpus (rfc9421_negative_v3, 96 cases across seven sections) via
+# tools/run_consensus.sh --require 12. The job fails unless every runner
+# reproduces every case (each exits 0 iff it matched the frozen oracle, so
+# all-pass = all-agree byte-for-byte) and all twelve are present: a missing
+# toolchain shrinks N below --require and fails closed, so the field can never
+# silently shrink while still "passing".
 #
-# Ten stacks: python/ts/go/rust verifiers + java, kotlin, dotnet, ruby, php,
-# elixir self-contained runners. Go and Rust run their vendored conformance
-# tests from the sibling verifier repos, checked out alongside.
+# Twelve stacks: python/ts/go/rust verifiers + c, java, kotlin, scala, dotnet,
+# ruby, php, elixir self-contained runners. Go and Rust run their vendored
+# conformance tests from the sibling verifier repos, checked out alongside.
 
-name: 10-way consensus
+name: 12-way consensus
 
 on:
   push:
@@ -27,7 +29,7 @@ concurrency:
 
 jobs:
   consensus:
-    name: rfc9421_negative_v1 (require 10)
+    name: rfc9421_negative_v3 (require 12)
     runs-on: ubuntu-latest
     env:
       VGO_DIR: ${{ github.workspace }}/_siblings/verifier-go
@@ -106,6 +108,24 @@ jobs:
             for j in "${jars[@]}"; do curl -fsSL "$B/$j" -o "$d/$(basename "$j")"; done
           done
 
-      # --- the invariant: full 10-way consensus, or the job fails ---
+      # --- C toolchain: gcc (cc) is preinstalled; jansson + OpenSSL headers are not ---
+      - name: C deps (jansson, libssl)
+        run: sudo apt-get update -q && sudo apt-get install -y -q libjansson-dev libssl-dev pkg-config
+
+      # --- Scala: scala-cli fetches its own Scala 3 + deps via the runner's
+      #     //> using directives; the JVM comes from setup-java above ---
+      - name: Scala CLI
+        run: |
+          set -euo pipefail
+          curl -fsLo /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz
+          gzip -df /tmp/scala-cli.gz
+          chmod +x /tmp/scala-cli
+          sudo mv /tmp/scala-cli /usr/local/bin/scala-cli
+          scala-cli version
+
+      # --- the invariant: full 12-way consensus, or the job fails ---
+      # --require 12 means all twelve toolchains must be present AND agree; an
+      # absent C or Scala toolchain (the two that were silently missing before)
+      # now fails the gate rather than passing a shrunken field.
       - name: Run N-way consensus
-        run: bash tools/run_consensus.sh --require 10
+        run: bash tools/run_consensus.sh --require 12
