@@ -1,5 +1,10 @@
 # cargo-audit configuration for the rust-fapi runner.
 #
+# NOTE ON LOCATION: cargo-audit only auto-loads its ignore config from
+# `.cargo/audit.toml` (relative to where `cargo audit` runs), NOT from a bare
+# `audit.toml` in the crate root. The previous crate-root file was never honored;
+# this is the working location.
+#
 # RUSTSEC-2023-0071 (Marvin Attack) is a timing sidechannel in the `rsa` crate's
 # PRIVATE-KEY operations (RSA decryption / private-key use), exploited to recover
 # a private key from an oracle that decrypts attacker-chosen ciphertexts. This

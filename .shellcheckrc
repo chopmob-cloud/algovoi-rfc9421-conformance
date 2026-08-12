@@ -8,3 +8,22 @@
 # only place unquoted expansion is used, and its input (pkg-config output) is
 # trusted.
 disable=SC2046
+
+# SC2016 / SC2028: the KAF cell drivers (kaf/run_cells_*.sh) build a command
+# STRING with `echo '...'` that is then executed INSIDE a Docker container. The
+# single quotes are deliberate: $CORPUS_IN, $(pkg-config ...) and the `\n` in
+# `tr` must NOT expand on the host, they are meant to run in-container. The
+# per-cell $M2 / $JACKSON / $BC variables are concatenated explicitly outside the
+# quotes. Host-side non-expansion is the intended behaviour, not a bug.
+disable=SC2016
+disable=SC2028
+
+# SC2015: the consensus drivers use `have X && have Y || { echo ABSENT; return; }`
+# to mean "present only if BOTH tools exist". The else-branch firing when the
+# first check passes but the second fails is exactly the intended fallback (mark
+# the language ABSENT), so the A && B || C caution does not apply here.
+disable=SC2015
+
+# SC2012: `ls "$d"/libs/*.jar | tr` lists jar files that we fetch ourselves with
+# fixed, alphanumeric names, so the ls glob is safe and find is unnecessary.
+disable=SC2012
