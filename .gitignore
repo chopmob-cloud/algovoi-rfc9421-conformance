@@ -18,6 +18,7 @@ runners/elixir/deps/
 # KAF cell artifacts: sealed receipts + the public key are committed; the raw
 # per-run results and any seal secret are not.
 kaf/cells.results.json
+kaf/cells_wba.results.json
 kaf/**/*.secret
 
 # C runner build artifacts
