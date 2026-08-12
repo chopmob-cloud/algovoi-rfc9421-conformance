@@ -1,0 +1,21 @@
+# bandit configuration for algovoi-rfc9421-conformance.
+#
+# These are corpus-generation and signing dev tools with NO untrusted input; the
+# flagged patterns were reviewed and are intentional:
+#   B101 (assert)  - the generators/signers assert invariants (head-JWS verifies,
+#                    digest matches, provenance chain verifies) before writing the
+#                    signed artifact; they are always run without -O.
+#   B112 (try/except/continue) - probing optional corpus fields.
+#   B404 (import subprocess) / B603 (subprocess call) - the seal scripts run the
+#                    KAT gate via subprocess using sys.executable + a fixed in-repo
+#                    script path + the corpus path; never a shell, never untrusted
+#                    input.
+#   B607 (partial exe path) / B110 (try/except/pass) - the signers best-effort
+#                    restrict the off-repo key file's ACL via `icacls` on Windows,
+#                    wrapped in try/except/pass so it is a no-op elsewhere; a fixed
+#                    system tool, check=False, no untrusted input.
+# The one real weak-hash finding (md5, B324) is fixed at the source with
+# usedforsecurity=False (it builds the negative Content-Digest vector the FAPI
+# verifier must reject), so it is NOT skipped here.
+[bandit]
+skips = B101,B110,B112,B404,B603,B607

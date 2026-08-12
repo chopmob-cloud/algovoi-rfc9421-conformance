@@ -35,7 +35,10 @@ def build(m):
     body = base64.b64decode(body_b64)
     cd_sha512 = O.compute_content_digest(body, "sha-512")
     cd_swapped = m["content_digest_response"]           # digest of a DIFFERENT body
-    cd_md5 = "md5=:" + base64.b64encode(hashlib.md5(body).digest()).decode() + ":"
+    # md5 is deliberately weak here: this builds the NEGATIVE Content-Digest vector
+    # the FAPI verifier must reject. usedforsecurity=False documents that (and keeps
+    # the digest bytes identical, so the corpus is unchanged).
+    cd_md5 = "md5=:" + base64.b64encode(hashlib.md5(body, usedforsecurity=False).digest()).decode() + ":"
 
     corpus = {
         "name": "fapi_messagesigning_v0",

@@ -1,0 +1,35 @@
+# gitleaks configuration for algovoi-rfc9421-conformance.
+#
+# This repository is a signed conformance corpus. It ships PUBLIC cryptographic
+# material by design: the corpus head is EdDSA-signed and the compact JWS
+# (`head_jws`) plus the signer's public JWK travel in the manifest; receipts carry
+# the seal's public JWK and signature; the corpus and vectors carry public keys
+# (`pub_spki_hex`, `*_uncompressed_hex`), key identifiers (`keyid`, `kid`, JWK
+# thumbprints) and signatures over public data. None of these are secrets. Every
+# genuine private key (corpus signing seed, KAF seal secret, FAPI material RSA/EC
+# keys) is held OFF-REPO. The allowlist below scopes gitleaks to that reality so a
+# public signature is not misreported as a leaked JWT.
+
+title = "algovoi-rfc9421-conformance"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "public conformance-corpus signatures, public keys and key identifiers (no private material is committed)"
+regexTarget = "line"
+regexes = [
+  '''"head_jws"\s*:''',
+  '''"keyid"\s*:''',
+  '''"kid"\s*:''',
+  '''"sig_b64"\s*:''',
+  # env-var NAMES that locate the off-repo signing key (not key values)
+  '''KEY_ENV\s*=\s*"ALGOVOI_[A-Z0-9_]*"''',
+  '''ALGOVOI_[A-Z0-9_]*_SIGNING_KEY''',
+]
+paths = [
+  '''corpus/.*\.json''',
+  '''vectors/.*\.json''',
+  '''kaf/receipts/.*\.json''',
+  '''kaf/keys/.*\.json''',
+]

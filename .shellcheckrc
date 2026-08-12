@@ -1,0 +1,10 @@
+# shellcheck configuration for algovoi-rfc9421-conformance.
+#
+# SC2046 (quote to prevent word splitting) is disabled intentionally: the
+# consensus and cell drivers compile the C runner with
+# `cc ... $(pkg-config --cflags --libs jansson) -lcrypto`, where the command
+# substitution MUST word-split into separate compiler flags. Quoting it would
+# pass the whole flag list as a single argument and break the build. This is the
+# only place unquoted expansion is used, and its input (pkg-config output) is
+# trusted.
+disable=SC2046
