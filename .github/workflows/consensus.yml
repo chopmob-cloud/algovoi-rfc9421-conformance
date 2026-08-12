@@ -123,6 +123,15 @@ jobs:
           sudo mv /tmp/scala-cli /usr/local/bin/scala-cli
           scala-cli version
 
+      # TEMP diagnostic: surface the Scala runner's own output (the consensus
+      # driver swallows it). Remove before merge.
+      - name: DEBUG scala runner
+        continue-on-error: true
+        run: |
+          cd runners/scala
+          scala-cli run --server=false negative_v1.scala -- \
+            "$GITHUB_WORKSPACE/corpus/rfc9421_negative_v3/rfc9421_negative_v3.json" || echo "SCALA EXIT $?"
+
       # --- the invariant: full 12-way consensus, or the job fails ---
       # --require 12 means all twelve toolchains must be present AND agree; an
       # absent C or Scala toolchain (the two that were silently missing before)
