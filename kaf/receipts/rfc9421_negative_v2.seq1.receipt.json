@@ -15,8 +15,9 @@
     },
     "axes": {
       "agreement": {
-        "independent_runners": 10,
+        "independent_runners": 11,
         "languages": [
+          "c",
           "dotnet",
           "elixir",
           "go",
@@ -28,7 +29,7 @@
           "rust",
           "typescript"
         ],
-        "result": "full 10-way byte-for-byte consensus",
+        "result": "full 11-way byte-for-byte consensus",
         "cases": 89
       },
       "kat": {
@@ -62,6 +63,13 @@
           "lang": "rust",
           "image": "rust:1-slim-bookworm",
           "image_digest": "rust@sha256:2775a09d208ff0d7c1f50490c45b62db929e87ba1dcbc3f2132ac71a704bcdd3",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "gcc-14-c",
+          "lang": "c",
+          "image": "gcc:14-bookworm",
+          "image_digest": "gcc@sha256:5e927c284bf55a7dc796262e311a0703344f62f41f5621eb56843111b1d37e15",
           "verdict": "PASS"
         },
         {
@@ -107,8 +115,8 @@
           "verdict": "PASS"
         }
       ],
-      "cells_passed": 10,
-      "cells_total": 10
+      "cells_passed": 11,
+      "cells_total": 11
     }
   },
   "seal": {
@@ -121,6 +129,6 @@
       "x": "xrHz4BWRsQTQry-L1t8wWI70S7F81M4G2yLwKnPmKAQ",
       "kid": "4bbcedc71692d3dc9491239d2fff1ea2"
     },
-    "sig_b64": "2KePNEQRLnA1/mi8KHLg0ngntutuTHZW5MRz9o1o6Jrs8iJ2o3L205sDWJZCfy8T59SAIbKVf+MDLawqKjmeBQ=="
+    "sig_b64": "0p06W1KyFBtHg3r0WTGVNvRpsWsmdUGBlKcja2z5t065agKcstf26DQGpF41pyEjvkatPYy2FRLQoEqLBhV6Cg=="
   }
 }
