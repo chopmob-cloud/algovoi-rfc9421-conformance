@@ -68,8 +68,9 @@ def main() -> int:
         if committed.get("x") != seal["jwk"]["x"]:
             failures.append("receipt seal key does not match committed kaf/keys/kaf-seal.pub.json")
 
-    # 2. corpus binding
-    corpus_path = os.path.join(CORPUS_DIR, "rfc9421_negative_v1.json")
+    # 2. corpus binding -- locate the corpus the receipt names (v1, v2, ...)
+    cid = payload["corpus"]["id"]
+    corpus_path = os.path.join(HERE, "corpus", cid, cid + ".json")
     if os.path.exists(corpus_path):
         with open(corpus_path, "rb") as fh:
             actual = "sha256:" + hashlib.sha256(fh.read()).hexdigest()

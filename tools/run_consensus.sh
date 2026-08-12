@@ -21,7 +21,7 @@
 set -u
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"          # repo root
-CORPUS="${ALGOVOI_NEGATIVE_V1:-$HERE/corpus/rfc9421_negative_v1/rfc9421_negative_v1.json}"
+CORPUS="${ALGOVOI_NEGATIVE_V1:-$HERE/corpus/rfc9421_negative_v2/rfc9421_negative_v2.json}"
 REQUIRE=10
 [ "${1:-}" = "--require" ] && REQUIRE="${2:-10}"
 

@@ -18,7 +18,9 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 REPO="${REPO:-$HERE}"
 VGO="${VGO:-$HERE/../algovoi-rfc9421-verifier-go}"
 VRS="${VRS:-$HERE/../algovoi-rfc9421-verifier-rs}"
-CORPUS_IN=/work/corpus/rfc9421_negative_v1/rfc9421_negative_v1.json
+# repo-relative corpus path (mounted at /work); defaults to the v2 superset.
+CORPUS="${CORPUS:-corpus/rfc9421_negative_v2/rfc9421_negative_v2.json}"
+CORPUS_IN="/work/$CORPUS"
 RESULTS="$HERE/kaf/cells.results.json"
 
 ALL_CELLS="python-3.12-slim node-20-slim go-1.26-bookworm rust-1-slim temurin-17-java temurin-17-kotlin dotnet-sdk-9.0 ruby-3.2-slim php-8.3-cli elixir-1.16-otp26"
