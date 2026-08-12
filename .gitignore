@@ -27,3 +27,4 @@ runners/scala/.scala-build/
 
 # rust runner build artifacts
 runners/rust/target/
+runners/rust-wba/target/

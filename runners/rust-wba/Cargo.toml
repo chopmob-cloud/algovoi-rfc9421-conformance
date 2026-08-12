@@ -1,0 +1,20 @@
+[package]
+name = "wba-runner"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["AlgoVoi <chopmob@gmail.com>"]
+description = "Rust runner for the Web Bot Auth RFC 9421 profile corpus (webbotauth_v0). Self-contained; reproduces every verdict in the frozen corpus."
+
+[[bin]]
+name = "verify_wba"
+path = "src/main.rs"
+
+[dependencies]
+# Versions pinned to the sibling algovoi-rfc9421-verifier-rs workspace so the
+# already-cached crates resolve offline (no ipnet: CIDR membership is done by
+# hand against std::net::IpAddr, keeping the dependency set to cached crates).
+serde_json = "1"
+base64 = "0.22"
+ed25519-dalek = "2"
+hex = "0.4"
