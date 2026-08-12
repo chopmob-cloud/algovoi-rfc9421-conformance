@@ -4,6 +4,7 @@
 
 # algovoi-rfc9421-conformance
 
+[![12-way consensus](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/consensus.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/consensus.yml)
 [![RFC 9421](./assets/badges/rfc9421.svg)](https://www.rfc-editor.org/rfc/rfc9421.html)
 [![Cross-validated](./assets/badges/languages.svg)](#cross-implementation-validation-matrix)
 [![Cases](./assets/badges/cases.svg)](#the-seven-sections)
@@ -164,7 +165,7 @@ Together the two corpora cover canonicalise → sign → verify end to end. And 
 ## Adding a language
 
 A runner is a self-contained probe: read the corpus JSON, and for every case
-reproduce the reference verdict across all six sections - signing-base
+reproduce the reference verdict across all seven sections - signing-base
 construction (both modes; **attempt the build even for negative cases** so a
 build that must fail is actually exercised), `Signature-Input` and `Signature`
 structured-field parsing with base64-canonicality rejection, the Ed25519

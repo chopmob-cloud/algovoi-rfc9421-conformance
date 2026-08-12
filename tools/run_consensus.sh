@@ -71,7 +71,10 @@ run_lang() {
         && echo PASS || echo FAIL ;;
     scala)
       have scala-cli || { echo "ABSENT: no scala-cli"; return; }
-      ( cd "$HERE/runners/scala" && scala-cli run negative_v1.scala -- "$CORPUS" ) >/dev/null 2>&1 \
+      # --server=false compiles in-process instead of via the Bloop background
+      # build server, which is unreliable in ephemeral/CI environments (matches
+      # the proven KAF docker cell invocation).
+      ( cd "$HERE/runners/scala" && scala-cli run --server=false negative_v1.scala -- "$CORPUS" ) >/dev/null 2>&1 \
         && echo PASS || echo FAIL ;;
     kotlin)
       have kotlinc && have java || { echo "ABSENT: no kotlinc/java"; return; }
