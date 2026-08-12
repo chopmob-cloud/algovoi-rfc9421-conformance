@@ -1,0 +1,110 @@
+# 12-way FAPI 2.0 Message Signing consensus — enforce byte-for-byte parity on every push.
+#
+# Runs all twelve independent language runners against the one frozen, signed
+# FAPI 2.0 Message Signing profile corpus (fapi_messagesigning_v0, 31 cases across six sections) via
+# tools/run_consensus_fapi.sh --require 12. The job fails unless every runner
+# reproduces every case (each exits 0 iff it matched the frozen oracle, so
+# all-pass = all-agree byte-for-byte) and all twelve are present: a missing
+# toolchain shrinks N below --require and fails closed.
+#
+# Unlike the negative-battery workflow, the go and rust runners are self-contained
+# in this repo, so there are no sibling verifier checkouts. The KAT gate
+# (tools/check_kat_wba.py) runs first inside the driver.
+
+name: 12-way FAPI 2.0 Message Signing consensus
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fapi-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consensus:
+    name: fapi_messagesigning_v0 (require 12)
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      GOTOOLCHAIN: local
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- twelve toolchains ---
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+        # `cryptography` is used by the KAT gate (tools/check_kat_wba.py) to verify
+        # Ed25519 independently of the verifier's PyNaCl backend.
+      - run: python -m pip install --quiet algovoi-rfc9421-verifier cryptography
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }   # the fapi runner uses only node built-ins
+
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.22" }
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: gmp
+
+      - uses: ruby/setup-ruby@v1
+        with: { ruby-version: "3.2" }
+
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "9.0.x" }
+
+      - uses: erlef/setup-beam@v1
+        with: { otp-version: "26", elixir-version: "1.16" }
+
+      - name: Kotlin compiler
+        run: |
+          set -euo pipefail
+          KV=2.0.20
+          curl -fsSL -o /tmp/kotlin.zip "https://github.com/JetBrains/kotlin/releases/download/v${KV}/kotlin-compiler-${KV}.zip"
+          sudo unzip -q /tmp/kotlin.zip -d /opt
+          echo "/opt/kotlinc/bin" >> "$GITHUB_PATH"
+
+      # --- jars for the JVM runners (gitignored; fetched from Maven Central).
+      #     java uses org.json; kotlin uses Jackson + Bouncy Castle. ---
+      - name: Fetch JVM jars
+        run: |
+          set -euo pipefail
+          B=https://repo1.maven.org/maven2
+          mkdir -p runners/java/libs runners/kotlin/libs
+          curl -fsSL "$B/org/json/json/20240303/json-20240303.jar" -o runners/java/libs/json-20240303.jar
+          for j in \
+            com/fasterxml/jackson/core/jackson-core/2.17.0/jackson-core-2.17.0.jar \
+            com/fasterxml/jackson/core/jackson-databind/2.17.0/jackson-databind-2.17.0.jar \
+            com/fasterxml/jackson/core/jackson-annotations/2.17.0/jackson-annotations-2.17.0.jar \
+            org/bouncycastle/bcprov-jdk18on/1.78.1/bcprov-jdk18on-1.78.1.jar; do
+            curl -fsSL "$B/$j" -o "runners/kotlin/libs/$(basename "$j")"
+          done
+
+      - name: C deps (jansson, libssl)
+        run: sudo apt-get update -q && sudo apt-get install -y -q libjansson-dev libssl-dev pkg-config
+
+      - name: Scala CLI
+        run: |
+          set -euo pipefail
+          curl -fsLo /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz
+          gzip -df /tmp/scala-cli.gz
+          chmod +x /tmp/scala-cli
+          sudo mv /tmp/scala-cli /usr/local/bin/scala-cli
+          scala-cli version
+
+      # --- the invariant: full 12-way consensus (KAT-gated), or the job fails ---
+      - name: Run N-way consensus
+        run: bash tools/run_consensus_fapi.sh --require 12

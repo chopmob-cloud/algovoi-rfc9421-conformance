@@ -12,6 +12,8 @@ runners/dotnet/bin/
 runners/dotnet/obj/
 runners/dotnet-wba/bin/
 runners/dotnet-wba/obj/
+runners/dotnet-fapi/bin/
+runners/dotnet-fapi/obj/
 runners/elixir/_build/
 runners/elixir/deps/
 
@@ -19,6 +21,7 @@ runners/elixir/deps/
 # per-run results and any seal secret are not.
 kaf/cells.results.json
 kaf/cells_wba.results.json
+kaf/cells_fapi.results.json
 kaf/**/*.secret
 
 # C runner build artifacts

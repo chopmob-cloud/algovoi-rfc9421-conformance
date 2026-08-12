@@ -212,6 +212,52 @@ Where the negative battery asks "is this one signature valid?", the Web Bot Auth
 profile asks "does the verifier enforce the deployment rules?", which is what a
 real origin accepting agent traffic has to get right.
 
+## Profile: FAPI 2.0 Message Signing (`fapi_messagesigning_v0`)
+
+A second named industry profile on the same machinery. **FAPI 2.0 Message
+Signing** (OpenID Foundation, financial-grade API) uses RFC 9421 for
+non-repudiation of high-value API calls (UK Open Banking, Berlin Group NextGenPSD2,
+FDX). It is stricter than a merely-valid signature: only **PS256** (RSA-PSS
+SHA-256) and **ES256** (ECDSA P-256) are allowed; the signature MUST cover a
+mandated set of components so the access token and the body are bound (request:
+`@method`, `@target-uri`, `authorization`, `content-digest`; response: `@status`,
+`content-digest`); and when a message has a body a **Content-Digest (RFC 9530)**
+MUST be present, covered, and match the body.
+
+| Section | Each case | Verdict |
+|---|---|---|
+| `fapi_signing_base` | a FAPI request/response with the mandated covered components | the exact RFC 9421 Section 2.5 signing base, byte-for-byte |
+| `fapi_required_coverage` | a message type plus a set of covered components | are all the mandated components covered? |
+| `fapi_content_digest` | a body plus a `Content-Digest` header | does the digest match the body, cover it, and use an allowed hash? |
+| `fapi_alg` | a signature algorithm label | is it one of the FAPI-allowed PS256 / ES256? |
+| `fapi_ps256_verify` | a signing base, signature and RSA key | the RSA-PSS SHA-256 verdict |
+| `fapi_es256_verify` | a signing base, signature and EC key | the ECDSA P-256 verdict, with the high-s malleable twin rejected |
+
+The adversarial focus is the profile's real failure modes: **coverage downgrade**
+(a valid signature that omits `authorization`, so the token is unbound, or
+`content-digest`, so the body is unbound), **body-swap** (a Content-Digest that
+does not match the body, or is present but not covered, or uses a weak hash like
+md5), **algorithm downgrade** (RS256 / HS256 / `none` where only PS256 and ES256
+are allowed), and **ECDSA malleability** (the high-s twin of a valid ES256
+signature, rejected under a strict low-s rule). All keys are fixed test material,
+signatures are frozen once (`vectors/fapi_material_v0.json`, public keys and
+signatures only, the RSA and EC private keys held off-repo), and bodies are
+carried in the corpus, so the battery is fully deterministic.
+
+Assurance matches the other batteries: the corpus is JCS+EdDSA signed
+(`fapi_messagesigning_v0`), `tools/check_kat_fapi.py` re-derives every verdict
+independently (hand-built signing base, first-principles profile rules, PS256 and
+ES256 re-verified with the low-s check re-derived), `tools/run_consensus_fapi.sh
+--require 12` runs the twelve runners fail-closed, and `kaf/run_cells_fapi.sh`
+re-runs each in its pinned Docker image. Latest sealed run
+(`kaf/receipts/fapi_messagesigning_v0.seq1.receipt.json`) binds **full 12-way
+byte-for-byte consensus over 27 cases, 12/12 hermetic cells PASS**, under the same
+KAF seal identity as the negative-battery and Web Bot Auth receipts.
+
+Where Web Bot Auth secures agentic-web traffic, FAPI 2.0 secures the RSA/ECDSA
+financial-grade world, so the two profiles reach the two industries RFC 9421
+signatures matter most in today, on one shared, signed assurance substrate.
+
 ## Adding a language
 
 A runner is a self-contained probe: read the corpus JSON, and for every case
