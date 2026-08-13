@@ -1,0 +1,39 @@
+# cose-wg COSE_Sign1 interop: on every push, reproduce the COSE working group's own
+# example verdicts.
+#
+# External interoperability gate for the CBOR Object Signing stage. Unlike the
+# 12-way consensus (twelve of our runners agree on our crafted corpus), this proves
+# our COSE_Sign1 verifier reproduces the verdicts of the COSE WG's example set
+# (cose-wg/Examples sign1-tests, frozen in vectors/cose_wg_sign1_v0.json).
+# tools/check_cose_wg.py fails closed if our oracle disagrees with our profile
+# verdict or if pycose disagrees with the WG base-spec verdict, and asserts the one
+# deliberate profile hardening (reject alg-in-unprotected).
+#
+# Python-only and fast: our oracle plus the independent pycose library.
+
+name: cose-wg COSE interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cose-interop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  interop:
+    name: COSE_Sign1 (oracle + pycose vs cose-wg examples)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install --quiet pycose cbor2
+      - name: Reproduce the cose-wg COSE_Sign1 example verdicts
+        run: python tools/check_cose_wg.py

@@ -11,6 +11,7 @@
 [![SFV interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv-interop.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv-interop.yml)
 [![JWS](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml)
 [![COSE](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml)
+[![COSE interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose-interop.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose-interop.yml)
 [![ML-DSA](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml)
 [![ACVP interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/acvp.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/acvp.yml)
 [![security](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml)
@@ -459,6 +460,26 @@ implementation (`pycose`) plus an independent `cbor2` canonical check,
 (`kaf/receipts/cose_v0.seq1.receipt.json`) binds **full 12-way byte-for-byte
 consensus over 26 cases, 12/12 hermetic cells PASS**, under the same KAF seal
 identity as the other receipts.
+
+### External interoperability: cose-wg examples
+
+Our COSE_Sign1 verifier also reproduces the **COSE working group's own example
+set** (`cose-wg/Examples`, the `sign1-tests` the reference COSE libraries validate
+against). `vectors/cose_wg_sign1_v0.json` carries those ES256/P-256 vectors verbatim
+(provenance pinned to an exact commit), and `tools/check_cose_wg.py` (CI:
+`cose-interop.yml`) decides every case two ways, fail-closed: our oracle reproduces
+our profile verdict **9/9**, and the independent `pycose` library reproduces the
+WG's base-spec verdict **9/9** (3 accept, 6 reject). Bringing the external-AAD
+vectors in scope is why `verdict()` now folds in RFC 9052 Section 4.4 external
+Additional Authenticated Data.
+
+One divergence from the base spec is **asserted, not hidden**: cose-wg
+`sign-pass-01` carries the `alg` only in the *unprotected* header, which RFC 9052
+permits but our profile rejects, because an unprotected `alg` is not integrity-
+protected and is an algorithm-downgrade surface (our `cose_protected_header` section
+tests exactly this rejection). pycose confirms the base-spec accept; our oracle
+holds the stricter line. We reproduce the WG's examples everywhere their verdict is
+also the safe one, and are deliberately, visibly stricter where it is not.
 
 ## Corpus: post-quantum ML-DSA (`pqc_mldsa_v0`)
 

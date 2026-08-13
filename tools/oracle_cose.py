@@ -226,13 +226,16 @@ _VERIFIERS = {ALG_ES256: _verify_es256, ALG_EDDSA: _verify_eddsa, ALG_PS256: _ve
 # The verdict surface used by the generator
 # ---------------------------------------------------------------------------
 
-def verdict(data: bytes, key: dict):
+def verdict(data: bytes, key: dict, external_aad: bytes = b""):
     """Decide accept/reject for one COSE_Sign1 verified under the held public key.
 
     `data` is the message bytes; `key` is the public COSE key the verifier holds
-    (a dict from the material's `keys` map). Returns (accept: bool, reason: str).
-    The reason is informational; the corpus asserts only the bool, which the
-    independent library re-derives.
+    (a dict from the material's `keys` map). `external_aad` is the externally
+    supplied Additional Authenticated Data (RFC 9052 Section 4.4) the verifier is
+    configured with; it is folded into the Sig_structure preimage and defaults to
+    empty (our corpus does not use it, but the cose-wg interop vectors do).
+    Returns (accept: bool, reason: str). The reason is informational; the corpus
+    asserts only the bool, which the independent library re-derives.
 
     Order of rejection is deliberate: structural parse (which also enforces the
     protected-header determinism), then alg-in-protected, then an unknown crit,
@@ -264,6 +267,6 @@ def verdict(data: bytes, key: dict):
     if key.get("kty") != ALG_KTY[alg]:
         return False, f"alg_key_type_mismatch:alg={alg} kty={key.get('kty')}"
 
-    preimage = sig_structure(protected, payload if payload is not None else b"")
+    preimage = sig_structure(protected, payload if payload is not None else b"", external_aad)
     ok = _VERIFIERS[alg](key, preimage, sig)
     return (ok, "ok" if ok else "signature_invalid")

@@ -1,0 +1,157 @@
+{
+  "note": "cose-wg COSE_Sign1 interop anchors (sign1-tests, ES256/P-256). External interoperability evidence: our COSE_Sign1 verifier reproduces the COSE working group's own example verdicts, cross-checked by pycose. WG public example vectors, carried verbatim; no secrets.",
+  "standard": "RFC 9052 (COSE_Sign1)",
+  "selection": "sign1-tests, COSE_Sign1 single-signer, ES256 / P-256 (pass and fail)",
+  "source": {
+    "repo": "cose-wg/Examples",
+    "path": "sign1-tests",
+    "commit": "9478ee1cbd805b65ef3d4d2599ec3568ab06d346",
+    "commit_date": "2017-04-06T02:18:16Z",
+    "url_base": "https://raw.githubusercontent.com/cose-wg/Examples/9478ee1cbd805b65ef3d4d2599ec3568ab06d346/sign1-tests/",
+    "fetched_at": "2026-08-13"
+  },
+  "counts": {
+    "total": 9,
+    "wg_accept": 3,
+    "wg_reject": 6,
+    "policy_divergences": 1,
+    "uses_external_aad": 1
+  },
+  "cases": [
+    {
+      "name": "sign-fail-01",
+      "title": "sign-fail-01: Wrong CBOR Tag",
+      "cbor_hex": "d903e68443a10126a10442313154546869732069732074686520636f6e74656e742e58408eb33e4ca31d1c465ab05aac34cc6b23d58fef5c083106c4d25a91aef0b0117e2af9a291aa32e14ab834dc56ed2a223444547e01f11d3b0916e5a4c345cacb36",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "",
+      "wg_valid": false,
+      "our_expected_valid": false,
+      "policy_divergence": null
+    },
+    {
+      "name": "sign-fail-02",
+      "title": "sign-fail-02: Change signature",
+      "cbor_hex": "d28443a10126a10442313154546869732069732074686520636f6e74656e742f58408eb33e4ca31d1c465ab05aac34cc6b23d58fef5c083106c4d25a91aef0b0117e2af9a291aa32e14ab834dc56ed2a223444547e01f11d3b0916e5a4c345cacb36",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "",
+      "wg_valid": false,
+      "our_expected_valid": false,
+      "policy_divergence": null
+    },
+    {
+      "name": "sign-fail-03",
+      "title": "sign-fail-03: Change Sign Algorithm",
+      "cbor_hex": "d28445a1013903e6a10442313154546869732069732074686520636f6e74656e742e58408eb33e4ca31d1c465ab05aac34cc6b23d58fef5c083106c4d25a91aef0b0117e2af9a291aa32e14ab834dc56ed2a223444547e01f11d3b0916e5a4c345cacb36",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "",
+      "wg_valid": false,
+      "our_expected_valid": false,
+      "policy_divergence": null
+    },
+    {
+      "name": "sign-fail-04",
+      "title": "sign-fail-04: Change Sign Algorithm",
+      "cbor_hex": "d2844aa10167756e6b6e6f776ea10442313154546869732069732074686520636f6e74656e742e58408eb33e4ca31d1c465ab05aac34cc6b23d58fef5c083106c4d25a91aef0b0117e2af9a291aa32e14ab834dc56ed2a223444547e01f11d3b0916e5a4c345cacb36",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "",
+      "wg_valid": false,
+      "our_expected_valid": false,
+      "policy_divergence": null
+    },
+    {
+      "name": "sign-fail-06",
+      "title": "sign-fail-06: Add protected attribute",
+      "cbor_hex": "d28445a201260300a10442313154546869732069732074686520636f6e74656e742e58408eb33e4ca31d1c465ab05aac34cc6b23d58fef5c083106c4d25a91aef0b0117e2af9a291aa32e14ab834dc56ed2a223444547e01f11d3b0916e5a4c345cacb36",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "",
+      "wg_valid": false,
+      "our_expected_valid": false,
+      "policy_divergence": null
+    },
+    {
+      "name": "sign-fail-07",
+      "title": "sign-fail-07: Remove protected attribute",
+      "cbor_hex": "d28443a10126a10442313154546869732069732074686520636f6e74656e742e58406520bbaf2081d7e0ed0f95f76eb0733d667005f7467cec4b87b9381a6ba1ede8e00df29f32a37230f39a842a54821fdd223092819d7728efb9d3a0080b75380b",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "",
+      "wg_valid": false,
+      "our_expected_valid": false,
+      "policy_divergence": null
+    },
+    {
+      "name": "sign-pass-01",
+      "title": "sign-pass-01: Redo protected",
+      "cbor_hex": "d28441a0a201260442313154546869732069732074686520636f6e74656e742e584087db0d2e5571843b78ac33ecb2830df7b6e0a4d5b7376de336b23c591c90c425317e56127fbe04370097ce347087b233bf722b64072beb4486bda4031d27244f",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "",
+      "wg_valid": true,
+      "our_expected_valid": false,
+      "policy_divergence": "alg is only in the unprotected header; our profile requires the alg in the integrity-protected header (RFC 9052 permits either). An unprotected alg is an algorithm-downgrade surface, so we reject where the base spec accepts."
+    },
+    {
+      "name": "sign-pass-02",
+      "title": "sign-pass-02: External",
+      "cbor_hex": "d28443a10126a10442313154546869732069732074686520636f6e74656e742e584010729cd711cb3813d8d8e944a8da7111e7b258c9bdca6135f7ae1adbee9509891267837e1e33bd36c150326ae62755c6bd8e540c3e8f92d7d225e8db72b8820b",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "11aa22bb33cc44dd55006699",
+      "wg_valid": true,
+      "our_expected_valid": true,
+      "policy_divergence": null
+    },
+    {
+      "name": "sign-pass-03",
+      "title": "sign-pass-03: Remove CBOR Tag",
+      "cbor_hex": "8443a10126a10442313154546869732069732074686520636f6e74656e742e58408eb33e4ca31d1c465ab05aac34cc6b23d58fef5c083106c4d25a91aef0b0117e2af9a291aa32e14ab834dc56ed2a223444547e01f11d3b0916e5a4c345cacb36",
+      "key": {
+        "kty": "EC2",
+        "crv": "P-256",
+        "x_hex": "bac5b11cad8f99f9c72b05cf4b9e26d244dc189f745228255a219a86d6a09eff",
+        "y_hex": "20138bf82dc1b6d562be0fa54ab7804a3a64b6d72ccfed6b6fb6ed28bbfc117e"
+      },
+      "external_hex": "",
+      "wg_valid": true,
+      "our_expected_valid": true,
+      "policy_divergence": null
+    }
+  ]
+}
