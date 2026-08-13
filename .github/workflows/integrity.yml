@@ -1,0 +1,56 @@
+# Stack integrity + reproducibility gate: fail-closed on every push, PR and run.
+#
+# Two proofs that the frozen, signed artifacts in this repository are internally
+# consistent and untampered:
+#
+#   tools/stack_verify.py         every signed corpus head verifies (file sha256
+#                                 == signed head, EdDSA head_jws valid), every
+#                                 provenance hash chain verifies, and every KAF
+#                                 receipt is valid under the one KAF seal identity.
+#   tools/check_reproducibility.py every corpus regenerates byte-identically from
+#                                 its in-repo generator plus the pinned verifier
+#                                 package, or (for frozen off-repo material) its
+#                                 committed digest matches its signed head.
+#
+# Both are fail-closed: any drift, forgery, broken chain, wrong seal identity or
+# non-reproducible corpus exits the job non-zero.
+
+name: stack integrity
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integrity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integrity:
+    name: stack_verify + reproducibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      # stack_verify needs cryptography/pynacl/rfc8785; check_reproducibility runs
+      # the corpus generators, which need the pinned reference verifier packages
+      # plus http-sfv / jwcrypto for the crypto and SFV corpora.
+      - name: Install verification + generator dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet cryptography pynacl rfc8785 http-sfv jwcrypto
+          python -m pip install --quiet -r runners/python/requirements.txt
+
+      - name: Stack self-proving gate
+        run: python tools/stack_verify.py
+
+      - name: Reproducibility gate
+        run: python tools/check_reproducibility.py

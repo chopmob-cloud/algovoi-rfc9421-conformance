@@ -1,0 +1,91 @@
+# Standing security scanner gate: fail-closed on every push, PR and manual run.
+#
+# Mirrors the clean-Docker security audit this repository passed: secret scanning
+# (gitleaks), Python static analysis (bandit), shell linting (shellcheck), Python
+# dependency advisories (pip-audit) and Rust dependency advisories (cargo-audit).
+# Each scanner is fail-closed: a finding, or a missing/failed tool, exits the job
+# non-zero. The committed scanner configs (.gitleaks.toml, .shellcheckrc, the
+# per-runner .cargo/audit.toml ignore files) are honored, so documented, reviewed
+# exceptions (public conformance signatures, verify-only RSA advisories) do not
+# trip the gate while anything new does.
+
+name: security scanners
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: gitleaks + bandit + shellcheck + pip-audit + cargo-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      # 1. Secret scanning via the pinned gitleaks CLI binary (arch-detected).
+      - name: gitleaks (secret scan)
+        run: |
+          set -euo pipefail
+          V=8.18.4
+          case "$(uname -m)" in
+            x86_64) GL_ARCH=x64 ;;
+            aarch64|arm64) GL_ARCH=arm64 ;;
+            *) echo "unsupported arch $(uname -m)"; exit 1 ;;
+          esac
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180 \
+            -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${V}/gitleaks_${V}_linux_${GL_ARCH}.tar.gz"
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks detect --no-git --source . --config .gitleaks.toml
+
+      # 2. Python static analysis. The skips match the audited baseline: B101
+      #    (asserts in tools), B110/B112 (documented try/except/continue in
+      #    scanners), B404/B603/B607 (subprocess use in the consensus drivers).
+      - name: bandit (python static analysis)
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet bandit
+          bandit --skip B101,B110,B112,B404,B603,B607 -r tools runners/python
+
+      # 3. Shell linting over every tracked *.sh (honors .shellcheckrc).
+      - name: shellcheck (shell lint)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -q
+          sudo apt-get install -y -q shellcheck
+          mapfile -t SH < <(git ls-files '*.sh')
+          shellcheck "${SH[@]}"
+
+      # 4. Python dependency advisories for the runner requirements.
+      - name: pip-audit (python dependency advisories)
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet pip-audit
+          pip-audit -r runners/python/requirements.txt
+
+      # 5. Rust dependency advisories in each Rust runner. cargo-audit auto-loads
+      #    the per-crate .cargo/audit.toml ignore file relative to its cwd.
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - name: cargo-audit (rust dependency advisories)
+        run: |
+          set -euo pipefail
+          for crate in runners/rust-sfv runners/rust-jws runners/rust-wba runners/rust-fapi; do
+            echo "::group::cargo audit $crate"
+            ( cd "$crate" && cargo generate-lockfile && cargo audit )
+            echo "::endgroup::"
+          done

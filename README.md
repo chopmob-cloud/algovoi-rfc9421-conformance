@@ -9,6 +9,8 @@
 [![FAPI 2.0](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/fapi.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/fapi.yml)
 [![Structured Fields](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml)
 [![JWS](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml)
+[![security](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml)
+[![integrity](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml)
 [![RFC 9421](./assets/badges/rfc9421.svg)](https://www.rfc-editor.org/rfc/rfc9421.html)
 [![Cross-validated](./assets/badges/languages.svg)](#cross-implementation-validation-matrix)
 [![Cases](./assets/badges/cases.svg)](#the-seven-sections)
@@ -126,6 +128,16 @@ Four axes, each a runnable gate that fails closed:
 `tools/mutation_test.sh` flips one expected verdict per section and requires the
 consensus to go red each time - proving the runners compute verdicts rather than
 echo the corpus (no fail-open runner).
+
+Two stack-level gates prove the whole repository, not just one corpus.
+`tools/stack_verify.py` verifies every corpus in one command: each file sha256
+equals its signed head, each `head_jws` EdDSA signature and provenance chain
+verifies, and every sealed receipt is valid under the one KAF seal identity.
+`tools/check_reproducibility.py` regenerates each corpus from its generator and
+asserts byte-identical output, so a frozen corpus cannot silently drift from the
+code that produced it. Both run in CI (`integrity.yml`), and `security.yml` runs
+the fail-closed scanner suite (gitleaks, bandit, shellcheck, pip-audit,
+cargo-audit) on every push.
 
 ## Running
 
