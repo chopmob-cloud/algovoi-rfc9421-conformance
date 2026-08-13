@@ -33,6 +33,8 @@ import json
 import os
 import sys
 
+import cbor2
+from cbor2 import CBORTag
 from pycose.messages import Sign1Message
 from pycose.keys import EC2Key
 from pycose.keys.curves import P256
@@ -45,7 +47,7 @@ ROOT = os.path.dirname(HERE)
 ANCHORS = (sys.argv[1] if len(sys.argv) > 1
            else os.path.join(ROOT, "vectors", "cose_wg_sign1_v0.json"))
 
-COSE_SIGN1_TAG_BYTE = b"\xd2"  # CBOR tag 18
+COSE_SIGN1_TAG = 18
 
 
 def oracle_accepts(cbor_hex, key, ext_hex):
@@ -59,14 +61,28 @@ def oracle_accepts(cbor_hex, key, ext_hex):
         return False
 
 
+def _mut(x):
+    return list(x) if isinstance(x, (list, tuple)) else x
+
+
 def pycose_accepts(cbor_hex, key, ext_hex):
-    """Base-spec verdict via native pycose. Untagged COSE_Sign1 is wrapped in the
-    tag-18 byte pycose's decode() requires; the alg may sit in either header."""
-    data = bytes.fromhex(cbor_hex)
-    if data[:1] != COSE_SIGN1_TAG_BYTE:
-        data = COSE_SIGN1_TAG_BYTE + data
+    """Base-spec verdict via pycose. Built from the cbor2-decoded array through
+    Sign1Message.from_cose_obj (the same path the KAT uses), which is resilient
+    across cbor2 versions, rather than pycose 1.1.0's cbor2-5-era decode(). A tag,
+    if present, must be COSE_Sign1 (18); an untagged array is accepted (a valid
+    COSE_Sign1 when the type is known from context). The alg may sit in either
+    header, and external AAD (RFC 9052 Section 4.4) is folded in when present."""
     try:
-        msg = Sign1Message.decode(data)
+        top = cbor2.loads(bytes.fromhex(cbor_hex))
+        if isinstance(top, CBORTag):
+            if top.tag != COSE_SIGN1_TAG:
+                return False
+            arr = _mut(top.value)
+        else:
+            arr = _mut(top)
+        if not isinstance(arr, list) or len(arr) != 4:
+            return False
+        msg = Sign1Message.from_cose_obj([arr[0], arr[1], arr[2], arr[3]], True)
         msg.key = EC2Key(crv=P256, x=bytes.fromhex(key["x_hex"]), y=bytes.fromhex(key["y_hex"]))
         if ext_hex:
             msg.external_aad = bytes.fromhex(ext_hex)
