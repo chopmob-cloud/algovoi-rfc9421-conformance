@@ -1,13 +1,15 @@
-# 9-way post-quantum ML-DSA-65 (FIPS 204) consensus: enforce byte-for-byte parity on every push.
+# 12-way post-quantum ML-DSA-65 (FIPS 204) consensus: enforce byte-for-byte parity on every push.
 #
-# Runs the covered language runners against the one frozen, signed pqc_mldsa_v0
+# Runs all twelve language runners against the one frozen, signed pqc_mldsa_v0
 # corpus (ML-DSA-65 verification, NIST FIPS 204 final, 12 cases) via
-# tools/run_consensus_pqc_mldsa.sh --require 9. This is a DOCUMENTED SUBSET, not a
-# fixed 12: ML-DSA-65 verify libraries exist for nine ecosystems (python, node, go,
-# rust, c, java, kotlin, scala, dotnet), backed by six distinct FIPS-204
-# implementation families (liboqs, noble, Cloudflare CIRCL, RustCrypto, Bouncy
-# Castle). ruby, php and elixir are deferred: their pinned runtimes' OpenSSL
-# predates ML-DSA (which arrived in OpenSSL 3.5) and no mature pure library exists.
+# tools/run_consensus_pqc_mldsa.sh --require 12. Nine ecosystems (python, node,
+# go, rust, c, java, kotlin, scala, dotnet) use a native FIPS-204 verify library
+# across six distinct implementation families (liboqs, noble, Cloudflare CIRCL,
+# RustCrypto, Bouncy Castle). ruby, php and elixir have no mature pure library in
+# their pinned runtimes (whose bundled OpenSSL predates ML-DSA, added in OpenSSL
+# 3.5), so they bind the liboqs C reference directly (ruby via the ffi gem, php
+# via ext-ffi, elixir via an Erlang port to a tiny C helper): three more language
+# runtimes on the same six implementation families.
 #
 # The KAT gate (tools/check_kat_pqc_mldsa.py) runs first inside the driver and
 # re-derives every verdict with a separate FIPS-204 implementation (dilithium-py),
@@ -15,7 +17,7 @@
 # interoperable with the earlier round-3 Dilithium; any old-Dilithium library
 # fails the valid control.
 
-name: 9-way ML-DSA (FIPS 204) consensus
+name: 12-way ML-DSA (FIPS 204) consensus
 
 on:
   push:
@@ -32,7 +34,7 @@ concurrency:
 
 jobs:
   consensus:
-    name: pqc_mldsa_v0 (require 9)
+    name: pqc_mldsa_v0 (require 12)
     runs-on: ubuntu-latest
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
@@ -41,7 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # --- nine toolchains (ruby/php/elixir deferred, see header) ---
+      # --- twelve toolchains ---
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
         # liboqs-python builds and bundles liboqs (the reference ML-DSA-65 impl the
@@ -66,6 +68,19 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: "9.0.x" }   # BouncyCastle.Cryptography via PackageReference
+
+      # ruby/php/elixir bind the system liboqs built below (for the C runner);
+      # they need no ML-DSA package, only their runtime + an FFI path.
+      - uses: ruby/setup-ruby@v1
+        with: { ruby-version: "3.3" }
+      - run: gem install ffi   # the ffi gem binds liboqs.so at runtime
+
+      - uses: shivammathur/setup-php@v2
+        with: { php-version: "8.3", extensions: ffi }
+
+      - uses: erlef/setup-beam@v1
+        with: { otp-version: "26", elixir-version: "1.16" }
+      - run: mix local.hex --force   # jason (pure Elixir) for the runner's JSON decode
 
       - name: Kotlin compiler
         run: |
@@ -95,8 +110,8 @@ jobs:
             curl -fsSL $RETRY "$B/$j" -o "runners/kotlin/libs/$(basename "$j")"
           done
 
-      - name: C deps (liboqs build toolchain + jansson, libssl)
-        run: sudo apt-get update -q && sudo apt-get install -y -q cmake ninja-build git libjansson-dev libssl-dev pkg-config
+      - name: C deps (liboqs build toolchain + jansson, libssl; libffi for ruby/php)
+        run: sudo apt-get update -q && sudo apt-get install -y -q cmake ninja-build git libjansson-dev libssl-dev libffi-dev pkg-config
       - name: Build and install liboqs system-wide (for the C runner)
         run: |
           set -euo pipefail
@@ -114,6 +129,6 @@ jobs:
           sudo mv /tmp/scala-cli /usr/local/bin/scala-cli
           scala-cli version
 
-      # --- the invariant: full 9-way consensus (KAT-gated), or the job fails ---
-      - name: Run N-way consensus (documented subset, require 9)
-        run: bash tools/run_consensus_pqc_mldsa.sh --require 9
+      # --- the invariant: full 12-way consensus (KAT-gated), or the job fails ---
+      - name: Run N-way consensus (all twelve languages, require 12)
+        run: bash tools/run_consensus_pqc_mldsa.sh --require 12

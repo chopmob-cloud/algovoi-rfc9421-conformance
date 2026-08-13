@@ -68,10 +68,10 @@ and **[post-quantum ML-DSA](#corpus-post-quantum-ml-dsa-pqc_mldsa_v0)**
 (`pqc_mldsa_v0`, NIST FIPS 204, the sign-and-verify stage carried forward to the
 post-quantum migration). The first three are independence-checked against a
 separate third-party implementation of their own standard (`http_sfv`, `jwcrypto`,
-`pycose`) before the language fan-out; the ML-DSA corpus is validated across a
-documented 9-language subset backed by six distinct FIPS-204 implementations (not
-all twelve languages have a mature ML-DSA library yet). See the Corpus sections
-below.
+`pycose`) before the language fan-out; the ML-DSA corpus is validated across all
+twelve languages, backed by six distinct FIPS-204 implementations (ruby, php and
+elixir bind the liboqs C reference directly, since no mature pure library exists
+for their runtimes yet). See the Corpus sections below.
 
 ## The battery
 
@@ -89,7 +89,7 @@ corpus/
   sfv_v0/                Structured Field Values, RFC 8941, 67 cases, 6 sections (signed + sealed)
   jws_v0/                JSON Web Signature, RFC 7515/7518/8037, 29 cases, 8 sections (signed + sealed)
   cose_v0/               CBOR Object Signing, RFC 9052/9053/8949, 26 cases, 7 sections (signed + sealed)
-  pqc_mldsa_v0/          post-quantum ML-DSA-65, NIST FIPS 204, 12 cases, 2 sections (signed + sealed, 9-way subset)
+  pqc_mldsa_v0/          post-quantum ML-DSA-65, NIST FIPS 204, 12 cases, 2 sections (signed + sealed, full 12-way)
 vectors/                 frozen public test material (fapi/jws/cose/pqc_mldsa _material_v0.json: public keys + signatures/messages only)
 runners/{python,typescript,go,rust,c,java,kotlin,scala,dotnet,ruby,php,elixir}/
   verify_{wba,fapi,sfv,jws,cose}.*  the profiles' and standard corpora's per-language runners (rust-{wba,fapi,sfv,jws,cose}/, dotnet-{wba,fapi,sfv,jws,cose}/)
@@ -455,9 +455,8 @@ migration needs to catch that trap. The frozen signatures were produced with
 liboqs ML-DSA-65 and are independently re-verified; a runner backed by an old
 Dilithium library fails the valid control immediately.
 
-This is a **documented 9-language subset**, not the full twelve, because a mature
-FIPS-204 ML-DSA-65 verify library does not yet exist for every ecosystem, backed by
-six distinct implementation families:
+This is the **full twelve languages**, backed by six distinct FIPS-204
+implementation families:
 
 | Languages | Implementation |
 |---|---|
@@ -466,20 +465,25 @@ six distinct implementation families:
 | go | Cloudflare CIRCL |
 | rust | RustCrypto `ml-dsa` |
 | java, kotlin, scala, dotnet | Bouncy Castle |
+| ruby, php, elixir | liboqs (bound directly via FFI / an Erlang port) |
 
-Ruby, PHP and Elixir are **deferred** (logged in the consensus driver and the
-sealed receipt's `deferred_languages`): their pinned runtimes' OpenSSL predates
-ML-DSA, which arrived in OpenSSL 3.5, and no mature pure library exists yet. No
-silent cap: the receipt states "full 9-way" honestly, and coverage widens as the
-ecosystem's libraries mature.
+Ruby, PHP and Elixir have no mature pure FIPS-204 library in their pinned runtimes
+(whose bundled OpenSSL predates ML-DSA, added in OpenSSL 3.5), so they bind the
+liboqs C reference directly: ruby through the `ffi` gem, php through `ext-ffi`,
+elixir through an Erlang port to a tiny C helper. Each keeps its whole decision
+surface (hex decode, wrong-length rejection) in-language and calls out only for
+the raw verify. Honest framing: this is **twelve language runtimes over six
+distinct implementation families**, not twelve distinct crypto libraries. Those
+three widen the runtime spread on the Cells axis rather than adding a new
+implementation family.
 
 Assurance matches the other batteries: the corpus is JCS+EdDSA signed
 (`pqc_mldsa_v0`), `tools/check_kat_pqc_mldsa.py` re-derives every verdict with a
 separate FIPS-204 implementation (`dilithium-py`),
-`tools/run_consensus_pqc_mldsa.sh --require 9` runs the nine covered runners
+`tools/run_consensus_pqc_mldsa.sh --require 12` runs all twelve runners
 fail-closed, and `kaf/run_cells_pqc_mldsa.sh` re-runs each in its pinned Docker
 image. Latest sealed run (`kaf/receipts/pqc_mldsa_v0.seq1.receipt.json`) binds
-**full 9-way byte-for-byte consensus over 12 cases, 9/9 hermetic cells PASS**, under
+**full 12-way byte-for-byte consensus over 12 cases, 12/12 hermetic cells PASS**, under
 the same KAF seal identity as the other receipts. All keys are fixed test material
 (`vectors/pqc_mldsa_material_v0.json`, public ML-DSA-65 key plus messages and
 signatures only, the private key held off-repo).

@@ -16,26 +16,25 @@
     },
     "axes": {
       "agreement": {
-        "independent_runners": 9,
+        "independent_runners": 12,
         "languages": [
           "c",
           "dotnet",
+          "elixir",
           "go",
           "java",
           "kotlin",
+          "php",
           "python",
+          "ruby",
           "rust",
           "scala",
           "typescript"
         ],
-        "result": "full 9-way byte-for-byte consensus",
+        "result": "full 12-way byte-for-byte consensus",
         "cases": 12,
-        "coverage": "documented subset of mature FIPS-204 ML-DSA-65 verify libraries",
-        "deferred_languages": [
-          "ruby",
-          "php",
-          "elixir"
-        ]
+        "coverage": "full twelve-language consensus across six distinct FIPS-204 ML-DSA-65 implementation families",
+        "deferred_languages": []
       },
       "kat": {
         "corpus_integrity": "matches signed manifest head",
@@ -104,10 +103,31 @@
           "image": "mcr.microsoft.com/dotnet/sdk:9.0",
           "image_digest": "mcr.microsoft.com/dotnet/sdk@sha256:35048e3a81e6a07c316e7bbbd80d80d2ba705fe5f23a8ed42b6638c8f4c20d30",
           "verdict": "PASS"
+        },
+        {
+          "cell": "ruby-33-slim",
+          "lang": "ruby",
+          "image": "ruby:3.3-slim",
+          "image_digest": "ruby@sha256:649a5d3b7ca4f574a5f84a61bd79cdc7cca2bbd1f882fbe6c1eb4fdbc7454738",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "php-83-cli",
+          "lang": "php",
+          "image": "php:8.3-cli",
+          "image_digest": "php@sha256:f62df9916bc05ae3c5120b41a115938f22623b0c98c815cbe2c67bc73cec21ef",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "elixir-116-otp26",
+          "lang": "elixir",
+          "image": "elixir:1.16-otp-26",
+          "image_digest": "elixir@sha256:ca587e096fcf7f1f8f80122705dd6e7ed17dc8b963210af525a4cc07cdbb19b1",
+          "verdict": "PASS"
         }
       ],
-      "cells_passed": 9,
-      "cells_total": 9
+      "cells_passed": 12,
+      "cells_total": 12
     }
   },
   "seal": {
@@ -120,6 +140,6 @@
       "x": "xrHz4BWRsQTQry-L1t8wWI70S7F81M4G2yLwKnPmKAQ",
       "kid": "4bbcedc71692d3dc9491239d2fff1ea2"
     },
-    "sig_b64": "TBbAAa5hgaG6UhjO19axO1rA74XvO/sSDAXaUATt5rJrmi7BCg1Wh07af7rOos/DZXm46qhlW94/qbQM2TobCg=="
+    "sig_b64": "xh1ZBtoWntZI7EM0d+WZ+tFeH+BwTAJrquXNuembp61RiTdypvY7DxNWWrIjSV3L0BA07jKQjhpmN2lELs3TAg=="
   }
 }

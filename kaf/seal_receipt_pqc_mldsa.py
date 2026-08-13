@@ -4,9 +4,9 @@
 Binds the KAF axes this profile proves into one signed, re-verifiable receipt:
 
   - Agreement : the N-way byte-for-byte consensus, DERIVED from the distinct
-                languages whose hermetic cells actually passed (a documented
-                subset: nine covered languages, ruby/php/elixir deferred for lack
-                of a mature FIPS-204 ML-DSA library).
+                languages whose hermetic cells actually passed (the full twelve
+                languages, backed by six distinct FIPS-204 implementation
+                families; ruby/php/elixir bind the liboqs C reference directly).
   - KAT       : the corpus is the exact signed artifact and every verdict is
                 independently re-derivable with a SEPARATE FIPS-204 ML-DSA-65
                 implementation, dilithium-py (tools/check_kat_pqc_mldsa.py).
@@ -35,7 +35,7 @@ from nacl.signing import SigningKey
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEFERRED_LANGUAGES = ["ruby", "php", "elixir"]
+DEFERRED_LANGUAGES: list[str] = []
 
 
 def _b64u(b: bytes) -> str:
@@ -105,7 +105,7 @@ def main() -> int:
                 "languages": independent_langs,
                 "result": f"full {len(independent_langs)}-way byte-for-byte consensus",
                 "cases": total_cases,
-                "coverage": "documented subset of mature FIPS-204 ML-DSA-65 verify libraries",
+                "coverage": "full twelve-language consensus across six distinct FIPS-204 ML-DSA-65 implementation families",
                 "deferred_languages": DEFERRED_LANGUAGES,
             },
             "kat": {"corpus_integrity": "matches signed manifest head",

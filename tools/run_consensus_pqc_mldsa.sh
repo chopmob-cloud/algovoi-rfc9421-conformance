@@ -11,13 +11,16 @@
 #   - fewer than --require runners present -> NOT GREEN;
 #   - any present runner FAIL              -> NOT GREEN.
 #
-# Coverage is a DOCUMENTED SUBSET, not a fixed 12: --require defaults to 9, the
-# count of languages with a mature FIPS-204 (not round-3 Dilithium) ML-DSA-65
-# verify library. ruby, php and elixir are DEFERRED (see the note printed below):
-# no mature FIPS-204 ML-DSA library installs cleanly in their pinned runtimes,
-# whose bundled OpenSSL predates ML-DSA (added in OpenSSL 3.5). The hermetic Docker
-# proof lives in kaf/run_cells_pqc_mldsa.sh; this host driver needs the toolchains
-# and one ML-DSA library per language present locally.
+# Coverage is the full twelve languages: --require defaults to 12. Nine languages
+# use a native FIPS-204 (not round-3 Dilithium) ML-DSA-65 verify library across
+# six distinct implementation families (liboqs, noble, Cloudflare CIRCL,
+# RustCrypto, Bouncy Castle). ruby, php and elixir have no mature pure library in
+# their pinned runtimes (whose bundled OpenSSL predates ML-DSA, added in OpenSSL
+# 3.5), so they bind the liboqs C reference directly (ruby via the ffi gem, php
+# via ext-ffi, elixir via an Erlang port to a tiny C helper): three more
+# independent language runtimes, still within the six implementation families.
+# The hermetic Docker proof lives in kaf/run_cells_pqc_mldsa.sh; this host driver
+# needs the toolchains and one ML-DSA library per language present locally.
 #
 # Usage:  tools/run_consensus_pqc_mldsa.sh [--require N]
 # Env:    ALGOVOI_PQC_MLDSA  corpus path (default: repo corpus)
@@ -25,11 +28,11 @@ set -u
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
 CORPUS="${ALGOVOI_PQC_MLDSA:-$HERE/corpus/pqc_mldsa_v0/pqc_mldsa_v0.json}"
-REQUIRE=9
-[ "${1:-}" = "--require" ] && REQUIRE="${2:-9}"
+REQUIRE=12
+[ "${1:-}" = "--require" ] && REQUIRE="${2:-12}"
 
-LANGS=(python typescript go rust c java kotlin scala dotnet)
-DEFERRED=(ruby php elixir)
+LANGS=(python typescript go rust c java kotlin scala dotnet ruby php elixir)
+DEFERRED=()
 
 have() { command -v "$1" >/dev/null 2>&1; }
 PY="$(command -v python3 || command -v python || true)"
@@ -79,6 +82,20 @@ run_lang() {
       have dotnet || { echo "ABSENT: no dotnet"; return; }
       [ -f "$HERE/runners/dotnet-pqc-mldsa/verify_pqc_mldsa.csproj" ] || { echo "ABSENT: dotnet-pqc-mldsa project not present"; return; }
       ( cd "$HERE/runners/dotnet-pqc-mldsa" && DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 dotnet run -c Release --verbosity quiet -- "$CORPUS" ) >/dev/null 2>&1 && echo PASS || echo FAIL ;;
+    ruby)
+      have ruby || { echo "ABSENT: no ruby"; return; }
+      [ -f "$HERE/runners/ruby/verify_pqc_mldsa.rb" ] || { echo "ABSENT: ruby runner not present"; return; }
+      ruby "$HERE/runners/ruby/verify_pqc_mldsa.rb" "$CORPUS" >/dev/null 2>&1 && echo PASS || echo FAIL ;;
+    php)
+      have php || { echo "ABSENT: no php"; return; }
+      [ -f "$HERE/runners/php/verify_pqc_mldsa.php" ] || { echo "ABSENT: php runner not present"; return; }
+      php -d ffi.enable=1 "$HERE/runners/php/verify_pqc_mldsa.php" "$CORPUS" >/dev/null 2>&1 && echo PASS || echo FAIL ;;
+    elixir)
+      have elixir || { echo "ABSENT: no elixir"; return; }
+      [ -f "$HERE/runners/elixir/verify_pqc_mldsa.exs" ] || { echo "ABSENT: elixir runner not present"; return; }
+      d="$(mktemp -d)"; cp "$HERE/runners/elixir/verify_pqc_mldsa.exs" "$HERE/runners/elixir/mldsa_verify_helper.c" "$d/"
+      ( cd "$d" && elixir verify_pqc_mldsa.exs "$CORPUS" ) >/dev/null 2>&1 && echo PASS || echo FAIL
+      rm -rf "$d" ;;
   esac
 }
 
@@ -109,12 +126,14 @@ for lang in "${LANGS[@]}"; do
   esac
 done
 echo "----------------------------------------------------------------"
-echo "DEFERRED (no mature FIPS-204 ML-DSA-65 library that installs cleanly):"
-for lang in "${DEFERRED[@]}"; do
-  printf "  %-11s %s\n" "$lang" "ABSENT/deferred: bundled OpenSSL predates ML-DSA (OpenSSL 3.5); no pure-language FIPS-204 lib"
-done
-echo "----------------------------------------------------------------"
-echo "present: ${present}/${#LANGS[@]}   passed: ${passed}   require: ${REQUIRE}   deferred: ${#DEFERRED[@]} (ruby php elixir)"
+if [ "${#DEFERRED[@]}" -gt 0 ]; then
+  echo "DEFERRED (no mature FIPS-204 ML-DSA-65 library that installs cleanly):"
+  for lang in "${DEFERRED[@]}"; do
+    printf "  %-11s %s\n" "$lang" "ABSENT/deferred: bundled OpenSSL predates ML-DSA (OpenSSL 3.5); no pure-language FIPS-204 lib"
+  done
+  echo "----------------------------------------------------------------"
+fi
+echo "present: ${present}/${#LANGS[@]}   passed: ${passed}   require: ${REQUIRE}   deferred: ${#DEFERRED[@]}"
 
 if [ -n "$failed_langs" ]; then
   echo "RESULT: NOT GREEN -- consensus FAIL in:${failed_langs}"

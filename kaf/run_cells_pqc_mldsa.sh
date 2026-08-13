@@ -15,11 +15,18 @@
 #   kotlin  Bouncy Castle bcprov-jdk18on 1.81
 #   scala   Bouncy Castle bcprov-jdk18on 1.81
 #   dotnet  BouncyCastle.Cryptography 2.6.1
+#   ruby    liboqs 0.14.0 via the ffi gem (OQS C API)
+#   php     liboqs 0.14.0 via ext-ffi (OQS C API)
+#   elixir  liboqs 0.14.0 via an Erlang port to a tiny C helper (OQS C API)
 #
-# Six distinct FIPS-204 implementation families cover the nine runners (liboqs,
+# Six distinct FIPS-204 implementation families cover the twelve runners (liboqs,
 # noble, circl, RustCrypto, Bouncy Castle), so this is genuine multi-implementation
-# consensus, not one library wrapped everywhere. A round-3 Dilithium build would
-# fail the valid controls; that is the built-in tripwire.
+# consensus, not one library wrapped everywhere. ruby, php and elixir add three
+# more independent language runtimes on the Cells axis: each binds the liboqs C
+# reference directly (its bundled OpenSSL predates ML-DSA and no mature pure
+# library exists), so they widen the runtime spread without adding a new crypto
+# family. A round-3 Dilithium build would fail the valid controls; that is the
+# built-in tripwire.
 #
 # Env:
 #   REPO   conformance repo checkout       (default: this repo)
@@ -32,7 +39,7 @@ CORPUS="${CORPUS:-corpus/pqc_mldsa_v0/pqc_mldsa_v0.json}"
 CORPUS_IN="/work/$CORPUS"
 RESULTS="$HERE/kaf/cells_pqc_mldsa.results.json"
 
-ALL_CELLS="pqc-python node-20-slim go-1.26-bookworm rust-1-slim gcc-14-c temurin-17-java temurin-17-kotlin temurin-17-scala dotnet-sdk-9.0"
+ALL_CELLS="pqc-python node-20-slim go-1.26-bookworm rust-1-slim gcc-14-c temurin-17-java temurin-17-kotlin temurin-17-scala dotnet-sdk-9.0 ruby-33-slim php-83-cli elixir-116-otp26"
 CELLS="${CELLS:-$ALL_CELLS}"
 
 M2="https://repo1.maven.org/maven2"
@@ -51,6 +58,9 @@ image_for() {
     gcc-14-c)          echo "gcc:14-bookworm" ;;
     temurin-17-java|temurin-17-kotlin|temurin-17-scala) echo "eclipse-temurin:17" ;;
     dotnet-sdk-9.0)    echo "mcr.microsoft.com/dotnet/sdk:9.0" ;;
+    ruby-33-slim)      echo "ruby:3.3-slim" ;;
+    php-83-cli)        echo "php:8.3-cli" ;;
+    elixir-116-otp26)  echo "elixir:1.16-otp-26" ;;
   esac
 }
 
@@ -65,6 +75,9 @@ lang_for() {
     temurin-17-kotlin) echo kotlin ;;
     temurin-17-scala) echo scala ;;
     dotnet-sdk-9.0) echo dotnet ;;
+    ruby-33-slim) echo ruby ;;
+    php-83-cli) echo php ;;
+    elixir-116-otp26) echo elixir ;;
   esac
 }
 
@@ -88,6 +101,12 @@ cmd_for() {
       echo 'apt-get update -q >/dev/null && apt-get install -y -q curl >/dev/null && curl -fsLo /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz && gzip -df /tmp/scala-cli.gz && chmod +x /tmp/scala-cli && cp /work/runners/scala/verify_pqc_mldsa.scala /tmp/ && cd /tmp && HOME=/tmp /tmp/scala-cli run --server=false verify_pqc_mldsa.scala -- '"$CORPUS_IN" ;;
     dotnet-sdk-9.0)
       echo 'export HOME=/tmp DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 && mkdir -p /tmp/dn && cp /work/runners/dotnet-pqc-mldsa/Program.cs /work/runners/dotnet-pqc-mldsa/verify_pqc_mldsa.csproj /tmp/dn/ && cd /tmp/dn && dotnet run -c Release --verbosity quiet -- '"$CORPUS_IN" ;;
+    ruby-33-slim)
+      echo 'apt-get update -q >/dev/null && apt-get install -y -q build-essential cmake ninja-build git libffi-dev pkg-config >/dev/null && cd /tmp && git clone --depth 1 --branch '"$LIBOQS"' https://github.com/open-quantum-safe/liboqs >/dev/null 2>&1 && cmake -GNinja -DOQS_MINIMAL_BUILD=SIG_ml_dsa_65 -DOQS_BUILD_ONLY_LIB=ON -DBUILD_SHARED_LIBS=ON -DOQS_USE_OPENSSL=OFF -DCMAKE_BUILD_TYPE=Release -S liboqs -B liboqs/build >/dev/null 2>&1 && ninja -C liboqs/build >/dev/null 2>&1 && ninja -C liboqs/build install >/dev/null 2>&1 && ldconfig && gem install ffi >/dev/null 2>&1 && ruby /work/runners/ruby/verify_pqc_mldsa.rb '"$CORPUS_IN" ;;
+    php-83-cli)
+      echo 'apt-get update -q >/dev/null && apt-get install -y -q build-essential cmake ninja-build git libffi-dev pkg-config >/dev/null && docker-php-ext-install ffi >/dev/null 2>&1 && cd /tmp && git clone --depth 1 --branch '"$LIBOQS"' https://github.com/open-quantum-safe/liboqs >/dev/null 2>&1 && cmake -GNinja -DOQS_MINIMAL_BUILD=SIG_ml_dsa_65 -DOQS_BUILD_ONLY_LIB=ON -DBUILD_SHARED_LIBS=ON -DOQS_USE_OPENSSL=OFF -DCMAKE_BUILD_TYPE=Release -S liboqs -B liboqs/build >/dev/null 2>&1 && ninja -C liboqs/build >/dev/null 2>&1 && ninja -C liboqs/build install >/dev/null 2>&1 && ldconfig && php -d ffi.enable=1 /work/runners/php/verify_pqc_mldsa.php '"$CORPUS_IN" ;;
+    elixir-116-otp26)
+      echo 'apt-get update -q >/dev/null && apt-get install -y -q build-essential cmake ninja-build git >/dev/null && cd /tmp && git clone --depth 1 --branch '"$LIBOQS"' https://github.com/open-quantum-safe/liboqs >/dev/null 2>&1 && cmake -GNinja -DOQS_MINIMAL_BUILD=SIG_ml_dsa_65 -DOQS_BUILD_ONLY_LIB=ON -DBUILD_SHARED_LIBS=ON -DOQS_USE_OPENSSL=OFF -DCMAKE_BUILD_TYPE=Release -S liboqs -B liboqs/build >/dev/null 2>&1 && ninja -C liboqs/build >/dev/null 2>&1 && ninja -C liboqs/build install >/dev/null 2>&1 && ldconfig && export HOME=/tmp MIX_HOME=/tmp/.mix HEX_HOME=/tmp/.hex && mix local.hex --force >/dev/null 2>&1 && mkdir -p /tmp/ex && cp /work/runners/elixir/verify_pqc_mldsa.exs /work/runners/elixir/mldsa_verify_helper.c /tmp/ex/ && cd /tmp/ex && elixir verify_pqc_mldsa.exs '"$CORPUS_IN" ;;
   esac
 }
 
