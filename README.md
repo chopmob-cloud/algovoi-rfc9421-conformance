@@ -11,6 +11,7 @@
 [![JWS](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml)
 [![COSE](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml)
 [![ML-DSA](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml)
+[![ACVP interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/acvp.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/acvp.yml)
 [![security](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml)
 [![integrity](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml)
 [![RFC 9421](./assets/badges/rfc9421.svg)](https://www.rfc-editor.org/rfc/rfc9421.html)
@@ -502,6 +503,24 @@ image. Latest sealed run (`kaf/receipts/pqc_mldsa_v0.seq1.receipt.json`) binds
 the same KAF seal identity as the other receipts. All keys are fixed test material
 (`vectors/pqc_mldsa_material_v0.json`, public ML-DSA-65 key plus messages and
 signatures only, the private key held off-repo).
+
+### External interoperability: NIST ACVP
+
+The 12-way consensus proves twelve of our runners agree on our crafted battery;
+this proves our stack reproduces the verdicts **NIST itself publishes**. The frozen
+anchors in `vectors/pqc_mldsa_acvp_mldsa65_v0.json` are the fifteen pure external
+ML-DSA-65 cases from NIST's ACVP `ML-DSA-sigVer-FIPS204` set (three valid controls,
+twelve crafted rejects; one empty and fourteen non-empty context strings), carried
+verbatim with their upstream provenance pinned to an exact `usnistgov/ACVP-Server`
+commit. `tools/check_acvp_pqc_mldsa.py` (CI: `acvp.yml`) recomputes every one of
+NIST's verdicts with **two independent FIPS-204 implementations** (liboqs via
+`verify_with_ctx_str`, and dilithium-py), and requires both to match NIST across
+every context length. Two independent libraries reproducing the standards body's
+own pass/fail is interoperability with the standard, not agreement with ourselves;
+a round-3 Dilithium library or a verifier that mishandles the FIPS-204 context
+binding fails it. The pre-hash (HashML-DSA) and internal-`mu` ACVP groups are out of
+scope here (liboqs exposes no HashML-DSA verify; internal-`mu` is a distinct
+interface).
 
 ## Adding a language
 

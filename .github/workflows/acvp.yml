@@ -1,0 +1,43 @@
+# NIST ACVP ML-DSA-65 interop: on every push, reproduce NIST's own sigVer verdicts
+# with two independent FIPS-204 implementations.
+#
+# This is the EXTERNAL interoperability gate for the post-quantum stage. Unlike the
+# 12-way consensus (twelve of our runners agree on our crafted corpus), this proves
+# our stack reproduces the pass/fail verdicts NIST itself publishes for FIPS 204
+# ML-DSA-65 signature verification (vectors/pqc_mldsa_acvp_mldsa65_v0.json, pure
+# external interface, empty and non-empty context). tools/check_acvp_pqc_mldsa.py
+# recomputes every verdict with liboqs AND dilithium-py and requires both to match
+# NIST; a round-3 Dilithium library or a context-mishandling verifier fails it.
+#
+# Python-only and fast: no language fan-out, just the two independent FIPS-204
+# libraries against the frozen NIST anchors.
+
+name: NIST ACVP ML-DSA interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acvp-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  interop:
+    name: ACVP ML-DSA-65 sigVer (liboqs + dilithium-py vs NIST)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      # liboqs-python builds and bundles liboqs (the reference ML-DSA-65 impl,
+      # exercised here via verify_with_ctx_str); dilithium-py is the independent
+      # FIPS-204 implementation the second verdict is derived with.
+      - run: python -m pip install --quiet liboqs-python dilithium-py
+      - name: Reproduce NIST ACVP ML-DSA-65 verdicts with two independent libraries
+        run: python tools/check_acvp_pqc_mldsa.py
