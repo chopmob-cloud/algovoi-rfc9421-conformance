@@ -48,3 +48,11 @@ runners/c/verify_sfv
 runners/c/verify_jws
 kaf/cells_sfv.results.json
 kaf/cells_jws.results.json
+
+# cose_v0 runner + cell artifacts
+runners/rust-cose/target/
+runners/dotnet-cose/bin/
+runners/dotnet-cose/obj/
+runners/c/verify_cose
+kaf/cells_cose.results.json
+runners/rust-cose/Cargo.lock

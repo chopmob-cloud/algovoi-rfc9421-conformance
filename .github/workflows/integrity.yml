@@ -42,11 +42,11 @@ jobs:
 
       # stack_verify needs cryptography/pynacl/rfc8785; check_reproducibility runs
       # the corpus generators, which need the pinned reference verifier packages
-      # plus http-sfv / jwcrypto for the crypto and SFV corpora.
+      # plus http-sfv / jwcrypto / cbor2 for the SFV, JWS, and COSE corpora.
       - name: Install verification + generator dependencies
         run: |
           set -euo pipefail
-          python -m pip install --quiet cryptography pynacl rfc8785 http-sfv jwcrypto
+          python -m pip install --quiet cryptography pynacl rfc8785 http-sfv jwcrypto cbor2
           python -m pip install --quiet -r runners/python/requirements.txt
 
       - name: Stack self-proving gate

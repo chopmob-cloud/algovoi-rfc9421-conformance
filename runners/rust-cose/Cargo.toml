@@ -1,0 +1,22 @@
+[package]
+name = "cose-runner"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["AlgoVoi <chopmob@gmail.com>"]
+description = "Rust runner for the COSE_Sign1 corpus (cose_v0). Self-contained; reproduces every verdict in the frozen corpus with a hand-rolled RFC 8949 Section 4.2 canonical CBOR codec."
+
+[[bin]]
+name = "verify_cose"
+path = "src/main.rs"
+
+[dependencies]
+# Versions pinned to the sibling rust-jws / rust-fapi crates so the already-cached
+# crates resolve offline. `rsa` (sha2 feature) does PS256 (RSA-PSS SHA-256, salt 32),
+# `p256` does ES256 (from_sec1_bytes enforces the on-curve check), and
+# `ed25519-dalek` does EdDSA (Ed25519). The CBOR codec is hand-rolled (no cbor crate)
+# so map-key ordering is RFC 8949 Section 4.2 bytewise, matching the frozen corpus.
+serde_json = "1"
+rsa = { version = "0.9", features = ["sha2"] }
+p256 = { version = "0.13", features = ["ecdsa", "arithmetic"] }
+ed25519-dalek = "2"

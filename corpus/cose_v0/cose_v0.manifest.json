@@ -1,0 +1,50 @@
+{
+  "manifest_version": 1,
+  "corpus_id": "cose_v0",
+  "version": "0.1.0",
+  "canonicalizer": "JCS(RFC8785)+EdDSA",
+  "signers": [
+    {
+      "kid": "0105cdec932e3bb72b9b69e62728bad3",
+      "jwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "2WiKpJJHICdjNZ-xKJNx2BoLiUmuzgIoPeNToABr5xo",
+        "kid": "0105cdec932e3bb72b9b69e62728bad3"
+      },
+      "signer_did": "did:web:algovoi.co.uk"
+    }
+  ],
+  "vectors": [],
+  "changelog": [],
+  "custody": "local secret Ed25519 key held off-repo; rotate to KMS/foundation before publish (gated)",
+  "head": {
+    "corpus_id": "cose_v0",
+    "version": "0.1.0",
+    "canonicalizer": "JCS(RFC8785)+EdDSA",
+    "corpus_digest": "sha256:ed4875940fc3788a14cde72a56421bd2b2fb44c2635037ca489fa076709c8278",
+    "file_sha256": "sha256:f9163f95f06335bd5aaf95e83694c9ecaf20f5ed6db1302206445b24f845a28d",
+    "section_counts": {
+      "cose_sig_structure": 2,
+      "cose_deterministic_cbor": 8,
+      "cose_protected_header": 3,
+      "cose_es256_verify": 6,
+      "cose_eddsa_verify": 3,
+      "cose_ps256_verify": 2,
+      "cose_crit": 2
+    },
+    "section_digests": {
+      "cose_sig_structure": "sha256:8327320131c111a3c04a0a60db017f86646f44e38acfb6fc47472a782f600181",
+      "cose_deterministic_cbor": "sha256:58c76706976b6431dbce5fa0c0a4674271098fb97b9e7aa6b2557a8d1f1ef411",
+      "cose_protected_header": "sha256:b55c99d25e2d5f0b25db0a8dd3af1d5c8efba7c7d0d69e15dca975af1a16b09d",
+      "cose_es256_verify": "sha256:46550afab9ffa23860c94e56be938bc258b21cb582e46aec7be71424d213ccb3",
+      "cose_eddsa_verify": "sha256:771cf18f42ca0e2299dd9672512b85df663c981ba09961ef1899c2f9600f3592",
+      "cose_ps256_verify": "sha256:c6efb672e542fc7ffbc61093ad20f0272f2aa3b79c2f69ae992a443ed578423a",
+      "cose_crit": "sha256:1428a0738cb0497e13ec0a8fb67459d82ffef0592a0f818b3de345495119d727"
+    },
+    "total_cases": 26
+  },
+  "head_jws": "eyJhbGciOiJFZERTQSIsImtpZCI6IjAxMDVjZGVjOTMyZTNiYjcyYjliNjllNjI3MjhiYWQzIiwidHlwIjoiY29ycHVzLWhlYWQrandzIn0.eyJjYW5vbmljYWxpemVyIjoiSkNTKFJGQzg3ODUpK0VkRFNBIiwiY29ycHVzX2RpZ2VzdCI6InNoYTI1NjplZDQ4NzU5NDBmYzM3ODhhMTRjZGU3MmE1NjQyMWJkMmIyZmI0NGMyNjM1MDM3Y2E0ODlmYTA3NjcwOWM4Mjc4IiwiY29ycHVzX2lkIjoiY29zZV92MCIsImZpbGVfc2hhMjU2Ijoic2hhMjU2OmY5MTYzZjk1ZjA2MzM1YmQ1YWFmOTVlODM2OTRjOWVjYWYyMGY1ZWQ2ZGIxMzAyMjA2NDQ1YjI0Zjg0NWEyOGQiLCJzZWN0aW9uX2NvdW50cyI6eyJjb3NlX2NyaXQiOjIsImNvc2VfZGV0ZXJtaW5pc3RpY19jYm9yIjo4LCJjb3NlX2VkZHNhX3ZlcmlmeSI6MywiY29zZV9lczI1Nl92ZXJpZnkiOjYsImNvc2VfcHJvdGVjdGVkX2hlYWRlciI6MywiY29zZV9wczI1Nl92ZXJpZnkiOjIsImNvc2Vfc2lnX3N0cnVjdHVyZSI6Mn0sInNlY3Rpb25fZGlnZXN0cyI6eyJjb3NlX2NyaXQiOiJzaGEyNTY6MTQyOGEwNzM4Y2IwNDk3ZTEzZWMwYThmYjY3NDU5ZDgyZmZlZjA1OTJhMGY4MThiM2RlMzQ1NDk1MTE5ZDcyNyIsImNvc2VfZGV0ZXJtaW5pc3RpY19jYm9yIjoic2hhMjU2OjU4Yzc2NzA2OTc2YjY0MzFkYmNlNWZhMGMwYTQ2NzQyNzEwOThmYjk3YjllN2FhNmIyNTU3YThkMWYxZWY0MTEiLCJjb3NlX2VkZHNhX3ZlcmlmeSI6InNoYTI1Njo3NzFjZjE4ZjQyY2EwZTIyOTlkZDk2NzI1MTJiODVkZjY2M2M5ODFiYTA5OTYxZWYxODk5YzJmOTYwMGYzNTkyIiwiY29zZV9lczI1Nl92ZXJpZnkiOiJzaGEyNTY6NDY1NTBhZmFiOWZmYTIzODYwYzk0ZTU2YmU5MzhiYzI1OGIyMWNiNTgyZTQ2YWVjN2JlNzE0MjRkMjEzY2NiMyIsImNvc2VfcHJvdGVjdGVkX2hlYWRlciI6InNoYTI1NjpiNTVjOTlkMjVlMmQ1ZjBiMjVkYjBhOGRkM2FmMWQ1YzhlZmJhN2M3ZDBkNjllMTVkY2E5NzVhZjFhMTZiMDlkIiwiY29zZV9wczI1Nl92ZXJpZnkiOiJzaGEyNTY6YzZlZmI2NzJlNTQyZmM3ZmZiYzYxMDkzYWQyMGYwMjcyZjJhYTNiNzljMmY2OWFlOTkyYTQ0M2VkNTc4NDIzYSIsImNvc2Vfc2lnX3N0cnVjdHVyZSI6InNoYTI1Njo4MzI3MzIwMTMxYzExMWEzYzA0YTBhNjBkYjAxN2Y4NjY0NmY0NGUzOGFjZmI2ZmM0NzQ3MmE3ODJmNjAwMTgxIn0sInRvdGFsX2Nhc2VzIjoyNiwidmVyc2lvbiI6IjAuMS4wIn0.63kicBNJLLf7mpWsWJYsh-wN1ybX_se2I-YqCjnseVheNC3wvbJ0TFZofSrkMgJBefDArjAQ3oRZDRxybTxPCQ",
+  "head_typ": "corpus-head+jws",
+  "signed_at": "2026-08-12T00:00:00Z"
+}

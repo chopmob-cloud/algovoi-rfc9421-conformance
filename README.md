@@ -9,6 +9,7 @@
 [![FAPI 2.0](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/fapi.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/fapi.yml)
 [![Structured Fields](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml)
 [![JWS](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml)
+[![COSE](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml)
 [![security](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml)
 [![integrity](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml)
 [![RFC 9421](./assets/badges/rfc9421.svg)](https://www.rfc-editor.org/rfc/rfc9421.html)
@@ -51,16 +52,20 @@ algorithm restriction), not just whether one signature is valid. See the Profile
 sections below.
 
 The same twelve-language substrate is a bridge across the whole signing flow, not
-only RFC 9421. Two standard-stage corpora extend it to the neighbouring stages,
+only RFC 9421. Three standard-stage corpora extend it to the neighbouring stages,
 each frozen, signed, 12-way and sealed like the rest:
 **[Structured Field Values](#corpus-structured-field-values-sfv_v0)**
 (`sfv_v0`, RFC 8941, the parse and canonical-serialization stage that sits
-underneath Signature-Input and Content-Digest) and
+underneath Signature-Input and Content-Digest),
 **[JSON Web Signature](#corpus-json-web-signature-jws_v0)**
 (`jws_v0`, RFC 7515 / 7518 / 8037, the JOSE sign-and-verify stage, carrying the
-`alg=none`, algorithm-confusion and `crit` negatives). Each is independence-checked
-against a separate third-party implementation of its own standard (`http_sfv` and
-`jwcrypto`) before the language fan-out. See the Corpus sections below.
+`alg=none`, algorithm-confusion and `crit` negatives), and
+**[CBOR Object Signing](#corpus-cbor-object-signing-cose_v0)**
+(`cose_v0`, RFC 9052 / 9053 / 8949, the CBOR counterpart to JOSE: COSE_Sign1 over
+deterministic CBOR, the sign-and-verify stage for the WebAuthn / IoT / mdoc world).
+Each is independence-checked against a separate third-party implementation of its
+own standard (`http_sfv`, `jwcrypto` and `pycose`) before the language fan-out. See
+the Corpus sections below.
 
 ## The battery
 
@@ -77,18 +82,21 @@ corpus/
   fapi_messagesigning_v0/  FAPI 2.0 Message Signing profile, 27 cases, 6 sections (signed + sealed)
   sfv_v0/                Structured Field Values, RFC 8941, 67 cases, 6 sections (signed + sealed)
   jws_v0/                JSON Web Signature, RFC 7515/7518/8037, 29 cases, 8 sections (signed + sealed)
-vectors/                 frozen public test material (fapi_material_v0.json, jws_material_v0.json: public keys + signatures only)
+  cose_v0/               CBOR Object Signing, RFC 9052/9053/8949, 26 cases, 7 sections (signed + sealed)
+vectors/                 frozen public test material (fapi/jws/cose _material_v0.json: public keys + signatures/messages only)
 runners/{python,typescript,go,rust,c,java,kotlin,scala,dotnet,ruby,php,elixir}/
-  verify_{wba,fapi,sfv,jws}.*  the profiles' and standard corpora's per-language runners (rust-{wba,fapi,sfv,jws}/, dotnet-{wba,fapi,sfv,jws}/)
+  verify_{wba,fapi,sfv,jws,cose}.*  the profiles' and standard corpora's per-language runners (rust-{wba,fapi,sfv,jws,cose}/, dotnet-{wba,fapi,sfv,jws,cose}/)
 tools/
   run_consensus.sh       N-way consensus gate (fail-closed --require)
   check_kat.py           KAT integrity gate (signed-head signature + anchors)
+  stack_verify.py        stack-level gate (every corpus head + provenance + receipt under one KAF identity)
+  check_reproducibility.py  determinism gate (regenerate each corpus, assert byte-identical)
   mutation_test.sh       proves the gate is not vacuous
   gen_negative_v1/v2/v3.py   regenerate the corpus from the reference
   sign_negative_v1/v2/v3.py  sign + version via algovoi-corpus-cm
-  {oracle,gen,sign,check_kat,run_consensus}_{wba,fapi,sfv,jws}*  each corpus's oracle / generator / signer / KAT gate / driver
+  {oracle,gen,sign,check_kat,run_consensus}_{wba,fapi,sfv,jws,cose}*  each corpus's oracle / generator / signer / KAT gate / driver
 kaf/                     hermetic runtime cells + EdDSA sealed assurance receipts
-  run_cells_{wba,fapi,sfv,jws}.sh, seal_receipt_{wba,fapi,sfv,jws}.py, receipts/  per-corpus cells + seals
+  run_cells_{wba,fapi,sfv,jws,cose}.sh, seal_receipt_{wba,fapi,sfv,jws,cose}.py, receipts/  per-corpus cells + seals
 assets/  LICENSE  NOTICE  CONTRIBUTING.md
 ```
 
@@ -378,6 +386,48 @@ twelve runners fail-closed, and `kaf/run_cells_jws.sh` re-runs each in its pinne
 Docker image. Latest sealed run (`kaf/receipts/jws_v0.seq1.receipt.json`) binds
 **full 12-way byte-for-byte consensus over 29 cases, 12/12 hermetic cells PASS**,
 under the same KAF seal identity as the other receipts.
+
+## Corpus: CBOR Object Signing (`cose_v0`)
+
+COSE (RFC 9052) is the CBOR counterpart to JOSE: the same sign-and-verify stage of
+the flow, but over CBOR instead of JSON, which is where WebAuthn/FIDO passkeys,
+IoT, and ISO mdoc live. `cose_v0` is a frozen, signed corpus of 26 cases across
+seven sections for COSE_Sign1 (single-signer), the CBOR analog of a compact JWS.
+Scope is RFC 9052 + RFC 9053 (ES256, EdDSA, PS256) + RFC 8949 deterministic CBOR;
+ECDSA low-s is deliberately not enforced (plain COSE permits high-s, so low-s
+stays a FAPI rule), keeping `cose_v0` the version-neutral base.
+
+| Section | Each case | Verdict |
+|---|---|---|
+| `cose_sig_structure` | a COSE_Sign1 signing preimage | the exact `Sig_structure` CBOR bytes `["Signature1", protected, external_aad, payload]`, byte-for-byte |
+| `cose_deterministic_cbor` | a CBOR datum | is it RFC 8949 Section 4.2 canonical (shortest-form ints, definite lengths, bytewise-sorted map keys)? |
+| `cose_protected_header` | a message with `alg` in the protected vs the unprotected header | rejected unless `alg` is in the integrity-protected header |
+| `cose_es256_verify` | ECDSA P-256, incl. wrong-width R\|\|S and off-curve key | the ECDSA verdict over the Sig_structure |
+| `cose_eddsa_verify` | Ed25519, valid and tampered | the EdDSA verdict |
+| `cose_ps256_verify` | RSA-PSS SHA-256, valid and tampered | the RSA verdict |
+| `cose_crit` | an unknown critical header label | rejected |
+
+The adversarial focus is the COSE-specific failure modes: an **unprotected `alg`**
+(an attacker can rewrite an algorithm carried outside the signature), a
+**non-canonical protected header or Sig_structure** (the byte-exact CBOR is the
+signing preimage, so a lenient encoder breaks cross-verification), **key/algorithm
+confusion** (ES256 against an OKP key, and so on), and an unhandled **`crit`**
+label. All keys are fixed test material and the signed messages are frozen once
+(`vectors/cose_material_v0.json`, public COSE keys and crafted messages only, the
+EC/Ed25519/RSA private keys held off-repo), so the battery is fully deterministic.
+Every runner hand-rolls its CBOR codec (a permissive decoder plus an RFC 8949
+Section 4.2 bytewise canonical encoder) so the deterministic-CBOR judgement is
+byte-identical across all twelve languages, since native CBOR libraries diverge on
+map key ordering (bytewise versus the older length-first CTAP2 form).
+
+Assurance matches the other batteries: the corpus is JCS+EdDSA signed (`cose_v0`),
+`tools/check_kat_cose.py` re-derives every verdict with a separate third-party COSE
+implementation (`pycose`) plus an independent `cbor2` canonical check,
+`tools/run_consensus_cose.sh --require 12` runs the twelve runners fail-closed, and
+`kaf/run_cells_cose.sh` re-runs each in its pinned Docker image. Latest sealed run
+(`kaf/receipts/cose_v0.seq1.receipt.json`) binds **full 12-way byte-for-byte
+consensus over 26 cases, 12/12 hermetic cells PASS**, under the same KAF seal
+identity as the other receipts.
 
 ## Adding a language
 
