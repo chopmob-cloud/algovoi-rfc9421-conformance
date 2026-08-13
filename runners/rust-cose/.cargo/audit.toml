@@ -1,0 +1,14 @@
+# cargo-audit configuration for the rust-cose runner.
+#
+# LOCATION: cargo-audit auto-loads its ignore config from `.cargo/audit.toml`
+# (relative to where `cargo audit` runs), not from a bare crate-root audit.toml.
+#
+# RUSTSEC-2023-0071 (Marvin Attack) is a timing sidechannel in the `rsa` crate's
+# PRIVATE-KEY operations (RSA decryption / private-key use). This runner only
+# performs PUBLIC-KEY RSA-PSS SHA-256 *verification* (PS256) of the frozen cose_v0
+# messages: it holds no private key, never decrypts, and is not a network oracle,
+# so the sidechannel has nothing to attack. There is no fixed `rsa` version to
+# upgrade to (Solution: "No fixed upgrade is available"). Documented ignore; the
+# usage is verify-only and out of scope for this advisory.
+[advisories]
+ignore = ["RUSTSEC-2023-0071"]

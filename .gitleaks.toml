@@ -23,6 +23,9 @@ regexes = [
   '''"keyid"\s*:''',
   '''"kid"\s*:''',
   '''"sig_b64"\s*:''',
+  # a `"key"` field names which PUBLIC test key from the material a case verifies
+  # against (a label like "wrong_ed25519"), not a secret value
+  '''"key"\s*:''',
   # env-var NAMES that locate the off-repo signing key (not key values)
   '''KEY_ENV\s*=\s*"ALGOVOI_[A-Z0-9_]*"''',
   '''ALGOVOI_[A-Z0-9_]*_SIGNING_KEY''',
