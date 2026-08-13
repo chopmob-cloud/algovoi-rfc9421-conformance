@@ -53,7 +53,7 @@ jobs:
         with: { node-version: "20" }   # driver installs @noble/post-quantum per run
 
       - uses: actions/setup-go@v5
-        with: { go-version: "1.24" }   # CIRCL v1.6.5 needs a recent Go; GOTOOLCHAIN=local forbids auto-upgrade
+        with: { go-version: "1.25" }   # CIRCL v1.6.5 requires go >= 1.25.0; GOTOOLCHAIN=local forbids auto-upgrade
       - name: Node ML-DSA library (noble, in runners/typescript for the driver)
         run: |
           set -euo pipefail
