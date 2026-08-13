@@ -54,7 +54,7 @@ run_lang() {
       [ -f "$HERE/runners/rust-pqc-mldsa/Cargo.toml" ] || { echo "ABSENT: rust-pqc-mldsa crate not present"; return; }
       ( cd "$HERE/runners/rust-pqc-mldsa" && cargo run -q -- "$CORPUS" ) >/dev/null 2>&1 && echo PASS || echo FAIL ;;
     c)
-      { have cc && pkg-config --exists jansson 2>/dev/null && [ -f /usr/local/include/oqs/oqs.h -o -f /usr/include/oqs/oqs.h ]; } || { echo "ABSENT: no cc/jansson/liboqs"; return; }
+      { have cc && pkg-config --exists jansson 2>/dev/null && { [ -f /usr/local/include/oqs/oqs.h ] || [ -f /usr/include/oqs/oqs.h ]; }; } || { echo "ABSENT: no cc/jansson/liboqs"; return; }
       [ -f "$HERE/runners/c/verify_pqc_mldsa.c" ] || { echo "ABSENT: c runner not present"; return; }
       ( cd "$HERE/runners/c" && cc -O2 -w -o verify_pqc_mldsa verify_pqc_mldsa.c $(pkg-config --cflags --libs jansson) -loqs -lcrypto && ./verify_pqc_mldsa "$CORPUS" ) >/dev/null 2>&1 && echo PASS || echo FAIL ;;
     java)

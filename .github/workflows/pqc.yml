@@ -53,7 +53,11 @@ jobs:
         with: { node-version: "20" }   # driver installs @noble/post-quantum per run
 
       - uses: actions/setup-go@v5
-        with: { go-version: "1.22" }   # driver installs github.com/cloudflare/circl
+        with: { go-version: "1.24" }   # CIRCL v1.6.5 needs a recent Go; GOTOOLCHAIN=local forbids auto-upgrade
+      - name: Node ML-DSA library (noble, in runners/typescript for the driver)
+        run: |
+          set -euo pipefail
+          cd runners/typescript && npm init -y >/dev/null 2>&1 && npm i @noble/post-quantum@0.7.0
 
       - uses: dtolnay/rust-toolchain@stable   # driver builds the ml-dsa crate
 
@@ -93,6 +97,13 @@ jobs:
 
       - name: C deps (liboqs build toolchain + jansson, libssl)
         run: sudo apt-get update -q && sudo apt-get install -y -q cmake ninja-build git libjansson-dev libssl-dev pkg-config
+      - name: Build and install liboqs system-wide (for the C runner)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch 0.14.0 https://github.com/open-quantum-safe/liboqs /tmp/liboqs
+          cmake -GNinja -DOQS_MINIMAL_BUILD=SIG_ml_dsa_65 -DOQS_BUILD_ONLY_LIB=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -S /tmp/liboqs -B /tmp/liboqs/build
+          sudo ninja -C /tmp/liboqs/build install
+          sudo ldconfig
 
       - name: Scala CLI
         run: |
