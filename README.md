@@ -10,6 +10,7 @@
 [![Structured Fields](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml)
 [![SFV interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv-interop.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv-interop.yml)
 [![JWS](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml)
+[![JWS interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws-interop.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws-interop.yml)
 [![COSE](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml)
 [![COSE interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose-interop.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose-interop.yml)
 [![ML-DSA](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml)
@@ -418,6 +419,25 @@ twelve runners fail-closed, and `kaf/run_cells_jws.sh` re-runs each in its pinne
 Docker image. Latest sealed run (`kaf/receipts/jws_v0.seq1.receipt.json`) binds
 **full 12-way byte-for-byte consensus over 29 cases, 12/12 hermetic cells PASS**,
 under the same KAF seal identity as the other receipts.
+
+### External interoperability: JOSE worked examples
+
+Our JWS verifier also reproduces the **JOSE standards' own worked examples**.
+`vectors/jws_interop_v0.json` carries them from two authoritative sources (public
+keys only; no private JWK members or symmetric secrets ship): the **RFC 7520 JOSE
+cookbook** (`ietf-jose/cookbook`, provenance pinned to an exact commit) and the
+**RFC 7515 Appendix A** (ES256, alg=none) and **RFC 8037 Appendix A** (Ed25519)
+worked examples. `tools/check_jws_interop.py` (CI: `jws-interop.yml`) decides each
+two ways, fail-closed: our oracle reproduces all **4/4 in-scope** verdicts (RS256
+via cookbook 4.1, ES256 via RFC 7515 A.3, EdDSA via RFC 8037 A.4, and alg=none
+rejected via RFC 7515 A.5), and the independent `jwcrypto` library verifies every
+authoritative signature and rejects alg=none.
+
+The two out-of-scope cookbook examples (PS384, ES512) are carried deliberately: our
+verifier covers RS256/ES256/EdDSA, so it **rejects them as unsupported** (a correct
+scope decision, asserted with the `unsupported_alg` reason, not a mis-verification),
+while jwcrypto still verifies them, confirming the vectors are genuine and our
+rejection is scope, not error.
 
 ## Corpus: CBOR Object Signing (`cose_v0`)
 

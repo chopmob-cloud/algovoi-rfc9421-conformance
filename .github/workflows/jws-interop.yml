@@ -1,0 +1,38 @@
+# JOSE JWS interop: on every push, reproduce the JOSE standards' own worked examples.
+#
+# External interoperability gate for the JSON Web Signature stage. Unlike the 12-way
+# consensus (twelve of our runners agree on our crafted corpus), this proves our JWS
+# verifier reproduces the JOSE standards' authoritative vectors (RFC 7520 cookbook +
+# RFC 7515 / RFC 8037 appendix examples, frozen in vectors/jws_interop_v0.json).
+# tools/check_jws_interop.py fails closed if our oracle disagrees with the in-scope
+# verdict (RS256/ES256/EdDSA, alg=none rejected) or accepts an out-of-scope alg, or
+# if jwcrypto disagrees with the authoritative signed/none verdict.
+#
+# Python-only and fast: our oracle plus the independent jwcrypto library.
+
+name: JOSE JWS interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jws-interop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  interop:
+    name: JWS RFC 7520/7515/8037 (oracle + jwcrypto)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install --quiet jwcrypto
+      - name: Reproduce the JOSE JWS worked examples
+        run: python tools/check_jws_interop.py
