@@ -34,7 +34,11 @@ CORPUS_DIR = os.path.join(REPO, "corpus", "pqc_mldsa_v0")
 CORPUS = os.path.join(CORPUS_DIR, "pqc_mldsa_v0.json")
 
 CORPUS_ID = "pqc_mldsa_v0"
-VERSION = "0.1.0"
+# 0.2.0: adversarial-hardening superset -- adds the FIPS-204 domain-separation
+# negatives (context-string and HashML-DSA pre-hash) and the structural /
+# degenerate-key right-length rejections to mldsa65_verify (0.1.0 was the
+# accept/tamper/wrong-length base).
+VERSION = "0.2.0"
 CANONICALIZER = "JCS(RFC8785)+EdDSA"
 HEAD_TYP = "corpus-head+jws"
 TS = "2026-08-13T00:00:00Z"
@@ -92,7 +96,9 @@ def main() -> int:
     log = ProvenanceLog(issuer_id="did:web:algovoi.co.uk")
     log.append({"event": "sign_corpus_head", "corpus_id": CORPUS_ID, "version": VERSION,
                 "corpus_digest": head["corpus_digest"], "signer_kid": key.kid, "ts": TS,
-                "note": "local dev-key signing; foundation/KMS custody and publish are gated"})
+                "note": ("adversarial-hardening superset (domain-separation + structural / "
+                         "degenerate-key negatives); local dev-key signing; foundation/KMS "
+                         "custody and publish are gated")})
 
     assert verify_jws(head_jws, lambda kid: jwk, expected_typ=HEAD_TYP) == head, "head JWS mismatch"
     assert digest(json.loads(open(CORPUS, "rb").read())) == head["corpus_digest"], "digest drift"

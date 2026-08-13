@@ -48,6 +48,58 @@ MESSAGES = {
     "short": b"ML-DSA-65 FIPS-204 conformance anchor",
 }
 
+# Domain-separation adversarial material. Unlike the main controls (off-repo
+# randomised signer), this is a DETERMINISTIC throwaway keypair derived from a
+# fixed public seed with a separate FIPS-204 implementation (dilithium-py), so it
+# regenerates byte-identically and needs no off-repo secret: it exists only to
+# produce signatures crafted to be REJECTED (plus one positive control proving the
+# key works), which carry no secrecy value. It proves FIPS-204 domain separation:
+# a context-string signature and a HashML-DSA-65 (pre-hash) signature over the SAME
+# key and message must NOT verify under pure, empty-context ML-DSA-65 -- exactly
+# the confusion a lenient verifier (or a round-3 Dilithium port) would accept.
+DOMAINSEP_SEED = bytes([0xA5]) * 48
+DOMAINSEP_CTX = b"algovoi-rfc9421"
+
+
+def freeze_domain_sep(primary_msg_hex: str) -> dict:
+    """Deterministically derive the domain-separation material from a fixed seed and
+    an independent FIPS-204 implementation (dilithium-py). Asserts, with liboqs
+    (the oracle's implementation), that the pure control accepts and both the
+    context-string and pre-hash signatures reject under pure empty-context verify,
+    so the frozen material can only encode a genuine domain-separation split."""
+    import oqs
+    from dilithium_py.ml_dsa import ML_DSA_65, HASH_ML_DSA_65_WITH_SHA512 as H
+
+    msg = bytes.fromhex(primary_msg_hex)
+    ML_DSA_65.set_drbg_seed(DOMAINSEP_SEED)
+    pk, sk = ML_DSA_65.keygen()
+    pure = ML_DSA_65.sign(sk, msg, deterministic=True)
+    context = ML_DSA_65.sign(sk, msg, ctx=DOMAINSEP_CTX, deterministic=True)
+    try:
+        prehash = H.sign(sk, msg, deterministic=True)
+    except TypeError:  # older dilithium-py without the deterministic kwarg on HashML-DSA
+        prehash = H.sign(sk, msg)
+
+    if len(pk) != O.PK_LEN or any(len(s) != O.SIG_LEN for s in (pure, context, prehash)):
+        raise SystemExit("domain-sep material has a non-FIPS-204 length")
+    with oqs.Signature(O.MECHANISM) as v:  # cross-check against the oracle's implementation
+        if not v.verify(msg, pure, pk):
+            raise SystemExit("domain-sep pure control does not verify (bad key/material)")
+        if v.verify(msg, context, pk) or v.verify(msg, prehash, pk):
+            raise SystemExit("domain-sep negative unexpectedly verifies under pure ML-DSA-65")
+
+    return {
+        "note": ("Deterministic throwaway negative-vector key (fixed public seed), "
+                 "distinct from the off-repo main signer, no secrecy value. Proves "
+                 "FIPS-204 domain separation: the pure control accepts; the "
+                 "context-string and HashML-DSA-65 signatures over the SAME key and "
+                 "message reject under pure empty-context ML-DSA-65 verify."),
+        "seed_hex": DOMAINSEP_SEED.hex(),
+        "context_label": DOMAINSEP_CTX.decode("ascii"),
+        "public_key_hex": pk.hex(),
+        "signatures": {"pure": pure.hex(), "context": context.hex(), "prehash": prehash.hex()},
+    }
+
 
 def load_or_create_keys():
     """Return (public_key, secret_key, wrong_public_key, created). The secret key
@@ -119,7 +171,18 @@ def _assert_fips204(pk: bytes, sig_hex: dict) -> None:
 
 def main() -> int:
     if os.path.exists(OUT):
-        print("frozen material already present, leaving untouched:", OUT)
+        # The main frozen material (off-repo randomised signer) is preserved
+        # exactly; only the deterministic domain-separation material is added if a
+        # prior freeze predates it. Nothing that needs the off-repo key is touched.
+        material = json.load(open(OUT, encoding="utf-8"))
+        if "domain_separation" not in material:
+            material["domain_separation"] = freeze_domain_sep(material["messages"]["primary"])
+            with open(OUT, "w", encoding="utf-8", newline="\n") as fh:
+                json.dump(material, fh, indent=2, ensure_ascii=False)
+                fh.write("\n")
+            print("augmented frozen material with deterministic domain-separation vectors:", OUT)
+        else:
+            print("frozen material already complete, leaving untouched:", OUT)
         return 0
 
     pk, sk, wrong_pk, created = load_or_create_keys()
@@ -139,6 +202,7 @@ def main() -> int:
         "message_text_preview": {name: (msg.decode("utf-8", "replace") if msg else "")
                                  for name, msg in MESSAGES.items()},
         "signatures": signatures,
+        "domain_separation": freeze_domain_sep(MESSAGES["primary"].hex()),
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as fh:

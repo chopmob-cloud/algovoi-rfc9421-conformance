@@ -89,7 +89,7 @@ corpus/
   sfv_v0/                Structured Field Values, RFC 8941, 67 cases, 6 sections (signed + sealed)
   jws_v0/                JSON Web Signature, RFC 7515/7518/8037, 29 cases, 8 sections (signed + sealed)
   cose_v0/               CBOR Object Signing, RFC 9052/9053/8949, 26 cases, 7 sections (signed + sealed)
-  pqc_mldsa_v0/          post-quantum ML-DSA-65, NIST FIPS 204, 12 cases, 2 sections (signed + sealed, full 12-way)
+  pqc_mldsa_v0/          post-quantum ML-DSA-65, NIST FIPS 204, 21 cases, 2 sections (signed + sealed, full 12-way; domain-sep + structural adversarial)
 vectors/                 frozen public test material (fapi/jws/cose/pqc_mldsa _material_v0.json: public keys + signatures/messages only)
 runners/{python,typescript,go,rust,c,java,kotlin,scala,dotnet,ruby,php,elixir}/
   verify_{wba,fapi,sfv,jws,cose}.*  the profiles' and standard corpora's per-language runners (rust-{wba,fapi,sfv,jws,cose}/, dotnet-{wba,fapi,sfv,jws,cose}/)
@@ -440,9 +440,10 @@ identity as the other receipts.
 
 ML-DSA (NIST FIPS 204, final August 2024) is the standardised lattice signature of
 the post-quantum era, and this corpus carries the bridge's sign-and-verify stage
-forward to it. `pqc_mldsa_v0` is a frozen, signed corpus of 12 cases across two
-sections for ML-DSA-65 verification: `mldsa65_verify` (valid controls accept;
-tampered signature, altered message, cross-message and wrong-key all reject) and
+forward to it. `pqc_mldsa_v0` is a frozen, signed corpus of 21 cases across two
+sections for ML-DSA-65 verification: `mldsa65_verify` (the valid controls accept;
+tampered signature, altered message, cross-message and wrong-key all reject; the
+domain-separation and structural adversarial negatives below) and
 `mldsa65_malformed` (wrong-length or empty signature and public key all reject
 before any verify).
 
@@ -454,6 +455,20 @@ identically across independent FIPS-204 implementations is exactly what the
 migration needs to catch that trap. The frozen signatures were produced with
 liboqs ML-DSA-65 and are independently re-verified; a runner backed by an old
 Dilithium library fails the valid control immediately.
+
+**Adversarial coverage.** Two of the negatives are genuine verdict distinguishers,
+aimed squarely at the migration trap: a signature made with a **non-empty context
+string** and a **HashML-DSA-65 (SHA-512 pre-hash)** signature, both over the same
+key and message as a passing pure control, must reject under pure empty-context
+ML-DSA-65. A lenient verifier that ignores the context, or a round-3 Dilithium port
+that has no domain separation at all, would wrongly accept them; every FIPS-204
+runtime here rejects. The remaining structural negatives (all-zero and all-`0xFF`
+right-length signatures, `z`-region and hint-region byte tampers, all-zero and
+garbage right-length public keys) are decode-robustness and reject-consistency
+coverage: they are stated honestly as *not* forgery distinguishers (a norm-bound or
+hint bypass is caught by the challenge recomputation regardless), but they prove
+every one of the twelve runtimes decodes a malformed-but-right-length input and
+rejects it uniformly, without diverging or crashing.
 
 This is the **full twelve languages**, backed by six distinct FIPS-204
 implementation families:
@@ -483,7 +498,7 @@ separate FIPS-204 implementation (`dilithium-py`),
 `tools/run_consensus_pqc_mldsa.sh --require 12` runs all twelve runners
 fail-closed, and `kaf/run_cells_pqc_mldsa.sh` re-runs each in its pinned Docker
 image. Latest sealed run (`kaf/receipts/pqc_mldsa_v0.seq1.receipt.json`) binds
-**full 12-way byte-for-byte consensus over 12 cases, 12/12 hermetic cells PASS**, under
+**full 12-way byte-for-byte consensus over 21 cases, 12/12 hermetic cells PASS**, under
 the same KAF seal identity as the other receipts. All keys are fixed test material
 (`vectors/pqc_mldsa_material_v0.json`, public ML-DSA-65 key plus messages and
 signatures only, the private key held off-repo).

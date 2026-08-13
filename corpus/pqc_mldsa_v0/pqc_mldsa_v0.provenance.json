@@ -5,16 +5,16 @@
       "chain_seq": 0,
       "issuer_id": "did:web:algovoi.co.uk",
       "prev_receipt_hash": "",
-      "receipt_hash": "sha256:40bb1cf23c7a2faf3627fb42a22451d1a8aa95d0019e2e263216a487de3dbf03",
-      "chain_ref": "sha256:baea83dc969301ab83780affd2ef78982980aca8f19a82d77bf25c1cb155919a",
+      "receipt_hash": "sha256:a82a144a30869eb0f7f2a6c471760fb0826411e77ccea05a5acb039276bf8bb6",
+      "chain_ref": "sha256:bc03a4c51d4f22ffa1d0fd000bb4321e14ad63f7756a296f624cdc1e979d294c",
       "payload": {
         "event": "sign_corpus_head",
         "corpus_id": "pqc_mldsa_v0",
-        "version": "0.1.0",
-        "corpus_digest": "sha256:e6357c24804a50dd1416c4abffffe521d0c6822d01fabb30dea6534d0dbb6ef8",
+        "version": "0.2.0",
+        "corpus_digest": "sha256:7222f4e98e3e1559ab677c2a5def8a99573718df9aa9decd381c7526c6da75bc",
         "signer_kid": "7c072a9cb9ad3d0ee19ea454f120d639",
         "ts": "2026-08-13T00:00:00Z",
-        "note": "local dev-key signing; foundation/KMS custody and publish are gated"
+        "note": "adversarial-hardening superset (domain-separation + structural / degenerate-key negatives); local dev-key signing; foundation/KMS custody and publish are gated"
       }
     }
   ]

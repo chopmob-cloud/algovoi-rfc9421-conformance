@@ -43,8 +43,12 @@ ACVP_SECTION = "mldsa65_acvp_kat"
 
 
 def _flip_first_byte(hexstr: str) -> str:
+    return _flip_byte_at(hexstr, 0)
+
+
+def _flip_byte_at(hexstr: str, idx: int) -> str:
     b = bytearray(bytes.fromhex(hexstr))
-    b[0] ^= 0x01
+    b[idx] ^= 0x01
     return bytes(b).hex()
 
 
@@ -57,11 +61,29 @@ def _extend(hexstr: str, add: int) -> str:
     return (bytes.fromhex(hexstr) + b"\x00" * add).hex()
 
 
+def _const_sig(byte_val: int) -> str:
+    """A right-length (FIPS-204 3309) signature of a single repeated byte: a
+    structurally degenerate value that must reach the verify and be rejected, not
+    caught by the length gate."""
+    return (bytes([byte_val]) * O.SIG_LEN).hex()
+
+
+def _garbage_pk() -> str:
+    """A deterministic right-length (FIPS-204 1952) but meaningless public key: a
+    well-sized key that no signature was produced under, so every valid signature
+    must reject against it."""
+    return bytes(((i * 7 + 3) & 0xFF) for i in range(O.PK_LEN)).hex()
+
+
 def build(m, acvp):
     pk = m["public_key_hex"]
     wrong_pk = m["wrong_public_key_hex"]
     msg = m["messages"]
     sig = m["signatures"]
+    ds = m["domain_separation"]
+    ds_pk = ds["public_key_hex"]
+    ds_sig = ds["signatures"]
+    ds_ctx = ds["context_label"]
 
     corpus = {
         "name": "pqc_mldsa_v0",
@@ -69,8 +91,14 @@ def build(m, acvp):
                         "ML-DSA-65 signature verification (NIST FIPS 204 final, 2024): "
                         "the valid-signature accept controls, the tamper rejections "
                         "(flipped signature byte, altered message, wrong public key), "
-                        "and the malformed-input rejections (wrong-length signature or "
-                        "public key, empty signature). This is the post-quantum "
+                        "the malformed-input rejections (wrong-length signature or "
+                        "public key, empty signature), the FIPS-204 domain-separation "
+                        "negatives (a non-empty context-string signature and a "
+                        "HashML-DSA-65 pre-hash signature that both reject under pure "
+                        "empty-context verify), and the structural / degenerate-key "
+                        "rejections (all-zero and all-0xFF right-length signatures, "
+                        "z-region and hint-region tampers, all-zero and garbage "
+                        "right-length public keys). This is the post-quantum "
                         "sign/verify stage of the signing-flow bridge, the ML-DSA "
                         "sibling of the classical jws_v0 / cose_v0 corpora. FIPS 204 "
                         "final ML-DSA is NOT interoperable with round-3 Dilithium."),
@@ -92,7 +120,21 @@ def build(m, acvp):
                 "a one-byte-tampered signature is rejected",
                 "a signature verified against an altered message is rejected",
                 "a signature verified under the wrong public key is rejected",
+                "a non-empty context-string signature is rejected under pure empty-context verify (FIPS-204 domain separation)",
+                "a HashML-DSA-65 pre-hash signature is rejected under pure ML-DSA-65 verify (algorithm/domain separation)",
+                "an all-zero or all-0xFF right-length signature reaches the verify and is rejected, not caught by the length gate",
+                "a z-region and a hint-region single-byte tamper are both rejected",
+                "an all-zero or garbage right-length public key reaches the verify and is rejected uniformly, without erroring out",
             ],
+            "adversarial_notes": (
+                "The domain-separation negatives are genuine verdict distinguishers: a "
+                "lenient verifier that ignores the context string, or a round-3 Dilithium "
+                "port that lacks FIPS-204 domain separation, would WRONGLY accept them. "
+                "The structural-signature and degenerate-key negatives are rejected by "
+                "every FIPS-204 implementation via the challenge recomputation; they are "
+                "not forgery distinguishers (a norm-bound or hint bypass is caught by the "
+                "challenge check regardless) but decode-robustness and reject-consistency "
+                "coverage across all twelve runtimes."),
             "documented_divergences": [],
         },
     }
@@ -122,6 +164,47 @@ def build(m, acvp):
         {"public_key": wrong_pk, "message": msg["primary"], "signature": sig["primary"],
          "expect_valid": False,
          "note": "valid signature verified under a different (wrong) ML-DSA-65 public key, rejects"},
+
+        # -- domain separation (FIPS-204's headline change vs round-3 Dilithium):
+        #    same throwaway key + same message; only the signing domain differs. A
+        #    lenient verifier that ignores the context string, or a round-3 port
+        #    without domain separation, would WRONGLY accept the two negatives.
+        {"public_key": ds_pk, "message": msg["primary"], "signature": ds_sig["pure"],
+         "expect_valid": True,
+         "note": "domain-sep control: pure empty-context ML-DSA-65 signature, accepts"},
+        {"public_key": ds_pk, "message": msg["primary"], "signature": ds_sig["context"],
+         "expect_valid": False,
+         "note": (f"domain separation: signature made with a non-empty context string "
+                  f"({ds_ctx!r}) rejects under pure empty-context ML-DSA-65 verify")},
+        {"public_key": ds_pk, "message": msg["primary"], "signature": ds_sig["prehash"],
+         "expect_valid": False,
+         "note": ("domain separation: a HashML-DSA-65 (SHA-512 pre-hash) signature "
+                  "rejects under pure ML-DSA-65 verify")},
+
+        # -- structural signatures: right length (reach the verify, not the length
+        #    gate), degenerate or region-tampered content; every implementation
+        #    must decode and reject without diverging or crashing.
+        {"public_key": pk, "message": msg["primary"], "signature": _const_sig(0x00),
+         "expect_valid": False,
+         "note": "all-zero signature of the correct FIPS-204 length, rejects"},
+        {"public_key": pk, "message": msg["primary"], "signature": _const_sig(0xFF),
+         "expect_valid": False,
+         "note": "all-0xFF signature of the correct FIPS-204 length, rejects"},
+        {"public_key": pk, "message": msg["primary"], "signature": _flip_byte_at(sig["primary"], 100),
+         "expect_valid": False,
+         "note": "signature byte flipped in the z-vector region (offset 100), rejects"},
+        {"public_key": pk, "message": msg["primary"], "signature": _flip_byte_at(sig["primary"], O.SIG_LEN - 9),
+         "expect_valid": False,
+         "note": "signature byte flipped in the hint region (near end), rejects"},
+
+        # -- malformed-but-right-length public key: passes the length gate, reaches
+        #    the verify, and must reject (not error out) uniformly.
+        {"public_key": ("00" * O.PK_LEN), "message": msg["primary"], "signature": sig["primary"],
+         "expect_valid": False,
+         "note": "all-zero public key of the correct FIPS-204 length, rejects"},
+        {"public_key": _garbage_pk(), "message": msg["primary"], "signature": sig["primary"],
+         "expect_valid": False,
+         "note": "deterministic garbage public key of the correct FIPS-204 length, rejects"},
     ]
 
     # -- mldsa65_malformed: structural rejection before any verify -------------
