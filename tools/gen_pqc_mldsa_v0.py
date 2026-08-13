@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+"""Deterministically generate the post-quantum ML-DSA-65 corpus (pqc_mldsa_v0).
+
+Consumes the frozen public material (vectors/pqc_mldsa_material_v0.json) and stamps
+every expected verdict with tools/oracle_pqc_mldsa.py, the single reference decision
+surface (liboqs FIPS-204 ML-DSA-65 verify). The python runner re-uses that surface
+(python is the reference language); the KAT gate (tools/check_kat_pqc_mldsa.py)
+re-derives every verdict with a SEPARATE FIPS-204 ML-DSA-65 implementation
+(dilithium-py), so a corpus that merely agrees with our own surface cannot pass,
+and a Dilithium-vs-ML-DSA mismatch is caught.
+
+Every case is fully self-describing: it carries the public key, the message, and
+the signature as hex, an `expect_valid` bool, and a `note`. Negatives are
+tamperings of the frozen valid material (flipped signature byte, altered message,
+wrong public key) and malformed inputs (wrong-length signature / public key, empty
+signature). Deterministic and LF-only for a byte-stable signed digest.
+
+Optional NIST ACVP anchors: if vectors/pqc_mldsa_acvp_anchors.json is present (a
+small set of official ML-DSA-65 sigVer known-answer vectors), an mldsa65_acvp_kat
+section is emitted. Stage-1 does not block on ACVP; absent that file the section is
+omitted with the corpus noting so.
+
+Run (needs liboqs / the oqs package):  python tools/gen_pqc_mldsa_v0.py
+"""
+from __future__ import annotations
+
+import json
+import os
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import oracle_pqc_mldsa as O  # noqa: E402
+
+REPO = os.path.dirname(HERE)
+MATERIAL = os.path.join(REPO, "vectors", "pqc_mldsa_material_v0.json")
+ACVP = os.path.join(REPO, "vectors", "pqc_mldsa_acvp_anchors.json")
+OUT_DIR = os.path.join(REPO, "corpus", "pqc_mldsa_v0")
+OUT = os.path.join(OUT_DIR, "pqc_mldsa_v0.json")
+
+BASE_SECTIONS = ("mldsa65_verify", "mldsa65_malformed")
+ACVP_SECTION = "mldsa65_acvp_kat"
+
+
+def _flip_first_byte(hexstr: str) -> str:
+    b = bytearray(bytes.fromhex(hexstr))
+    b[0] ^= 0x01
+    return bytes(b).hex()
+
+
+def _truncate(hexstr: str, drop: int) -> str:
+    b = bytes.fromhex(hexstr)
+    return b[:len(b) - drop].hex()
+
+
+def _extend(hexstr: str, add: int) -> str:
+    return (bytes.fromhex(hexstr) + b"\x00" * add).hex()
+
+
+def build(m, acvp):
+    pk = m["public_key_hex"]
+    wrong_pk = m["wrong_public_key_hex"]
+    msg = m["messages"]
+    sig = m["signatures"]
+
+    corpus = {
+        "name": "pqc_mldsa_v0",
+        "description": ("Signed cross-language conformance battery for post-quantum "
+                        "ML-DSA-65 signature verification (NIST FIPS 204 final, 2024): "
+                        "the valid-signature accept controls, the tamper rejections "
+                        "(flipped signature byte, altered message, wrong public key), "
+                        "and the malformed-input rejections (wrong-length signature or "
+                        "public key, empty signature). This is the post-quantum "
+                        "sign/verify stage of the signing-flow bridge, the ML-DSA "
+                        "sibling of the classical jws_v0 / cose_v0 corpora. FIPS 204 "
+                        "final ML-DSA is NOT interoperable with round-3 Dilithium."),
+        "profile": "pqc-ml-dsa",
+        "policy": {
+            "spec": O.SPEC,
+            "parameter_set": O.MECHANISM,
+            "context_string": "empty (pure ML-DSA variant)",
+            "lengths": {"public_key": O.PK_LEN, "signature": O.SIG_LEN},
+            "fips204_not_dilithium": ("FIPS 204 (final, 2024) added domain separation and "
+                                      "revised encodings; an ML-DSA-65 signature does NOT "
+                                      "verify under a round-3 Dilithium3 verifier and vice "
+                                      "versa. Every implementation here is FIPS-204 final "
+                                      "ML-DSA-65, cross-checked by an independent FIPS-204 "
+                                      "library in the KAT gate."),
+            "security_rules": [
+                "a wrong-length public key is rejected before verify",
+                "a wrong-length signature (empty included) is rejected before verify",
+                "a one-byte-tampered signature is rejected",
+                "a signature verified against an altered message is rejected",
+                "a signature verified under the wrong public key is rejected",
+            ],
+            "documented_divergences": [],
+        },
+    }
+    for s in BASE_SECTIONS:
+        corpus[s] = []
+
+    # -- mldsa65_verify: accept controls + cryptographic rejections ------------
+    corpus["mldsa65_verify"] = [
+        {"public_key": pk, "message": msg["primary"], "signature": sig["primary"],
+         "expect_valid": True,
+         "note": "valid ML-DSA-65 control (primary message), accepts"},
+        {"public_key": pk, "message": msg["empty"], "signature": sig["empty"],
+         "expect_valid": True,
+         "note": "valid ML-DSA-65 signature over the empty message, accepts"},
+        {"public_key": pk, "message": msg["short"], "signature": sig["short"],
+         "expect_valid": True,
+         "note": "valid ML-DSA-65 control (short message), accepts"},
+        {"public_key": pk, "message": msg["primary"], "signature": _flip_first_byte(sig["primary"]),
+         "expect_valid": False,
+         "note": "one-byte-tampered signature (first byte flipped), rejects"},
+        {"public_key": pk, "message": _flip_first_byte(msg["primary"]), "signature": sig["primary"],
+         "expect_valid": False,
+         "note": "altered message (first byte flipped), signature no longer covers it, rejects"},
+        {"public_key": pk, "message": msg["empty"], "signature": sig["primary"],
+         "expect_valid": False,
+         "note": "primary-message signature verified against a different (empty) message, rejects"},
+        {"public_key": wrong_pk, "message": msg["primary"], "signature": sig["primary"],
+         "expect_valid": False,
+         "note": "valid signature verified under a different (wrong) ML-DSA-65 public key, rejects"},
+    ]
+
+    # -- mldsa65_malformed: structural rejection before any verify -------------
+    corpus["mldsa65_malformed"] = [
+        {"public_key": pk, "message": msg["primary"], "signature": _truncate(sig["primary"], 1),
+         "expect_valid": False,
+         "note": f"signature one byte short of the FIPS-204 {O.SIG_LEN}, rejects"},
+        {"public_key": pk, "message": msg["primary"], "signature": _extend(sig["primary"], 1),
+         "expect_valid": False,
+         "note": f"signature one byte over the FIPS-204 {O.SIG_LEN}, rejects"},
+        {"public_key": pk, "message": msg["primary"], "signature": "",
+         "expect_valid": False,
+         "note": "empty signature, rejects"},
+        {"public_key": _truncate(pk, 1), "message": msg["primary"], "signature": sig["primary"],
+         "expect_valid": False,
+         "note": f"public key one byte short of the FIPS-204 {O.PK_LEN}, rejects"},
+        {"public_key": _extend(pk, 1), "message": msg["primary"], "signature": sig["primary"],
+         "expect_valid": False,
+         "note": f"public key one byte over the FIPS-204 {O.PK_LEN}, rejects"},
+    ]
+
+    # -- mldsa65_acvp_kat: official NIST ACVP anchors, only if fetched ---------
+    if acvp:
+        cases = []
+        for a in acvp["cases"]:
+            cases.append({
+                "public_key": a["public_key"], "message": a["message"],
+                "signature": a["signature"], "expect_valid": bool(a["expect_valid"]),
+                "note": "NIST ACVP ML-DSA-65 sigVer anchor: " + a.get("note", a.get("tcId", "")),
+            })
+        corpus[ACVP_SECTION] = cases
+        corpus["policy"]["acvp_anchors"] = {
+            "included": True, "source": acvp.get("source", "usnistgov/ACVP-Server"),
+            "count": len(cases),
+        }
+    else:
+        corpus["policy"]["acvp_anchors"] = {
+            "included": False,
+            "reason": ("NIST ACVP ML-DSA-65 sigVer vectors were not bundled for stage-1 "
+                       "(no vectors/pqc_mldsa_acvp_anchors.json). Independence is proven "
+                       "by the second FIPS-204 implementation in the KAT gate; ACVP "
+                       "anchors are a later, non-blocking enhancement."),
+        }
+    return corpus
+
+
+def sections_of(corpus):
+    return [s for s in (*BASE_SECTIONS, ACVP_SECTION) if s in corpus]
+
+
+def main() -> int:
+    m = json.load(open(MATERIAL, encoding="utf-8"))
+    acvp = json.load(open(ACVP, encoding="utf-8")) if os.path.exists(ACVP) else None
+    corpus = build(m, acvp)
+
+    # Stamp every verdict from the oracle and assert the intended sign of each
+    # case, so a mislabeled positive/negative cannot slip into the corpus.
+    for sec in sections_of(corpus):
+        if not corpus[sec]:
+            raise SystemExit(f"section {sec} is empty")
+        for c in corpus[sec]:
+            accept, reason = O.verdict(c["public_key"], c["message"], c["signature"])
+            if accept != c["expect_valid"]:
+                raise SystemExit(
+                    f"oracle disagrees with the intended verdict [{sec}]: {c['note']!r} "
+                    f"(expect_valid={c['expect_valid']} oracle={accept} reason={reason})")
+
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(OUT, "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(corpus, fh, indent=2, ensure_ascii=False)
+        fh.write("\n")
+
+    counts = {s: len(corpus[s]) for s in sections_of(corpus)}
+    print("generated", OUT)
+    print("  sections", counts)
+    print("  total_cases", sum(counts.values()))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

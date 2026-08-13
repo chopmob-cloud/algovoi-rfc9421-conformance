@@ -48,6 +48,9 @@ jobs:
           set -euo pipefail
           python -m pip install --quiet cryptography pynacl rfc8785 http-sfv jwcrypto cbor2
           python -m pip install --quiet -r runners/python/requirements.txt
+          # liboqs-python lets check_reproducibility.py regenerate pqc_mldsa_v0
+          # (its generator stamps verdicts with the liboqs ML-DSA-65 verify).
+          python -m pip install --quiet liboqs-python
 
       - name: Stack self-proving gate
         run: python tools/stack_verify.py

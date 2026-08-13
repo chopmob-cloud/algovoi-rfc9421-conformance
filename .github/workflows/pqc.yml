@@ -1,0 +1,108 @@
+# 9-way post-quantum ML-DSA-65 (FIPS 204) consensus: enforce byte-for-byte parity on every push.
+#
+# Runs the covered language runners against the one frozen, signed pqc_mldsa_v0
+# corpus (ML-DSA-65 verification, NIST FIPS 204 final, 12 cases) via
+# tools/run_consensus_pqc_mldsa.sh --require 9. This is a DOCUMENTED SUBSET, not a
+# fixed 12: ML-DSA-65 verify libraries exist for nine ecosystems (python, node, go,
+# rust, c, java, kotlin, scala, dotnet), backed by six distinct FIPS-204
+# implementation families (liboqs, noble, Cloudflare CIRCL, RustCrypto, Bouncy
+# Castle). ruby, php and elixir are deferred: their pinned runtimes' OpenSSL
+# predates ML-DSA (which arrived in OpenSSL 3.5) and no mature pure library exists.
+#
+# The KAT gate (tools/check_kat_pqc_mldsa.py) runs first inside the driver and
+# re-derives every verdict with a separate FIPS-204 implementation (dilithium-py),
+# so a Dilithium-vs-ML-DSA mismatch cannot pass. FIPS 204 final is NOT
+# interoperable with the earlier round-3 Dilithium; any old-Dilithium library
+# fails the valid control.
+
+name: 9-way ML-DSA (FIPS 204) consensus
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pqc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  consensus:
+    name: pqc_mldsa_v0 (require 9)
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      GOTOOLCHAIN: local
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- nine toolchains (ruby/php/elixir deferred, see header) ---
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+        # liboqs-python builds and bundles liboqs (the reference ML-DSA-65 impl the
+        # python runner uses); dilithium-py is the independent FIPS-204 impl the KAT
+        # re-derives with; PyNaCl verifies the signed corpus head.
+      - run: python -m pip install --quiet liboqs-python dilithium-py pynacl
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }   # driver installs @noble/post-quantum per run
+
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.22" }   # driver installs github.com/cloudflare/circl
+
+      - uses: dtolnay/rust-toolchain@stable   # driver builds the ml-dsa crate
+
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "9.0.x" }   # BouncyCastle.Cryptography via PackageReference
+
+      - name: Kotlin compiler
+        run: |
+          set -euo pipefail
+          KV=2.0.20
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180 -o /tmp/kotlin.zip "https://github.com/JetBrains/kotlin/releases/download/v${KV}/kotlin-compiler-${KV}.zip"
+          sudo unzip -q /tmp/kotlin.zip -d /opt
+          echo "/opt/kotlinc/bin" >> "$GITHUB_PATH"
+
+      # --- JVM jars: java uses org.json + Bouncy Castle (MLDSASigner); kotlin uses
+      #     Jackson + Bouncy Castle. Bouncy Castle 1.81 has FIPS-204 ML-DSA. ---
+      - name: Fetch JVM jars
+        run: |
+          set -euo pipefail
+          B=https://repo1.maven.org/maven2
+          J=2.17.0
+          BC=1.81
+          RETRY="--retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180"
+          mkdir -p runners/java/libs runners/kotlin/libs
+          curl -fsSL $RETRY "$B/org/json/json/20240303/json-20240303.jar" -o runners/java/libs/json-20240303.jar
+          curl -fsSL $RETRY "$B/org/bouncycastle/bcprov-jdk18on/$BC/bcprov-jdk18on-$BC.jar" -o runners/java/libs/bcprov-jdk18on-$BC.jar
+          for j in \
+            com/fasterxml/jackson/core/jackson-core/$J/jackson-core-$J.jar \
+            com/fasterxml/jackson/core/jackson-databind/$J/jackson-databind-$J.jar \
+            com/fasterxml/jackson/core/jackson-annotations/$J/jackson-annotations-$J.jar \
+            org/bouncycastle/bcprov-jdk18on/$BC/bcprov-jdk18on-$BC.jar; do
+            curl -fsSL $RETRY "$B/$j" -o "runners/kotlin/libs/$(basename "$j")"
+          done
+
+      - name: C deps (liboqs build toolchain + jansson, libssl)
+        run: sudo apt-get update -q && sudo apt-get install -y -q cmake ninja-build git libjansson-dev libssl-dev pkg-config
+
+      - name: Scala CLI
+        run: |
+          set -euo pipefail
+          curl -fsL --retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180 -o /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz
+          gzip -df /tmp/scala-cli.gz
+          chmod +x /tmp/scala-cli
+          sudo mv /tmp/scala-cli /usr/local/bin/scala-cli
+          scala-cli version
+
+      # --- the invariant: full 9-way consensus (KAT-gated), or the job fails ---
+      - name: Run N-way consensus (documented subset, require 9)
+        run: bash tools/run_consensus_pqc_mldsa.sh --require 9

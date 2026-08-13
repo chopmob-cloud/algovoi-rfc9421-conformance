@@ -57,6 +57,7 @@ CORPORA = [
     ("sfv_v0", "gen_sfv_v0.py"),
     ("jws_v0", "gen_jws_v0.py"),
     ("cose_v0", "gen_cose_v0.py"),
+    ("pqc_mldsa_v0", "gen_pqc_mldsa_v0.py"),
 ]
 
 

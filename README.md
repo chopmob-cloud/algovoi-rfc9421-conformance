@@ -10,6 +10,7 @@
 [![Structured Fields](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml)
 [![JWS](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml)
 [![COSE](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml)
+[![ML-DSA](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml)
 [![security](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml)
 [![integrity](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml)
 [![RFC 9421](./assets/badges/rfc9421.svg)](https://www.rfc-editor.org/rfc/rfc9421.html)
@@ -62,10 +63,15 @@ underneath Signature-Input and Content-Digest),
 `alg=none`, algorithm-confusion and `crit` negatives), and
 **[CBOR Object Signing](#corpus-cbor-object-signing-cose_v0)**
 (`cose_v0`, RFC 9052 / 9053 / 8949, the CBOR counterpart to JOSE: COSE_Sign1 over
-deterministic CBOR, the sign-and-verify stage for the WebAuthn / IoT / mdoc world).
-Each is independence-checked against a separate third-party implementation of its
-own standard (`http_sfv`, `jwcrypto` and `pycose`) before the language fan-out. See
-the Corpus sections below.
+deterministic CBOR, the sign-and-verify stage for the WebAuthn / IoT / mdoc world),
+and **[post-quantum ML-DSA](#corpus-post-quantum-ml-dsa-pqc_mldsa_v0)**
+(`pqc_mldsa_v0`, NIST FIPS 204, the sign-and-verify stage carried forward to the
+post-quantum migration). The first three are independence-checked against a
+separate third-party implementation of their own standard (`http_sfv`, `jwcrypto`,
+`pycose`) before the language fan-out; the ML-DSA corpus is validated across a
+documented 9-language subset backed by six distinct FIPS-204 implementations (not
+all twelve languages have a mature ML-DSA library yet). See the Corpus sections
+below.
 
 ## The battery
 
@@ -83,7 +89,8 @@ corpus/
   sfv_v0/                Structured Field Values, RFC 8941, 67 cases, 6 sections (signed + sealed)
   jws_v0/                JSON Web Signature, RFC 7515/7518/8037, 29 cases, 8 sections (signed + sealed)
   cose_v0/               CBOR Object Signing, RFC 9052/9053/8949, 26 cases, 7 sections (signed + sealed)
-vectors/                 frozen public test material (fapi/jws/cose _material_v0.json: public keys + signatures/messages only)
+  pqc_mldsa_v0/          post-quantum ML-DSA-65, NIST FIPS 204, 12 cases, 2 sections (signed + sealed, 9-way subset)
+vectors/                 frozen public test material (fapi/jws/cose/pqc_mldsa _material_v0.json: public keys + signatures/messages only)
 runners/{python,typescript,go,rust,c,java,kotlin,scala,dotnet,ruby,php,elixir}/
   verify_{wba,fapi,sfv,jws,cose}.*  the profiles' and standard corpora's per-language runners (rust-{wba,fapi,sfv,jws,cose}/, dotnet-{wba,fapi,sfv,jws,cose}/)
 tools/
@@ -428,6 +435,54 @@ implementation (`pycose`) plus an independent `cbor2` canonical check,
 (`kaf/receipts/cose_v0.seq1.receipt.json`) binds **full 12-way byte-for-byte
 consensus over 26 cases, 12/12 hermetic cells PASS**, under the same KAF seal
 identity as the other receipts.
+
+## Corpus: post-quantum ML-DSA (`pqc_mldsa_v0`)
+
+ML-DSA (NIST FIPS 204, final August 2024) is the standardised lattice signature of
+the post-quantum era, and this corpus carries the bridge's sign-and-verify stage
+forward to it. `pqc_mldsa_v0` is a frozen, signed corpus of 12 cases across two
+sections for ML-DSA-65 verification: `mldsa65_verify` (valid controls accept;
+tampered signature, altered message, cross-message and wrong-key all reject) and
+`mldsa65_malformed` (wrong-length or empty signature and public key all reject
+before any verify).
+
+The reason this corpus matters is a live interoperability hazard: FIPS 204 final
+ML-DSA is **not** interoperable with the earlier round-3 "Dilithium" scheme (FIPS
+204 added domain separation and revised encodings), and many libraries still ship
+the old scheme under a similar name. A signed corpus whose frozen signatures verify
+identically across independent FIPS-204 implementations is exactly what the
+migration needs to catch that trap. The frozen signatures were produced with
+liboqs ML-DSA-65 and are independently re-verified; a runner backed by an old
+Dilithium library fails the valid control immediately.
+
+This is a **documented 9-language subset**, not the full twelve, because a mature
+FIPS-204 ML-DSA-65 verify library does not yet exist for every ecosystem, backed by
+six distinct implementation families:
+
+| Languages | Implementation |
+|---|---|
+| python, c | liboqs |
+| typescript | `@noble/post-quantum` |
+| go | Cloudflare CIRCL |
+| rust | RustCrypto `ml-dsa` |
+| java, kotlin, scala, dotnet | Bouncy Castle |
+
+Ruby, PHP and Elixir are **deferred** (logged in the consensus driver and the
+sealed receipt's `deferred_languages`): their pinned runtimes' OpenSSL predates
+ML-DSA, which arrived in OpenSSL 3.5, and no mature pure library exists yet. No
+silent cap: the receipt states "full 9-way" honestly, and coverage widens as the
+ecosystem's libraries mature.
+
+Assurance matches the other batteries: the corpus is JCS+EdDSA signed
+(`pqc_mldsa_v0`), `tools/check_kat_pqc_mldsa.py` re-derives every verdict with a
+separate FIPS-204 implementation (`dilithium-py`),
+`tools/run_consensus_pqc_mldsa.sh --require 9` runs the nine covered runners
+fail-closed, and `kaf/run_cells_pqc_mldsa.sh` re-runs each in its pinned Docker
+image. Latest sealed run (`kaf/receipts/pqc_mldsa_v0.seq1.receipt.json`) binds
+**full 9-way byte-for-byte consensus over 12 cases, 9/9 hermetic cells PASS**, under
+the same KAF seal identity as the other receipts. All keys are fixed test material
+(`vectors/pqc_mldsa_material_v0.json`, public ML-DSA-65 key plus messages and
+signatures only, the private key held off-repo).
 
 ## Adding a language
 

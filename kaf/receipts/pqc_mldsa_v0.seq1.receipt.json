@@ -1,0 +1,125 @@
+{
+  "payload": {
+    "framework": "KAF",
+    "layer": "L2",
+    "profile": "pqc-ml-dsa",
+    "suite": "pqc_mldsa_v0",
+    "sealed_at": "2026-08-13T00:00:00Z",
+    "seq": 1,
+    "corpus": {
+      "id": "pqc_mldsa_v0",
+      "file_sha256": "sha256:7d631fecc231f249518f32ad5c4f205519b0b41940a9ddabc40a46ba2dd208f9",
+      "manifest_file_sha256": "sha256:7d631fecc231f249518f32ad5c4f205519b0b41940a9ddabc40a46ba2dd208f9",
+      "manifest_corpus_digest": "sha256:e6357c24804a50dd1416c4abffffe521d0c6822d01fabb30dea6534d0dbb6ef8",
+      "signed_head": true,
+      "total_cases": 12
+    },
+    "axes": {
+      "agreement": {
+        "independent_runners": 9,
+        "languages": [
+          "c",
+          "dotnet",
+          "go",
+          "java",
+          "kotlin",
+          "python",
+          "rust",
+          "scala",
+          "typescript"
+        ],
+        "result": "full 9-way byte-for-byte consensus",
+        "cases": 12,
+        "coverage": "documented subset of mature FIPS-204 ML-DSA-65 verify libraries",
+        "deferred_languages": [
+          "ruby",
+          "php",
+          "elixir"
+        ]
+      },
+      "kat": {
+        "corpus_integrity": "matches signed manifest head",
+        "independent_rederivation": "every verdict re-derived independently with dilithium-py (a separate FIPS-204 ML-DSA-65 implementation)"
+      },
+      "cells": [
+        {
+          "cell": "pqc-python",
+          "lang": "python",
+          "image": "pqc-mldsa-v0:build",
+          "image_digest": "pqc-mldsa-v0@sha256:f8374b37557cdd2cbff9bfdd31c10f84af6c9af5dd7cfb53cbf3667f46059906",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "node-20-slim",
+          "lang": "typescript",
+          "image": "node:20-slim",
+          "image_digest": "node@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "go-1.26-bookworm",
+          "lang": "go",
+          "image": "golang:1.26-bookworm",
+          "image_digest": "golang@sha256:53eeac89074db483fdf0ab3be1df32bf6e47562263d2d0d6baa7f26acb4957dd",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "rust-1-slim",
+          "lang": "rust",
+          "image": "rust:1-slim-bookworm",
+          "image_digest": "rust@sha256:2775a09d208ff0d7c1f50490c45b62db929e87ba1dcbc3f2132ac71a704bcdd3",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "gcc-14-c",
+          "lang": "c",
+          "image": "gcc:14-bookworm",
+          "image_digest": "gcc@sha256:5e927c284bf55a7dc796262e311a0703344f62f41f5621eb56843111b1d37e15",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "temurin-17-java",
+          "lang": "java",
+          "image": "eclipse-temurin:17",
+          "image_digest": "eclipse-temurin@sha256:f9b295135b39ed8c650c713c6116600dd4c39ac5f3883f566d96fdec917ce3b2",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "temurin-17-kotlin",
+          "lang": "kotlin",
+          "image": "eclipse-temurin:17",
+          "image_digest": "eclipse-temurin@sha256:f9b295135b39ed8c650c713c6116600dd4c39ac5f3883f566d96fdec917ce3b2",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "temurin-17-scala",
+          "lang": "scala",
+          "image": "eclipse-temurin:17",
+          "image_digest": "eclipse-temurin@sha256:f9b295135b39ed8c650c713c6116600dd4c39ac5f3883f566d96fdec917ce3b2",
+          "verdict": "PASS"
+        },
+        {
+          "cell": "dotnet-sdk-9.0",
+          "lang": "dotnet",
+          "image": "mcr.microsoft.com/dotnet/sdk:9.0",
+          "image_digest": "mcr.microsoft.com/dotnet/sdk@sha256:35048e3a81e6a07c316e7bbbd80d80d2ba705fe5f23a8ed42b6638c8f4c20d30",
+          "verdict": "PASS"
+        }
+      ],
+      "cells_passed": 9,
+      "cells_total": 9
+    }
+  },
+  "seal": {
+    "alg": "Ed25519",
+    "canonicalization": "JCS(RFC8785)",
+    "kid": "4bbcedc71692d3dc9491239d2fff1ea2",
+    "jwk": {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "xrHz4BWRsQTQry-L1t8wWI70S7F81M4G2yLwKnPmKAQ",
+      "kid": "4bbcedc71692d3dc9491239d2fff1ea2"
+    },
+    "sig_b64": "TBbAAa5hgaG6UhjO19axO1rA74XvO/sSDAXaUATt5rJrmi7BCg1Wh07af7rOos/DZXm46qhlW94/qbQM2TobCg=="
+  }
+}

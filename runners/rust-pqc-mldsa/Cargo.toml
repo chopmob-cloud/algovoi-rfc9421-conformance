@@ -1,0 +1,19 @@
+[package]
+name = "pqc-mldsa-runner"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+authors = ["AlgoVoi <chopmob@gmail.com>"]
+description = "Rust runner for the post-quantum ML-DSA-65 corpus (pqc_mldsa_v0). Uses the RustCrypto ml-dsa crate (FIPS 204 final); reproduces every verdict in the frozen corpus."
+
+[[bin]]
+name = "verify_pqc_mldsa"
+path = "src/main.rs"
+
+[dependencies]
+# RustCrypto `ml-dsa` is a pure-Rust FIPS-204 (final) ML-DSA implementation,
+# independent of the reference liboqs. MlDsa65 is the ML-DSA-65 parameter set;
+# the Verifier trait verifies over the empty context (pure ML-DSA variant).
+ml-dsa = "0.1"
+serde_json = "1"
+hex = "0.4"
