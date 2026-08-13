@@ -90,6 +90,17 @@ CANONICAL = [
     ("dictionary", "a=1, a=2", "duplicate dictionary key, last wins"),
     ("dictionary", "a=1,  b=2", "extra space after comma normalized"),
     ("item", "1;a=1;a=2", "duplicate parameter collapses to the last value"),
+    # Multi-key duplicates: RFC 8941 4.2.2 / 4.2.3.2 keep the key's ORIGINAL
+    # position and overwrite the value; the duplicate does NOT move to the end.
+    # (These reveal the positioning that single-key duplicates above cannot.)
+    ("dictionary", "a=1,b=2,a=3",
+     "duplicate dictionary key keeps first position with last value (-> a=3, b=2)"),
+    ("dictionary", "a=1,b=2,c=3,b=4",
+     "duplicate middle key keeps its position (-> a=1, b=4, c=3)"),
+    ("item", "1;a=1;b=2;a=3",
+     "duplicate parameter key keeps first position with last value (-> 1;a=3;b=2)"),
+    ("list", "a;b=1;c=2;b=3",
+     "duplicate parameter on a list member keeps position (-> a;b=3;c=2)"),
 ]
 
 REJECT = [

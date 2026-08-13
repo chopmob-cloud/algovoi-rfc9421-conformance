@@ -223,9 +223,10 @@ static class VerifySfv
                 Bare val;
                 if (Peek() == '=') { I++; val = BareItem(); }
                 else val = new Bare { Kind = "boolean", B = true };
+                // duplicate key: overwrite value in place, keeping original position.
                 int existing = ps.FindIndex(p => p.Key == k);
-                if (existing >= 0) ps.RemoveAt(existing);
-                ps.Add(new Param(k, val));
+                if (existing >= 0) ps[existing] = new Param(k, val);
+                else ps.Add(new Param(k, val));
             }
             return ps;
         }
@@ -291,9 +292,10 @@ static class VerifySfv
                     var ps = Parameters();
                     value = new Node { InnerList = false, Bare = new Bare { Kind = "boolean", B = true }, Params = ps };
                 }
+                // duplicate key: overwrite value in place, keeping original position.
                 int existing = members.FindIndex(e => e.Key == k);
-                if (existing >= 0) members.RemoveAt(existing);
-                members.Add(new Entry(k, value));
+                if (existing >= 0) members[existing] = new Entry(k, value);
+                else members.Add(new Entry(k, value));
                 DiscardOws();
                 if (Eof()) return members;
                 if (Peek() != ',') throw new SFVError("dictionary members must be comma separated");

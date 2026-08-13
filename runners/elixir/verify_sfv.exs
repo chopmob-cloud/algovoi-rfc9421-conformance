@@ -204,7 +204,14 @@ defmodule Sfv do
           {{:boolean, true}, i}
         end
 
-      acc = List.keydelete(acc, k, 0) ++ [{k, value}]
+      # duplicate key: overwrite value in place, keeping original position.
+      acc =
+        if List.keymember?(acc, k, 0) do
+          List.keyreplace(acc, k, 0, {k, value})
+        else
+          acc ++ [{k, value}]
+        end
+
       parameters_loop(s, i, acc)
     else
       {acc, i}
@@ -284,7 +291,14 @@ defmodule Sfv do
         {{:item, {:boolean, true}, params}, i}
       end
 
-    members = List.keydelete(members, k, 0) ++ [{k, value}]
+    # duplicate key: overwrite value in place, keeping original position.
+    members =
+      if List.keymember?(members, k, 0) do
+        List.keyreplace(members, k, 0, {k, value})
+      else
+        members ++ [{k, value}]
+      end
+
     i = discard_ows(s, i)
 
     cond do

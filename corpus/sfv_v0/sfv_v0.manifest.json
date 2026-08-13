@@ -1,7 +1,7 @@
 {
   "manifest_version": 1,
   "corpus_id": "sfv_v0",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "canonicalizer": "JCS(RFC8785)+EdDSA",
   "signers": [
     {
@@ -20,16 +20,16 @@
   "custody": "local secret Ed25519 key held off-repo; rotate to KMS/foundation before publish (gated)",
   "head": {
     "corpus_id": "sfv_v0",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "canonicalizer": "JCS(RFC8785)+EdDSA",
-    "corpus_digest": "sha256:6d321d806a7f7a902f6fdd5760baea4586b3596d3013ce5496fd8b95b467f721",
-    "file_sha256": "sha256:9137326c44b9fd26423a7d2faa95d06b32cff0845984ae533cf412feae170987",
+    "corpus_digest": "sha256:6174bd7afd9b13d2b98c1a931eb555092f2888d8914e6f1a2c3ed14af2bb8425",
+    "file_sha256": "sha256:0c155919cc9df683b7cf035fc720e7bb7f2d05a963ee808d4b134514439f136e",
     "section_counts": {
       "sfv_item": 15,
       "sfv_list": 10,
       "sfv_dictionary": 6,
       "sfv_parameters": 6,
-      "sfv_canonical": 10,
+      "sfv_canonical": 14,
       "sfv_reject": 20
     },
     "section_digests": {
@@ -37,12 +37,12 @@
       "sfv_list": "sha256:8f836417f7782db59ee22a15cd064b39382dbbadcb1edfc06695b7eeb9ea5228",
       "sfv_dictionary": "sha256:1431ba778d6226b239c8c5f8d4fcf2bb3cd8b283ca40d4287077a94c07e1ebf9",
       "sfv_parameters": "sha256:c0efbcc5ca494f13253849d64071b91192e216ec1d49b0325edaa19520bfa4c3",
-      "sfv_canonical": "sha256:45bea70cd2b60c9db3a70cdccf8a39e1a0481dbbdc7f247b734c057c70268756",
+      "sfv_canonical": "sha256:d2eb7afcbe96c7dff4dbd58b3e48cf6780e935c30ca2fbe6cb9d9bea16316f6a",
       "sfv_reject": "sha256:0c48c02251201d4fa7c2eb64fef228c5d3b69641e1235242abc675781a0c9988"
     },
-    "total_cases": 67
+    "total_cases": 71
   },
-  "head_jws": "eyJhbGciOiJFZERTQSIsImtpZCI6ImY0N2YyZGQ0OGNhNGI2NzI3OTM5OTgzOWNmMjFkMTc2IiwidHlwIjoiY29ycHVzLWhlYWQrandzIn0.eyJjYW5vbmljYWxpemVyIjoiSkNTKFJGQzg3ODUpK0VkRFNBIiwiY29ycHVzX2RpZ2VzdCI6InNoYTI1Njo2ZDMyMWQ4MDZhN2Y3YTkwMmY2ZmRkNTc2MGJhZWE0NTg2YjM1OTZkMzAxM2NlNTQ5NmZkOGI5NWI0NjdmNzIxIiwiY29ycHVzX2lkIjoic2Z2X3YwIiwiZmlsZV9zaGEyNTYiOiJzaGEyNTY6OTEzNzMyNmM0NGI5ZmQyNjQyM2E3ZDJmYWE5NWQwNmIzMmNmZjA4NDU5ODRhZTUzM2NmNDEyZmVhZTE3MDk4NyIsInNlY3Rpb25fY291bnRzIjp7InNmdl9jYW5vbmljYWwiOjEwLCJzZnZfZGljdGlvbmFyeSI6Niwic2Z2X2l0ZW0iOjE1LCJzZnZfbGlzdCI6MTAsInNmdl9wYXJhbWV0ZXJzIjo2LCJzZnZfcmVqZWN0IjoyMH0sInNlY3Rpb25fZGlnZXN0cyI6eyJzZnZfY2Fub25pY2FsIjoic2hhMjU2OjQ1YmVhNzBjZDJiNjBjOWRiM2E3MGNkY2NmOGEzOWUxYTA0ODFkYmJkYzdmMjQ3YjczNGMwNTdjNzAyNjg3NTYiLCJzZnZfZGljdGlvbmFyeSI6InNoYTI1NjoxNDMxYmE3NzhkNjIyNmIyMzljOGM1ZjhkNGZjZjJiYjNjZDhiMjgzY2E0MGQ0Mjg3MDc3YTk0YzA3ZTFlYmY5Iiwic2Z2X2l0ZW0iOiJzaGEyNTY6NTYyZmY5NmUyOTMyYzVlNGFjOTE2N2M3YjJmMGM5MjA2ZDYyNTIzYTZlM2VlZjVkZWFiNGNlNDg0MjMyZDBlYSIsInNmdl9saXN0Ijoic2hhMjU2OjhmODM2NDE3Zjc3ODJkYjU5ZWUyMmExNWNkMDY0YjM5MzgyZGJiYWRjYjFlZGZjMDY2OTViN2VlYjllYTUyMjgiLCJzZnZfcGFyYW1ldGVycyI6InNoYTI1NjpjMGVmYmNjNWNhNDk0ZjEzMjUzODQ5ZDY0MDcxYjkxMTkyZTIxNmVjMWQ0OWIwMzI1ZWRhYTE5NTIwYmZhNGMzIiwic2Z2X3JlamVjdCI6InNoYTI1NjowYzQ4YzAyMjUxMjAxZDRmYTdjMmViNjRmZWYyMjhjNWQzYjY5NjQxZTEyMzUyNDJhYmM2NzU3ODFhMGM5OTg4In0sInRvdGFsX2Nhc2VzIjo2NywidmVyc2lvbiI6IjAuMS4wIn0.Fumj1G6AbBDVF9SsgCEE75bRQa8-IJe0bUdjlEZCOwrmulCVEoslwb0WEyFM8EPWvi_kOh6XdFdqHi8NTYoWDg",
+  "head_jws": "eyJhbGciOiJFZERTQSIsImtpZCI6ImY0N2YyZGQ0OGNhNGI2NzI3OTM5OTgzOWNmMjFkMTc2IiwidHlwIjoiY29ycHVzLWhlYWQrandzIn0.eyJjYW5vbmljYWxpemVyIjoiSkNTKFJGQzg3ODUpK0VkRFNBIiwiY29ycHVzX2RpZ2VzdCI6InNoYTI1Njo2MTc0YmQ3YWZkOWIxM2QyYjk4YzFhOTMxZWI1NTUwOTJmMjg4OGQ4OTE0ZTZmMWEyYzNlZDE0YWYyYmI4NDI1IiwiY29ycHVzX2lkIjoic2Z2X3YwIiwiZmlsZV9zaGEyNTYiOiJzaGEyNTY6MGMxNTU5MTljYzlkZjY4M2I3Y2YwMzVmYzcyMGU3YmI3ZjJkMDVhOTYzZWU4MDhkNGIxMzQ1MTQ0MzlmMTM2ZSIsInNlY3Rpb25fY291bnRzIjp7InNmdl9jYW5vbmljYWwiOjE0LCJzZnZfZGljdGlvbmFyeSI6Niwic2Z2X2l0ZW0iOjE1LCJzZnZfbGlzdCI6MTAsInNmdl9wYXJhbWV0ZXJzIjo2LCJzZnZfcmVqZWN0IjoyMH0sInNlY3Rpb25fZGlnZXN0cyI6eyJzZnZfY2Fub25pY2FsIjoic2hhMjU2OmQyZWI3YWZjYmU5NmM3ZGZmNGRiZDU4YjNlNDhjZjY3ODBlOTM1YzMwY2EyZmJlNmNiOWQ5YmVhMTYzMTZmNmEiLCJzZnZfZGljdGlvbmFyeSI6InNoYTI1NjoxNDMxYmE3NzhkNjIyNmIyMzljOGM1ZjhkNGZjZjJiYjNjZDhiMjgzY2E0MGQ0Mjg3MDc3YTk0YzA3ZTFlYmY5Iiwic2Z2X2l0ZW0iOiJzaGEyNTY6NTYyZmY5NmUyOTMyYzVlNGFjOTE2N2M3YjJmMGM5MjA2ZDYyNTIzYTZlM2VlZjVkZWFiNGNlNDg0MjMyZDBlYSIsInNmdl9saXN0Ijoic2hhMjU2OjhmODM2NDE3Zjc3ODJkYjU5ZWUyMmExNWNkMDY0YjM5MzgyZGJiYWRjYjFlZGZjMDY2OTViN2VlYjllYTUyMjgiLCJzZnZfcGFyYW1ldGVycyI6InNoYTI1NjpjMGVmYmNjNWNhNDk0ZjEzMjUzODQ5ZDY0MDcxYjkxMTkyZTIxNmVjMWQ0OWIwMzI1ZWRhYTE5NTIwYmZhNGMzIiwic2Z2X3JlamVjdCI6InNoYTI1NjowYzQ4YzAyMjUxMjAxZDRmYTdjMmViNjRmZWYyMjhjNWQzYjY5NjQxZTEyMzUyNDJhYmM2NzU3ODFhMGM5OTg4In0sInRvdGFsX2Nhc2VzIjo3MSwidmVyc2lvbiI6IjAuMi4wIn0.5RG2tdjssVA3twGPC8Iv9N6QfSoFe71xDlLDAboQs76LXaxvPo2PkwHY3G52CO4XA5eq3DOOGN1l2JyYNfVxBw",
   "head_typ": "corpus-head+jws",
   "signed_at": "2026-08-12T00:00:00Z"
 }

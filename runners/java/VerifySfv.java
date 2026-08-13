@@ -217,13 +217,13 @@ public class VerifySfv {
                 } else {
                     value = new Bare(); value.kind = "boolean"; value.b = true;
                 }
-                // duplicate key: overwrite, taking the later position.
+                // duplicate key: overwrite value in place, keeping original position.
                 int existing = -1;
                 for (int idx = 0; idx < params.size(); idx++) {
                     if (params.get(idx).key.equals(k)) { existing = idx; break; }
                 }
-                if (existing >= 0) params.remove(existing);
-                params.add(new Param(k, value));
+                if (existing >= 0) params.set(existing, new Param(k, value));
+                else params.add(new Param(k, value));
             }
             return params;
         }
@@ -301,12 +301,13 @@ public class VerifySfv {
                     value.bare.b = true;
                     value.params = ps;
                 }
+                // duplicate key: overwrite value in place, keeping original position.
                 int existing = -1;
                 for (int idx = 0; idx < members.size(); idx++) {
                     if (members.get(idx).key.equals(k)) { existing = idx; break; }
                 }
-                if (existing >= 0) members.remove(existing);
-                members.add(new Entry(k, value));
+                if (existing >= 0) members.set(existing, new Entry(k, value));
+                else members.add(new Entry(k, value));
                 discardOws();
                 if (eof()) return members;
                 if (peek() != ',') throw new SFVError("dictionary members must be comma separated");

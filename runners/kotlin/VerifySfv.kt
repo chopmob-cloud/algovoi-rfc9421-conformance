@@ -174,9 +174,10 @@ private class Parser(text: String) {
             val k = key()
             val value: Bare = if (peek() == '=') { i++; bareItem() }
                 else Bare().apply { kind = "boolean"; b = true }
+            // duplicate key: overwrite value in place, keeping original position.
             val existing = ps.indexOfFirst { it.key == k }
-            if (existing >= 0) ps.removeAt(existing)
-            ps.add(Param(k, value))
+            if (existing >= 0) ps[existing] = Param(k, value)
+            else ps.add(Param(k, value))
         }
         return ps
     }
@@ -232,9 +233,10 @@ private class Parser(text: String) {
                     bare = Bare().apply { kind = "boolean"; b = true }
                     params = parameters()
                 }
+            // duplicate key: overwrite value in place, keeping original position.
             val existing = members.indexOfFirst { it.key == k }
-            if (existing >= 0) members.removeAt(existing)
-            members.add(Entry(k, value))
+            if (existing >= 0) members[existing] = Entry(k, value)
+            else members.add(Entry(k, value))
             discardOws()
             if (eof()) return members
             if (peek() != ',') throw SFVError("dictionary members must be comma separated")

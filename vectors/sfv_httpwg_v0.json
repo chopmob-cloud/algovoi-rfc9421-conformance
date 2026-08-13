@@ -1,0 +1,2042 @@
+{
+  "note": "httpwg structured-field-tests interop anchors (RFC 8941 core). External interoperability evidence: our RFC 8941 parser and serializer reproduce the verdicts of the SFV editors' shared cross-implementation test suite. Community reference vectors, carried verbatim; no secrets.",
+  "standard": "RFC 8941",
+  "selection": "hand-written RFC 8941 core files (Items/Lists/Dictionaries, bare types, parameters, inner lists, canonical, rejects); excludes date.json and display-string.json (RFC 9651), the *-generated fuzz files, and examples.json",
+  "source": {
+    "repo": "httpwg/structured-field-tests",
+    "commit": "ae07345845e55abc338221f1e9325272e40985e8",
+    "commit_date": "2026-05-11T12:31:13Z",
+    "url_base": "https://raw.githubusercontent.com/httpwg/structured-field-tests/ae07345845e55abc338221f1e9325272e40985e8/",
+    "fetched_at": "2026-08-13"
+  },
+  "files": [
+    "binary",
+    "boolean",
+    "dictionary",
+    "item",
+    "list",
+    "listlist",
+    "number",
+    "param-dict",
+    "param-list",
+    "param-listlist",
+    "string",
+    "token"
+  ],
+  "counts": {
+    "total": 175,
+    "must_fail": 81,
+    "can_fail": 3,
+    "strict": 172
+  },
+  "tests": [
+    {
+      "file": "binary",
+      "name": "basic binary",
+      "raw": [
+        ":aGVsbG8=:"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "empty binary",
+      "raw": [
+        "::"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "padding at beginning",
+      "raw": [
+        ":=aGVsbG8=:"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "padding in middle",
+      "raw": [
+        ":a=GVsbG8=:"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "bad padding",
+      "raw": [
+        ":aGVsbG8:"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": true,
+      "canonical": [
+        ":aGVsbG8=:"
+      ]
+    },
+    {
+      "file": "binary",
+      "name": "bad padding dot",
+      "raw": [
+        ":aGVsbG8.:"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "bad end delimiter",
+      "raw": [
+        ":aGVsbG8="
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "extra whitespace",
+      "raw": [
+        ":aGVsb G8=:"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "all whitespace",
+      "raw": [
+        ":    :"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "extra chars",
+      "raw": [
+        ":aGVsbG!8=:"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "suffix chars",
+      "raw": [
+        ":aGVsbG8=!:"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "non-zero pad bits",
+      "raw": [
+        ":iZ==:"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": true,
+      "canonical": [
+        ":iQ==:"
+      ]
+    },
+    {
+      "file": "binary",
+      "name": "non-ASCII binary",
+      "raw": [
+        ":/+Ah:"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "base64url binary",
+      "raw": [
+        ":_-Ah:"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "binary",
+      "name": "binary prefix only",
+      "raw": [
+        ":"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "basic true boolean",
+      "raw": [
+        "?1"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "basic false boolean",
+      "raw": [
+        "?0"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "unknown boolean",
+      "raw": [
+        "?Q"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "whitespace boolean",
+      "raw": [
+        "? 1"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "negative zero boolean",
+      "raw": [
+        "?-0"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "T boolean",
+      "raw": [
+        "?T"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "F boolean",
+      "raw": [
+        "?F"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "t boolean",
+      "raw": [
+        "?t"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "f boolean",
+      "raw": [
+        "?f"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "spelled-out True boolean",
+      "raw": [
+        "?True"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "spelled-out False boolean",
+      "raw": [
+        "?False"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "boolean",
+      "name": "boolean prefix only",
+      "raw": [
+        "?"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "basic dictionary",
+      "raw": [
+        "en=\"Applepie\", da=:w4ZibGV0w6ZydGUK:"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "empty dictionary",
+      "raw": [
+        ""
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": []
+    },
+    {
+      "file": "dictionary",
+      "name": "single item dictionary",
+      "raw": [
+        "a=1"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "list item dictionary",
+      "raw": [
+        "a=(1 2)"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "single list item dictionary",
+      "raw": [
+        "a=(1)"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "empty list item dictionary",
+      "raw": [
+        "a=()"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "no whitespace dictionary",
+      "raw": [
+        "a=1,b=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=1, b=2"
+      ]
+    },
+    {
+      "file": "dictionary",
+      "name": "extra whitespace dictionary",
+      "raw": [
+        "a=1 ,  b=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=1, b=2"
+      ]
+    },
+    {
+      "file": "dictionary",
+      "name": "tab separated dictionary",
+      "raw": [
+        "a=1\t,\tb=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=1, b=2"
+      ]
+    },
+    {
+      "file": "dictionary",
+      "name": "leading whitespace dictionary",
+      "raw": [
+        "     a=1 ,  b=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=1, b=2"
+      ]
+    },
+    {
+      "file": "dictionary",
+      "name": "whitespace before = dictionary",
+      "raw": [
+        "a =1, b=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "whitespace after = dictionary",
+      "raw": [
+        "a=1, b= 2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "two lines dictionary",
+      "raw": [
+        "a=1",
+        "b=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=1, b=2"
+      ]
+    },
+    {
+      "file": "dictionary",
+      "name": "missing value dictionary",
+      "raw": [
+        "a=1, b, c=3"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "all missing value dictionary",
+      "raw": [
+        "a, b, c"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "start missing value dictionary",
+      "raw": [
+        "a, b=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "end missing value dictionary",
+      "raw": [
+        "a=1, b"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "missing value with params dictionary",
+      "raw": [
+        "a=1, b;foo=9, c=3"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "explicit true value with params dictionary",
+      "raw": [
+        "a=1, b=?1;foo=9, c=3"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=1, b;foo=9, c=3"
+      ]
+    },
+    {
+      "file": "dictionary",
+      "name": "trailing comma dictionary",
+      "raw": [
+        "a=1, b=2,"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "empty item dictionary",
+      "raw": [
+        "a=1,,b=2,"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "duplicate key dictionary",
+      "raw": [
+        "a=1,b=2,a=3"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=3, b=2"
+      ]
+    },
+    {
+      "file": "dictionary",
+      "name": "dictionary key ordering",
+      "raw": [
+        "m, z, t"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "numeric key dictionary",
+      "raw": [
+        "a=1,1b=2,a=1"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "uppercase key dictionary",
+      "raw": [
+        "a=1,B=2,a=1"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "dictionary",
+      "name": "bad key dictionary",
+      "raw": [
+        "a=1,b!=2,a=1"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "item",
+      "name": "empty item",
+      "raw": [
+        ""
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "item",
+      "name": "leading space",
+      "raw": [
+        " \t 1"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "item",
+      "name": "trailing space",
+      "raw": [
+        "1 \t "
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "item",
+      "name": "leading and trailing space",
+      "raw": [
+        "  1  "
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1"
+      ]
+    },
+    {
+      "file": "item",
+      "name": "leading and trailing whitespace",
+      "raw": [
+        "     1  "
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1"
+      ]
+    },
+    {
+      "file": "list",
+      "name": "basic list",
+      "raw": [
+        "1, 42"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "list",
+      "name": "empty list",
+      "raw": [
+        ""
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": []
+    },
+    {
+      "file": "list",
+      "name": "leading SP list",
+      "raw": [
+        "  42, 43"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "42, 43"
+      ]
+    },
+    {
+      "file": "list",
+      "name": "single item list",
+      "raw": [
+        "42"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "list",
+      "name": "no whitespace list",
+      "raw": [
+        "1,42"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1, 42"
+      ]
+    },
+    {
+      "file": "list",
+      "name": "extra whitespace list",
+      "raw": [
+        "1 , 42"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1, 42"
+      ]
+    },
+    {
+      "file": "list",
+      "name": "tab separated list",
+      "raw": [
+        "1\t,\t42"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1, 42"
+      ]
+    },
+    {
+      "file": "list",
+      "name": "two line list",
+      "raw": [
+        "1",
+        "42"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1, 42"
+      ]
+    },
+    {
+      "file": "list",
+      "name": "trailing comma list",
+      "raw": [
+        "1, 42,"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "list",
+      "name": "empty item list",
+      "raw": [
+        "1,,42"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "list",
+      "name": "empty item list (multiple field lines)",
+      "raw": [
+        "1",
+        "",
+        "42"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "basic list of lists",
+      "raw": [
+        "(1 2), (42 43)"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "single item list of lists",
+      "raw": [
+        "(42)"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "empty item list of lists",
+      "raw": [
+        "()"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "empty middle item list of lists",
+      "raw": [
+        "(1),(),(42)"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "(1), (), (42)"
+      ]
+    },
+    {
+      "file": "listlist",
+      "name": "extra whitespace list of lists",
+      "raw": [
+        "(  1  42  )"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "(1 42)"
+      ]
+    },
+    {
+      "file": "listlist",
+      "name": "wrong whitespace list of lists",
+      "raw": [
+        "(1\t 42)"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "no trailing parenthesis list of lists",
+      "raw": [
+        "(1 42"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "no trailing parenthesis middle list of lists",
+      "raw": [
+        "(1 2, (42 43)"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "no spaces in inner-list",
+      "raw": [
+        "(abc\"def\"?0123*dXZ3*xyz)"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "no closing parenthesis",
+      "raw": [
+        "("
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "nested inner lists",
+      "raw": [
+        "((1))"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "listlist",
+      "name": "dictionary in inner list",
+      "raw": [
+        "(a=1)"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "basic integer",
+      "raw": [
+        "42"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "zero integer",
+      "raw": [
+        "0"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative zero",
+      "raw": [
+        "-0"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "0"
+      ]
+    },
+    {
+      "file": "number",
+      "name": "double negative zero",
+      "raw": [
+        "--0"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative integer",
+      "raw": [
+        "-42"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "leading 0 integer",
+      "raw": [
+        "042"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "42"
+      ]
+    },
+    {
+      "file": "number",
+      "name": "leading 0 negative integer",
+      "raw": [
+        "-042"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "-42"
+      ]
+    },
+    {
+      "file": "number",
+      "name": "leading 0 zero",
+      "raw": [
+        "00"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "0"
+      ]
+    },
+    {
+      "file": "number",
+      "name": "comma",
+      "raw": [
+        "2,3"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative non-DIGIT first character",
+      "raw": [
+        "-a23"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "sign out of place",
+      "raw": [
+        "4-2"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "whitespace after sign",
+      "raw": [
+        "- 42"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "long integer",
+      "raw": [
+        "123456789012345"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "long integer followed by comma",
+      "raw": [
+        "123456789012345, 1"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "long negative integer",
+      "raw": [
+        "-123456789012345"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "too long integer",
+      "raw": [
+        "1234567890123456"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "too long integer followed by comma",
+      "raw": [
+        "1234567890123456, 1"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative too long integer",
+      "raw": [
+        "-1234567890123456"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "simple decimal",
+      "raw": [
+        "1.23"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative decimal",
+      "raw": [
+        "-1.23"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "decimal, whitespace after decimal",
+      "raw": [
+        "1. 23"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "decimal, whitespace before decimal",
+      "raw": [
+        "1 .23"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative decimal, whitespace after sign",
+      "raw": [
+        "- 1.23"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "decimal, followed by comma",
+      "raw": [
+        "123456789012.123, 1.1"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "tricky precision decimal",
+      "raw": [
+        "123456789012.1"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "double decimal decimal",
+      "raw": [
+        "1.5.4"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "adjacent double decimal decimal",
+      "raw": [
+        "1..4"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "decimal with three fractional digits",
+      "raw": [
+        "1.123"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative decimal with three fractional digits",
+      "raw": [
+        "-1.123"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "decimal with zero fractional digits",
+      "raw": [
+        "1."
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "decimal with four fractional digits",
+      "raw": [
+        "1.1234"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative decimal with four fractional digits",
+      "raw": [
+        "-1.1234"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "decimal with thirteen integer digits",
+      "raw": [
+        "1234567890123.0"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "negative decimal with thirteen integer digits",
+      "raw": [
+        "-1234567890123.0"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "number",
+      "name": "decimal with 1 significant digit and 1 insignificant digit",
+      "raw": [
+        "1.20"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1.2"
+      ]
+    },
+    {
+      "file": "number",
+      "name": "decimal with 1 significant digit and 2 insignificant digits",
+      "raw": [
+        "1.200"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1.2"
+      ]
+    },
+    {
+      "file": "number",
+      "name": "decimal with 2 significant digits and 1 insignificant digit",
+      "raw": [
+        "1.230"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "1.23"
+      ]
+    },
+    {
+      "file": "param-dict",
+      "name": "basic parameterised dict",
+      "raw": [
+        "abc=123;a=1;b=2, def=456, ghi=789;q=9;r=\"+w\""
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-dict",
+      "name": "single item parameterised dict",
+      "raw": [
+        "a=b; q=1.0"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=b;q=1.0"
+      ]
+    },
+    {
+      "file": "param-dict",
+      "name": "list item parameterised dictionary",
+      "raw": [
+        "a=(1 2); q=1.0"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=(1 2);q=1.0"
+      ]
+    },
+    {
+      "file": "param-dict",
+      "name": "missing parameter value parameterised dict",
+      "raw": [
+        "a=3;c;d=5"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-dict",
+      "name": "terminal missing parameter value parameterised dict",
+      "raw": [
+        "a=3;c=5;d"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-dict",
+      "name": "no whitespace parameterised dict",
+      "raw": [
+        "a=b;c=1,d=e;f=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=b;c=1, d=e;f=2"
+      ]
+    },
+    {
+      "file": "param-dict",
+      "name": "whitespace before = parameterised dict",
+      "raw": [
+        "a=b;q =0.5"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-dict",
+      "name": "whitespace after = parameterised dict",
+      "raw": [
+        "a=b;q= 0.5"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-dict",
+      "name": "whitespace before ; parameterised dict",
+      "raw": [
+        "a=b ;q=0.5"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-dict",
+      "name": "whitespace after ; parameterised dict",
+      "raw": [
+        "a=b; q=0.5"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=b;q=0.5"
+      ]
+    },
+    {
+      "file": "param-dict",
+      "name": "extra whitespace parameterised dict",
+      "raw": [
+        "a=b;  c=1  ,  d=e; f=2; g=3"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=b;c=1, d=e;f=2;g=3"
+      ]
+    },
+    {
+      "file": "param-dict",
+      "name": "two lines parameterised list",
+      "raw": [
+        "a=b;c=1",
+        "d=e;f=2"
+      ],
+      "header_type": "dictionary",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a=b;c=1, d=e;f=2"
+      ]
+    },
+    {
+      "file": "param-dict",
+      "name": "trailing comma parameterised list",
+      "raw": [
+        "a=b; q=1.0,"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-dict",
+      "name": "empty item parameterised list",
+      "raw": [
+        "a=b; q=1.0,,c=d"
+      ],
+      "header_type": "dictionary",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "basic parameterised list",
+      "raw": [
+        "abc_123;a=1;b=2; cdef_456, ghi;q=9;r=\"+w\""
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "abc_123;a=1;b=2;cdef_456, ghi;q=9;r=\"+w\""
+      ]
+    },
+    {
+      "file": "param-list",
+      "name": "single item parameterised list",
+      "raw": [
+        "text/html;q=1.0"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "missing parameter value parameterised list",
+      "raw": [
+        "text/html;a;q=1.0"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "missing terminal parameter value parameterised list",
+      "raw": [
+        "text/html;q=1.0;a"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "no whitespace parameterised list",
+      "raw": [
+        "text/html,text/plain;q=0.5"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "text/html, text/plain;q=0.5"
+      ]
+    },
+    {
+      "file": "param-list",
+      "name": "whitespace before = parameterised list",
+      "raw": [
+        "text/html, text/plain;q =0.5"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "whitespace after = parameterised list",
+      "raw": [
+        "text/html, text/plain;q= 0.5"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "whitespace before ; parameterised list",
+      "raw": [
+        "text/html, text/plain ;q=0.5"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "whitespace after ; parameterised list",
+      "raw": [
+        "text/html, text/plain; q=0.5"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "text/html, text/plain;q=0.5"
+      ]
+    },
+    {
+      "file": "param-list",
+      "name": "extra whitespace parameterised list",
+      "raw": [
+        "text/html  ,  text/plain;  q=0.5;  charset=utf-8"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "text/html, text/plain;q=0.5;charset=utf-8"
+      ]
+    },
+    {
+      "file": "param-list",
+      "name": "two lines parameterised list",
+      "raw": [
+        "text/html",
+        "text/plain;q=0.5"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "text/html, text/plain;q=0.5"
+      ]
+    },
+    {
+      "file": "param-list",
+      "name": "trailing comma parameterised list",
+      "raw": [
+        "text/html,text/plain;q=0.5,"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "empty item parameterised list",
+      "raw": [
+        "text/html,,text/plain;q=0.5,"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "duplicate parameter with different positions",
+      "raw": [
+        "a;b=1;c=2;b=3"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": [
+        "a;b=3;c=2"
+      ]
+    },
+    {
+      "file": "param-list",
+      "name": "parameter ordering",
+      "raw": [
+        "a;m;z;t"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "trailing semicolon in parameters",
+      "raw": [
+        "a;b=1;"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "trailing semicolon and space in parameters",
+      "raw": [
+        "a;b=1; "
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "empty parameter key",
+      "raw": [
+        "a;=1"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "parameter prefix only",
+      "raw": [
+        "a;"
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-list",
+      "name": "parameter prefix and space only",
+      "raw": [
+        "a; "
+      ],
+      "header_type": "list",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-listlist",
+      "name": "parameterised inner list",
+      "raw": [
+        "(abc_123);a=1;b=2, cdef_456"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-listlist",
+      "name": "parameterised inner list item",
+      "raw": [
+        "(abc_123;a=1;b=2;cdef_456)"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "param-listlist",
+      "name": "parameterised inner list with parameterised item",
+      "raw": [
+        "(abc_123;a=1;b=2);cdef_456"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "basic string",
+      "raw": [
+        "\"foo bar\""
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "empty string",
+      "raw": [
+        "\"\""
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "long string",
+      "raw": [
+        "\"foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo \""
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "whitespace string",
+      "raw": [
+        "\"   \""
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "non-ascii string",
+      "raw": [
+        "\"füü\""
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "tab in string",
+      "raw": [
+        "\"\t\""
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "newline in string",
+      "raw": [
+        "\" \n \""
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "single quoted string",
+      "raw": [
+        "'foo'"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "unbalanced string",
+      "raw": [
+        "\"foo"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "string quoting",
+      "raw": [
+        "\"foo \\\"bar\\\" \\\\ baz\""
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "bad string quoting",
+      "raw": [
+        "\"foo \\,\""
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "ending string quote",
+      "raw": [
+        "\"foo \\\""
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "abruptly ending string quote",
+      "raw": [
+        "\"foo \\"
+      ],
+      "header_type": "item",
+      "must_fail": true,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "string",
+      "name": "two lines string",
+      "raw": [
+        "\"foo",
+        "bar\""
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": true,
+      "canonical": [
+        "\"foo, bar\""
+      ]
+    },
+    {
+      "file": "token",
+      "name": "basic token - item",
+      "raw": [
+        "a_b-c.d3:f%00/*"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "token",
+      "name": "token with capitals - item",
+      "raw": [
+        "fooBar"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "token",
+      "name": "token starting with capitals - item",
+      "raw": [
+        "FooBar"
+      ],
+      "header_type": "item",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "token",
+      "name": "basic token - list",
+      "raw": [
+        "a_b-c3/*"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "token",
+      "name": "token with capitals - list",
+      "raw": [
+        "fooBar"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    },
+    {
+      "file": "token",
+      "name": "token starting with capitals - list",
+      "raw": [
+        "FooBar"
+      ],
+      "header_type": "list",
+      "must_fail": false,
+      "can_fail": false,
+      "canonical": null
+    }
+  ]
+}

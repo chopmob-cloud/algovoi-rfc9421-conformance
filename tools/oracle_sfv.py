@@ -207,13 +207,13 @@ class _Parser:
             else:
                 value = ("boolean", True)
             if key in seen:
-                # RFC 8941 4.2.3.2: a duplicate key overwrites, taking the
-                # later position.
-                params.pop(seen[key])
-                seen = {k: (idx - 1 if idx > seen[key] else idx)
-                        for k, idx in seen.items() if k != key}
-            seen[key] = len(params)
-            params.append((key, value))
+                # RFC 8941 4.2.3.2: a duplicate parameter key overwrites the
+                # value in place, RETAINING the key's original position (an
+                # ordered map update, not a move-to-end).
+                params[seen[key]] = (key, value)
+            else:
+                seen[key] = len(params)
+                params.append((key, value))
         return params
 
     # -- items and inner lists (4.2.3 / 4.2.1.2) ------------------------
@@ -278,11 +278,13 @@ class _Parser:
                 params = self.parameters()
                 value = ("item", ("boolean", True), params)
             if key in seen:
-                members.pop(seen[key])
-                seen = {k: (idx - 1 if idx > seen[key] else idx)
-                        for k, idx in seen.items() if k != key}
-            seen[key] = len(members)
-            members.append((key, value))
+                # RFC 8941 4.2.2: a duplicate dictionary key overwrites the
+                # value in place, RETAINING the key's original position (an
+                # ordered map update, not a move-to-end).
+                members[seen[key]] = (key, value)
+            else:
+                seen[key] = len(members)
+                members.append((key, value))
             self._discard_ows()
             if self._eof():
                 return members

@@ -91,9 +91,9 @@ static void params_init(Params *p) { p->a = NULL; p->n = 0; p->cap = 0; }
 static void params_push_dedup(Params *p, const char *key, Bare *val) {
     for (int i = 0; i < p->n; i++) {
         if (strcmp(p->a[i].key, key) == 0) {
-            for (int j = i; j < p->n - 1; j++) p->a[j] = p->a[j + 1];
-            p->n--;
-            break;
+            /* duplicate key: overwrite value in place, keep original position */
+            p->a[i].val = val;
+            return;
         }
     }
     if (p->n >= p->cap) {
@@ -379,16 +379,19 @@ static EntryList parse_dictionary(void) {
             value->bare->kind = K_BOOL; value->bare->b = 1;
             value->params = ps;
         }
-        /* dedup by key, keep later position */
+        /* dedup by key: overwrite value in place, keep original position */
+        int found = 0;
         for (int i = 0; i < r.n; i++) {
             if (strcmp(r.a[i].key, k) == 0) {
-                for (int j = i; j < r.n - 1; j++) r.a[j] = r.a[j + 1];
-                r.n--;
+                r.a[i].node = value;
+                found = 1;
                 break;
             }
         }
-        if (r.n >= cap) { int nc = cap * 2; Entry *na = aalloc(sizeof(Entry) * nc); memcpy(na, r.a, sizeof(Entry) * r.n); r.a = na; cap = nc; }
-        r.a[r.n].key = k; r.a[r.n].node = value; r.n++;
+        if (!found) {
+            if (r.n >= cap) { int nc = cap * 2; Entry *na = aalloc(sizeof(Entry) * nc); memcpy(na, r.a, sizeof(Entry) * r.n); r.a = na; cap = nc; }
+            r.a[r.n].key = k; r.a[r.n].node = value; r.n++;
+        }
         discard_ows();
         if (I >= LEN) return r;
         if (peekc() != ',') fail();

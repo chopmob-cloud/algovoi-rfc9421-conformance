@@ -219,9 +219,10 @@ impl<'a> Parser<'a> {
                 Bare::Boolean(true)
             };
             if let Some(pos) = params.iter().position(|p| p.key == k) {
-                params.remove(pos);
+                params[pos].val = val;
+            } else {
+                params.push(Param { key: k, val });
             }
-            params.push(Param { key: k, val });
         }
         Ok(params)
     }
@@ -286,9 +287,10 @@ impl<'a> Parser<'a> {
                 Node::Item { bare: Bare::Boolean(true), params }
             };
             if let Some(pos) = members.iter().position(|e| e.key == k) {
-                members.remove(pos);
+                members[pos].node = node;
+            } else {
+                members.push(Entry { key: k, node });
             }
-            members.push(Entry { key: k, node });
             self.discard_ows();
             if self.eof() { return Ok(members); }
             if self.peek() != Some(b',') { return Err(()); }

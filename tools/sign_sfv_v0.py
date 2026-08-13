@@ -31,7 +31,11 @@ CORPUS_DIR = os.path.join(REPO, "corpus", "sfv_v0")
 CORPUS = os.path.join(CORPUS_DIR, "sfv_v0.json")
 
 CORPUS_ID = "sfv_v0"
-VERSION = "0.1.0"
+# 0.2.0: adds multi-key duplicate-key regression cases (dictionary and parameter)
+# after fixing an RFC 8941 4.2.2/4.2.3.2 oracle bug that moved a duplicate key to
+# the last position instead of overwriting in place; validated against the httpwg
+# structured-field-tests suite and the independent http_sfv library.
+VERSION = "0.2.0"
 CANONICALIZER = "JCS(RFC8785)+EdDSA"
 HEAD_TYP = "corpus-head+jws"
 TS = "2026-08-12T00:00:00Z"

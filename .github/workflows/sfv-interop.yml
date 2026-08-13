@@ -1,0 +1,39 @@
+# httpwg SFV interop: on every push, reproduce the SFV editors' shared test suite.
+#
+# External interoperability gate for the Structured Field Values stage. Unlike the
+# 12-way consensus (twelve of our runners agree on our crafted corpus), this proves
+# our RFC 8941 parser/serializer reproduces the verdicts of the shared cross-
+# implementation suite the SFV editors maintain (httpwg/structured-field-tests,
+# frozen in vectors/sfv_httpwg_v0.json). tools/check_sfv_httpwg.py fails closed if
+# our oracle disagrees with any strict suite verdict; it also reports http_sfv's
+# agreement (http_sfv has a few of its own documented divergences from the suite,
+# which do not fail our gate).
+#
+# Python-only and fast: our oracle plus the independent http_sfv library.
+
+name: httpwg SFV interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sfv-interop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  interop:
+    name: SFV RFC 8941 (oracle + http_sfv vs httpwg suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install --quiet http-sfv
+      - name: Reproduce the httpwg structured-field-tests suite
+        run: python tools/check_sfv_httpwg.py

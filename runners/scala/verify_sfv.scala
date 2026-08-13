@@ -165,9 +165,10 @@ object VerifySfv:
         val value: Bare =
           if !eof && s.charAt(i) == '=' then { i += 1; bareItem() }
           else { val b = Bare(); b.kind = "boolean"; b.b = true; b }
+        // duplicate key: overwrite value in place, keeping original position.
         val existing = ps.indexWhere(_.key == k)
-        if existing >= 0 then ps.remove(existing)
-        ps += Param(k, value)
+        if existing >= 0 then ps(existing) = Param(k, value)
+        else ps += Param(k, value)
       ps.toSeq
 
     def item(): Node =
@@ -221,9 +222,10 @@ object VerifySfv:
             val n = Node(); n.innerList = false
             val bb = Bare(); bb.kind = "boolean"; bb.b = true
             n.bare = bb; n.params = ps; n
+        // duplicate key: overwrite value in place, keeping original position.
         val existing = members.indexWhere(_.key == k)
-        if existing >= 0 then members.remove(existing)
-        members += Entry(k, value)
+        if existing >= 0 then members(existing) = Entry(k, value)
+        else members += Entry(k, value)
         discardOws()
         if eof then return members.toSeq
         if s.charAt(i) != ',' then throw SFVError("dictionary members must be comma separated")

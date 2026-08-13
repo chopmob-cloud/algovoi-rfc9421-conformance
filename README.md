@@ -8,6 +8,7 @@
 [![Web Bot Auth](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/webbotauth.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/webbotauth.yml)
 [![FAPI 2.0](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/fapi.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/fapi.yml)
 [![Structured Fields](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv.yml)
+[![SFV interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv-interop.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/sfv-interop.yml)
 [![JWS](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/jws.yml)
 [![COSE](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/cose.yml)
 [![ML-DSA](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/pqc.yml)
@@ -87,7 +88,7 @@ corpus/
     kat_anchors_v1.json  independent, no-library known-answer anchors
   webbotauth_v0/         Web Bot Auth profile, 31 cases, 6 sections (signed + sealed)
   fapi_messagesigning_v0/  FAPI 2.0 Message Signing profile, 27 cases, 6 sections (signed + sealed)
-  sfv_v0/                Structured Field Values, RFC 8941, 67 cases, 6 sections (signed + sealed)
+  sfv_v0/                Structured Field Values, RFC 8941, 71 cases, 6 sections (signed + sealed; httpwg interop)
   jws_v0/                JSON Web Signature, RFC 7515/7518/8037, 29 cases, 8 sections (signed + sealed)
   cose_v0/               CBOR Object Signing, RFC 9052/9053/8949, 26 cases, 7 sections (signed + sealed)
   pqc_mldsa_v0/          post-quantum ML-DSA-65, NIST FIPS 204, 21 cases, 2 sections (signed + sealed, full 12-way; domain-sep + structural adversarial)
@@ -326,7 +327,7 @@ signatures matter most in today, on one shared, signed assurance substrate.
 RFC 8941 Structured Field Values is the parse and serialize stage that sits
 underneath the signing flow: `Signature-Input`, `Signature` and `Content-Digest`
 are all structured fields, and every modern HTTP header is one. `sfv_v0` is a
-frozen, signed corpus of 67 cases across six sections covering Items, Lists and
+frozen, signed corpus of 71 cases across six sections covering Items, Lists and
 Dictionaries, every bare-item type (Integer, Decimal, String, Token, Byte
 Sequence, Boolean), parameters, inner lists, canonical serialization and the
 strict-reject negatives.
@@ -355,8 +356,30 @@ implementation (`http_sfv`, Mark Nottingham's), `tools/run_consensus_sfv.sh
 --require 12` runs the twelve runners fail-closed, and `kaf/run_cells_sfv.sh`
 re-runs each in its pinned Docker image. Latest sealed run
 (`kaf/receipts/sfv_v0.seq1.receipt.json`) binds **full 12-way byte-for-byte
-consensus over 67 cases, 12/12 hermetic cells PASS**, under the same KAF seal
+consensus over 71 cases, 12/12 hermetic cells PASS**, under the same KAF seal
 identity as the other receipts.
+
+### External interoperability: httpwg structured-field-tests
+
+Beyond our own corpus, our RFC 8941 implementation reproduces the **shared cross-
+implementation test suite the SFV editors maintain** (`httpwg/structured-field-tests`),
+which most independent SFV libraries test against. `vectors/sfv_httpwg_v0.json`
+carries that suite's RFC 8941 core files verbatim (provenance pinned to an exact
+commit; `date`/`display-string` are RFC 9651 and the generated fuzz files are out of
+scope), and `tools/check_sfv_httpwg.py` (CI: `sfv-interop.yml`) reproduces every
+strict verdict: **172/172**, fail-closed. The same gate cross-checks the
+independent `http_sfv` library and reports its **5 divergences from the suite**
+(it is more lenient than RFC 8941 on non-canonical base64 padding and rejects the
+empty List/Dictionary the suite accepts) — those are http_sfv's, not ours, and are
+listed for transparency rather than failing the gate.
+
+This suite is also what caught a real bug: our oracle (and eight of the twelve
+runners) once moved a **duplicate dictionary key or parameter to the last
+position** instead of overwriting it in place, which RFC 8941 §4.2.2 / §4.2.3.2
+forbid (a duplicate keeps its original position with the last value). The fix and
+its multi-key regression cases (`a=1,b=2,a=3` → `a=3, b=2`) are why `sfv_v0` is now
+71 cases; the published corpus had never exercised a multi-key duplicate, so it was
+correct but the code paths were unproven until the shared suite exercised them.
 
 ## Corpus: JSON Web Signature (`jws_v0`)
 
