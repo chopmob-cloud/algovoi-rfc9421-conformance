@@ -1,0 +1,95 @@
+{
+  "note": "RFC 9421 Appendix B.2 worked-example interop anchors. Flagship external interoperability evidence: our RFC 9421 verifier rebuilds the RFC's own signature bases and accepts the RFC's own signatures. Public test keys only; no private keys ship.",
+  "standard": "RFC 9421 Appendix B.2",
+  "source": {
+    "rfc": "RFC 9421",
+    "url": "https://www.rfc-editor.org/rfc/rfc9421.html",
+    "sections": [
+      "B.1 (test keys)",
+      "B.2.1",
+      "B.2.4",
+      "B.2.6"
+    ]
+  },
+  "scope": "one worked example per RFC 9421 asymmetric algorithm: rsa-pss-sha512 (B.2.1), ecdsa-p256-sha256 (B.2.4), ed25519 (B.2.6). B.2.5 hmac-sha256 is symmetric and out of scope; B.2.2/B.2.3 are further rsa-pss variants.",
+  "counts": {
+    "total": 3,
+    "algorithms": [
+      "ecdsa-p256-sha256",
+      "ed25519",
+      "rsa-pss-sha512"
+    ]
+  },
+  "cases": [
+    {
+      "source": "RFC 9421 B.2.1",
+      "alg": "rsa-pss-sha512",
+      "message_type": "request",
+      "covered_components": [],
+      "components": {},
+      "signature_params_raw": "();created=1618884473;keyid=\"test-key-rsa-pss\";nonce=\"b3k2pp5k7z-50gnwp.yemd\"",
+      "signature_b64": "d2pmTvmbncD3xQm8E9ZV2828BjQWGgiwAaw5bAkgibUopemLJcWDy/lkbbHAve4cRAtx31Iq786U7it++wgGxbtRxf8Udx7zFZsckzXaJMkA7ChG52eSkFxykJeNqsrWH5S+oxNFlD4dzVuwe8DhTSja8xxbR/Z2cOGdCbzR72rgFWhzx2VjBqJzsPLMIQKhO4DGezXehhWwE56YCE+O6c0mKZsfxVrogUvA4HELjVKWmAvtl6UnCh8jYzuVG5WSb/QEVPnP5TmcAnLH1g+s++v6d4s8m0gCw1fV5/SITLq9mhho8K3+7EPYTU8IU1bLhdxO5Nyt8C8ssinQ98Xw9Q==",
+      "public_key": {
+        "format": "rsa-spki-der-hex",
+        "hex": "30820122300d06092a864886f70d01010105000382010f003082010a0282010100af8b669b7af6d1677f3dbaaf3f5b36f9012dbe9b91695f18ab8d208d447ccb6463c5ae9da46d865c76cf7ef32cf1cb7e2e1d461f8e71dbc470dd1cb9de69bea005e3c90f3a3a70e467937c9586e0803e0edf0e8cea902f2e4864f79027753ae27db2053cd53c3cf30eececab1401ea803b339e33c59933ad08470dd99d45a5681c870b982cf2fe5a892a96d775d67aaace2f9b27d72f48a00361d50000de5652dcdda62cba2db4e04b13fba1c894e139f483923a683649ec0f0bce8d0a4b2658a00e3ce66a9c3b419501d570f65ab868e4fdbfa77e9dbe1b9cd91056494b4377d502f266fb17433a9f4b08d08de3c576a670ce90557af94f67579a3273a5c8db0203010001"
+      },
+      "expected_signing_base": "\"@signature-params\": ();created=1618884473;keyid=\"test-key-rsa-pss\";nonce=\"b3k2pp5k7z-50gnwp.yemd\""
+    },
+    {
+      "source": "RFC 9421 B.2.4",
+      "alg": "ecdsa-p256-sha256",
+      "message_type": "response",
+      "covered_components": [
+        "@status",
+        "content-type",
+        "content-digest",
+        "content-length"
+      ],
+      "components": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "content-digest": "sha-512=:mEWXIS7MaLRuGgxOBdODa3xqM1XdEvxoYhvlCFJ41QJgJc4GTsPp29l5oGX69wWdXymyU0rjJuahq4l5aGgfLQ==:",
+          "content-length": "23"
+        }
+      },
+      "signature_params_raw": "(\"@status\" \"content-type\" \"content-digest\" \"content-length\");created=1618884473;keyid=\"test-key-ecc-p256\"",
+      "signature_b64": "wNmSUAhwb5LxtOtOpNa6W5xj067m5hFrj0XQ4fvpaCLx0NKocgPquLgyahnzDnDAUy5eCdlYUEkLIj+32oiasw==",
+      "public_key": {
+        "format": "ecc-p256-uncompressed-hex",
+        "hex": "04a885586552c2acf6471878cfd7b0935b4ffe0fd2dfc341248ea17bc41e058af031ce2737d2d30ce0617e851e83c61ef5679d151867657649035d90a74cd9e85d"
+      },
+      "expected_signing_base": "\"@status\": 200\n\"content-type\": application/json\n\"content-digest\": sha-512=:mEWXIS7MaLRuGgxOBdODa3xqM1XdEvxoYhvlCFJ41QJgJc4GTsPp29l5oGX69wWdXymyU0rjJuahq4l5aGgfLQ==:\n\"content-length\": 23\n\"@signature-params\": (\"@status\" \"content-type\" \"content-digest\" \"content-length\");created=1618884473;keyid=\"test-key-ecc-p256\""
+    },
+    {
+      "source": "RFC 9421 B.2.6",
+      "alg": "ed25519",
+      "message_type": "request",
+      "covered_components": [
+        "date",
+        "@method",
+        "@path",
+        "@authority",
+        "content-type",
+        "content-length"
+      ],
+      "components": {
+        "method": "POST",
+        "path": "/foo",
+        "authority": "example.com",
+        "headers": {
+          "date": "Tue, 20 Apr 2021 02:07:55 GMT",
+          "content-type": "application/json",
+          "content-length": "18"
+        }
+      },
+      "signature_params_raw": "(\"date\" \"@method\" \"@path\" \"@authority\" \"content-type\" \"content-length\");created=1618884473;keyid=\"test-key-ed25519\"",
+      "signature_b64": "wqcAqbmYJ2ji2glfAMaRy4gruYYnx2nEFN2HN6jrnDnQCK1u02Gb04v9EDgwUPiu4A0w6vuQv5lIp5WPpBKRCw==",
+      "public_key": {
+        "format": "ed25519-raw-hex",
+        "hex": "26b40b8f93fff3d897112f7ebc582b232dbd72517d082fe83cfb30ddce43d1bb"
+      },
+      "expected_signing_base": "\"date\": Tue, 20 Apr 2021 02:07:55 GMT\n\"@method\": POST\n\"@path\": /foo\n\"@authority\": example.com\n\"content-type\": application/json\n\"content-length\": 18\n\"@signature-params\": (\"date\" \"@method\" \"@path\" \"@authority\" \"content-type\" \"content-length\");created=1618884473;keyid=\"test-key-ed25519\""
+    }
+  ]
+}

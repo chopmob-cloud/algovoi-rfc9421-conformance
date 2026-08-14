@@ -17,6 +17,7 @@
 [![ACVP interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/acvp.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/acvp.yml)
 [![security](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/security.yml)
 [![integrity](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/integrity.yml)
+[![RFC 9421 App-B interop](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/rfc9421-appb-interop.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/rfc9421-appb-interop.yml)
 [![RFC 9421](./assets/badges/rfc9421.svg)](https://www.rfc-editor.org/rfc/rfc9421.html)
 [![Cross-validated](./assets/badges/languages.svg)](#cross-implementation-validation-matrix)
 [![Cases](./assets/badges/cases.svg)](#the-seven-sections)
@@ -157,6 +158,27 @@ asserts byte-identical output, so a frozen corpus cannot silently drift from the
 code that produced it. Both run in CI (`integrity.yml`), and `security.yml` runs
 the fail-closed scanner suite (gitleaks, bandit, shellcheck, pip-audit,
 cargo-audit) on every push.
+
+## External interoperability: RFC 9421 Appendix B.2
+
+The 12-way consensus proves twelve of our runners agree on our crafted battery;
+this proves our verifier reproduces **RFC 9421's own worked examples**. Every
+standard-stage corpus has an external interop gate that reproduces the standards
+body's own vectors, and the L2 core is anchored the same way. `vectors/rfc9421_appendix_b_v0.json`
+carries one worked example per RFC 9421 asymmetric algorithm from Appendix B, public
+test keys only: **B.2.1** (rsa-pss-sha512), **B.2.4** (ecdsa-p256-sha256) and
+**B.2.6** (ed25519). `tools/check_rfc9421_appendix_b.py` (CI: `rfc9421-appb-interop.yml`)
+checks each **two-sided, fail-closed**: `build_signing_base(...)` rebuilds the exact
+signature base the RFC prints (byte-for-byte, from the covered components and message
+inputs), and our verifier accepts the RFC's own signature over it under the RFC's
+key. Rebuilding the RFC's base *and* accepting the RFC's signature is interoperability
+with the standard's own vectors. (B.2.5 hmac-sha256 is symmetric and out of scope.)
+
+Together with the per-stage external gates -- **NIST ACVP** (ML-DSA), the **httpwg
+structured-field-tests** (SFV), the **cose-wg** examples (COSE) and the **RFC 7520
+cookbook** + RFC 7515/8037 appendices (JWS) -- every standard the substrate touches
+is validated against its own standards body's published vectors, not only against
+our own runners.
 
 ## Running
 

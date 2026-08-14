@@ -1,0 +1,40 @@
+# RFC 9421 Appendix B.2 interop: on every push, reproduce the RFC's own worked
+# signature examples.
+#
+# The flagship external interoperability gate for the L2 stage. Unlike the 12-way
+# consensus (twelve of our runners agree on our crafted corpus), this proves our
+# RFC 9421 verifier reproduces the RFC's own worked examples
+# (vectors/rfc9421_appendix_b_v0.json, one per asymmetric algorithm). Two-sided and
+# fail-closed: tools/check_rfc9421_appendix_b.py rebuilds each RFC signature base
+# byte-for-byte from the message inputs (builder), and accepts the RFC's own
+# signature over it under the RFC's public test key (verifier) for ed25519,
+# ecdsa-p256-sha256 and rsa-pss-sha512.
+#
+# Python-only and fast: the published AlgoVoi RFC 9421 verifier plus cryptography.
+
+name: RFC 9421 App-B interop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rfc9421-appb-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  interop:
+    name: RFC 9421 Appendix B.2 (builder + verifier vs the RFC)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python -m pip install --quiet algovoi-rfc9421-verifier algovoi-rfc9421-ecdsa cryptography
+      - name: Reproduce the RFC 9421 Appendix B.2 worked examples
+        run: python tools/check_rfc9421_appendix_b.py
