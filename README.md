@@ -78,6 +78,44 @@ twelve languages, backed by six distinct FIPS-204 implementations (ruby, php and
 elixir bind the liboqs C reference directly, since no mature pure library exists
 for their runtimes yet). See the Corpus sections below.
 
+## Who this is for
+
+**You are writing a signature library** (an RFC 9421 verifier, an SFV parser, a
+JOSE or COSE verifier) in any of the twelve languages. Drop your implementation
+into the runner slot and get two things at once: a conformance oracle over the
+security edges that actually break verifiers (alg=none, key/algorithm confusion,
+small-order keys, ECDSA malleability, non-canonical base64, duplicate-key
+canonicalisation), and interop against each standards body's own published vectors
+without assembling them yourself. The duplicate-key positioning bug this suite
+caught was latent in eight of twelve mature implementations; yours may have one it
+finds too.
+
+**You run an agent-payment or agentic-web platform** (x402, A2A, AP2, Web Bot
+Auth). These rails rest on RFC 9421 signatures over JCS-canonical bytes, and the
+failure that breaks them in production is cross-vendor signature divergence: one
+side signs, the other cannot verify, because their canonical bytes differ by a
+duplicate key or an escaped character. This is the neutral, signed conformance bar
+several implementations can certify against so their signatures actually
+interoperate.
+
+**You are migrating to post-quantum signatures.** The ML-DSA corpus catches the
+FIPS-204-versus-round-3-Dilithium interop trap and the context/domain-separation
+confusions, cross-checked against NIST ACVP across six independent implementation
+families, so a library swap does not silently stop verifying a partner's
+signatures.
+
+**You audit or certify signing systems.** The negative battery is a threat
+catalogue: every case is a real bypass class, run fail-closed. The EdDSA-sealed,
+hermetic, re-verifiable receipts (one KAF identity per frozen version) make this
+usable as the technical backbone of a "certified interoperable" mark for the agent
+signing stack, in the spirit of the OpenID FAPI conformance suite but spanning the
+whole flow.
+
+Scope, stated plainly: this is a verification-side conformance and interop battery
+(negative cases and vector reproduction, not a full signer-generator TCK). HMAC,
+multi-signature and external-`mu` paths are out of scope, and the JWS external
+coverage outside RS256 rests on the RFC 7515/8037 appendix vectors.
+
 ## The battery
 
 ```
