@@ -37,6 +37,7 @@ runners/rust-wba/target/
 runners/rust-fapi/target/
 runners/rust-sfv/target/
 runners/rust-jws/target/
+runners/rust-jws/Cargo.lock
 
 # sfv_v0 / jws_v0 runner + cell artifacts (built in CI / cells, never committed;
 # only the sealed receipts under kaf/receipts/ are committed)

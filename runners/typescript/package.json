@@ -8,7 +8,7 @@
     "verify": "node verify_ts.mjs"
   },
   "dependencies": {
-    "@algovoi/rfc9421-verifier": "0.4.2",
+    "@algovoi/rfc9421-verifier": "0.4.4",
     "@algovoi/rfc9421-ecdsa": "0.1.0"
   }
 }
