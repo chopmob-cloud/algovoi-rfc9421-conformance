@@ -79,6 +79,8 @@ jobs:
       # 5. Rust dependency advisories in each Rust runner. cargo-audit auto-loads
       #    the per-crate .cargo/audit.toml ignore file relative to its cwd.
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8  # stable
+        with:
+          toolchain: stable
       - uses: taiki-e/install-action@5488ac5a951645ce95062214902ac4b6bc1a1037  # v2
         with:
           tool: cargo-audit
