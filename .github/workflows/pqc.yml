@@ -41,44 +41,44 @@ jobs:
       DOTNET_NOLOGO: "1"
       GOTOOLCHAIN: local
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
 
       # --- twelve toolchains ---
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with: { python-version: "3.12" }
         # liboqs-python builds and bundles liboqs (the reference ML-DSA-65 impl the
         # python runner uses); dilithium-py is the independent FIPS-204 impl the KAT
         # re-derives with; PyNaCl verifies the signed corpus head.
       - run: python -m pip install --quiet liboqs-python dilithium-py pynacl
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with: { node-version: "20" }   # driver installs @noble/post-quantum per run
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff  # v5
         with: { go-version: "1.25" }   # CIRCL v1.6.5 requires go >= 1.25.0; GOTOOLCHAIN=local forbids auto-upgrade
       - name: Node ML-DSA library (noble, in runners/typescript for the driver)
         run: |
           set -euo pipefail
           cd runners/typescript && npm init -y >/dev/null 2>&1 && npm i @noble/post-quantum@0.7.0
 
-      - uses: dtolnay/rust-toolchain@stable   # driver builds the ml-dsa crate
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8  # stable   # driver builds the ml-dsa crate
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3  # v4
         with: { distribution: temurin, java-version: "17" }
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9  # v4
         with: { dotnet-version: "9.0.x" }   # BouncyCastle.Cryptography via PackageReference
 
       # ruby/php/elixir bind the system liboqs built below (for the C runner);
       # they need no ML-DSA package, only their runtime + an FFI path.
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@354a1ad156761f5ee2b7b13fa8e09943a5e8d252  # v1.229.0
         with: { ruby-version: "3.3" }
       - run: gem install ffi   # the ffi gem binds liboqs.so at runtime
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962  # v2
         with: { php-version: "8.3", extensions: ffi }
 
-      - uses: erlef/setup-beam@v1
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124  # v1
         with: { otp-version: "26", elixir-version: "1.16" }
       - run: mix local.hex --force   # jason (pure Elixir) for the runner's JSON decode
 
@@ -86,7 +86,9 @@ jobs:
         run: |
           set -euo pipefail
           KV=2.0.20
+          KOTLIN_SHA256="5f5d2a8ad6a718a002acd0775b67a9e27035872fdbd4b0791e3cb3ea00095931"
           curl -fsSL --retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180 -o /tmp/kotlin.zip "https://github.com/JetBrains/kotlin/releases/download/v${KV}/kotlin-compiler-${KV}.zip"
+          echo "${KOTLIN_SHA256}  /tmp/kotlin.zip" | sha256sum -c -
           sudo unzip -q /tmp/kotlin.zip -d /opt
           echo "/opt/kotlinc/bin" >> "$GITHUB_PATH"
 
@@ -101,21 +103,25 @@ jobs:
           RETRY="--retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180"
           mkdir -p runners/java/libs runners/kotlin/libs
           curl -fsSL $RETRY "$B/org/json/json/20240303/json-20240303.jar" -o runners/java/libs/json-20240303.jar
+          echo "3cf6cd6892e32e2b4c1c39e0f52f5248a2f5b37646fdfbb79a66b46b618414ed  runners/java/libs/json-20240303.jar" | sha256sum -c -
           curl -fsSL $RETRY "$B/org/bouncycastle/bcprov-jdk18on/$BC/bcprov-jdk18on-$BC.jar" -o runners/java/libs/bcprov-jdk18on-$BC.jar
-          for j in \
-            com/fasterxml/jackson/core/jackson-core/$J/jackson-core-$J.jar \
-            com/fasterxml/jackson/core/jackson-databind/$J/jackson-databind-$J.jar \
-            com/fasterxml/jackson/core/jackson-annotations/$J/jackson-annotations-$J.jar \
-            org/bouncycastle/bcprov-jdk18on/$BC/bcprov-jdk18on-$BC.jar; do
-            curl -fsSL $RETRY "$B/$j" -o "runners/kotlin/libs/$(basename "$j")"
-          done
+          echo "249f396412b0c0ce67f25c8197da757b241b8be3ec4199386c00704a2457459b  runners/java/libs/bcprov-jdk18on-$BC.jar" | sha256sum -c -
+          curl -fsSL $RETRY "$B/com/fasterxml/jackson/core/jackson-core/$J/jackson-core-$J.jar" -o "runners/kotlin/libs/jackson-core-$J.jar"
+          echo "55be130f6a68038088a261856c4e383ce79957a0fc1a29ecb213a9efd6ef4389  runners/kotlin/libs/jackson-core-$J.jar" | sha256sum -c -
+          curl -fsSL $RETRY "$B/com/fasterxml/jackson/core/jackson-databind/$J/jackson-databind-$J.jar" -o "runners/kotlin/libs/jackson-databind-$J.jar"
+          echo "d0ed5b54cb1b0bbb0828e24ce752a43a006dc188b34e3a4ae3238acc7b637418  runners/kotlin/libs/jackson-databind-$J.jar" | sha256sum -c -
+          curl -fsSL $RETRY "$B/com/fasterxml/jackson/core/jackson-annotations/$J/jackson-annotations-$J.jar" -o "runners/kotlin/libs/jackson-annotations-$J.jar"
+          echo "8562569a001d46e84ea23802257e33c8f68b24eb47c1e0efd133a0372c512959  runners/kotlin/libs/jackson-annotations-$J.jar" | sha256sum -c -
+          curl -fsSL $RETRY "$B/org/bouncycastle/bcprov-jdk18on/$BC/bcprov-jdk18on-$BC.jar" -o "runners/kotlin/libs/bcprov-jdk18on-$BC.jar"
+          echo "249f396412b0c0ce67f25c8197da757b241b8be3ec4199386c00704a2457459b  runners/kotlin/libs/bcprov-jdk18on-$BC.jar" | sha256sum -c -
 
       - name: C deps (liboqs build toolchain + jansson, libssl; libffi for ruby/php)
         run: sudo apt-get update -q && sudo apt-get install -y -q cmake ninja-build git libjansson-dev libssl-dev libffi-dev pkg-config
       - name: Build and install liboqs system-wide (for the C runner)
         run: |
           set -euo pipefail
-          git clone --depth 1 --branch 0.14.0 https://github.com/open-quantum-safe/liboqs /tmp/liboqs
+          git clone https://github.com/open-quantum-safe/liboqs /tmp/liboqs
+          git -C /tmp/liboqs checkout 94b421ebb82405c843dba4e9aa521a56ee5a333d  # tag 0.14.0 pinned by commit
           cmake -GNinja -DOQS_MINIMAL_BUILD=SIG_ml_dsa_65 -DOQS_BUILD_ONLY_LIB=ON -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -S /tmp/liboqs -B /tmp/liboqs/build
           sudo ninja -C /tmp/liboqs/build install
           sudo ldconfig
@@ -123,7 +129,11 @@ jobs:
       - name: Scala CLI
         run: |
           set -euo pipefail
-          curl -fsL --retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180 -o /tmp/scala-cli.gz https://github.com/VirtusLab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux.gz
+          SCV=1.6.1
+          SCALA_SHA256="ffb7f96ab4750fa3e2e4e4c2fab7e7275683b0547250cae302f8243055a8decc"
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 4 --retry-max-time 180 -o /tmp/scala-cli.gz \
+            "https://github.com/VirtusLab/scala-cli/releases/download/v${SCV}/scala-cli-x86_64-pc-linux.gz"
+          echo "${SCALA_SHA256}  /tmp/scala-cli.gz" | sha256sum -c -
           gzip -df /tmp/scala-cli.gz
           chmod +x /tmp/scala-cli
           sudo mv /tmp/scala-cli /usr/local/bin/scala-cli

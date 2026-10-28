@@ -181,7 +181,8 @@ def main() -> int:
     manifest_present = os.path.exists(MANIFEST)
     if manifest_present:
         try:
-            manifest = json.load(open(MANIFEST, encoding="utf-8"))
+            with open(MANIFEST, encoding="utf-8") as _fh:
+                manifest = json.load(_fh)
             recorded = manifest["head"].get("file_sha256")
             if recorded != file_sha:
                 failures.append(f"corpus digest drift: manifest {recorded} != actual {file_sha}")

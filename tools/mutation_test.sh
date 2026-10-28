@@ -33,7 +33,8 @@ mutate() { # <spec> -> writes mutated corpus to $TMP/mut.json, echoes a label
 import json, sys
 src, dst, spec = sys.argv[1], sys.argv[2], sys.argv[3]
 section, idx, field, val = spec.split(":")
-d = json.load(open(src, encoding="utf-8"))
+with open(src, encoding="utf-8") as _fh:
+    d = json.load(_fh)
 case = d[section][int(idx)]
 cur = case.get(field)
 if val == "flip":
@@ -42,7 +43,8 @@ elif val == "true":
     case[field] = True
 elif val == "false":
     case[field] = False
-json.dump(d, open(dst, "w", encoding="utf-8"), ensure_ascii=False)
+with open(dst, "w", encoding="utf-8") as _fh:
+    json.dump(d, _fh, ensure_ascii=False)
 print(f"{section}[{idx}].{field}: {cur!r} -> {case[field]!r}")
 PY
 }

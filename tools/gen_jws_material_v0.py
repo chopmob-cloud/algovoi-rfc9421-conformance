@@ -57,7 +57,8 @@ def _int_b64u(n: int) -> str:
 
 def load_or_create_keys():
     if os.path.exists(KEY_PATH):
-        d = json.load(open(KEY_PATH, encoding="utf-8"))
+        with open(KEY_PATH, encoding="utf-8") as _fh:
+            d = json.load(_fh)
         rsa_key = serialization.load_pem_private_key(d["rsa_pem"].encode(), password=None)
         ec_key = serialization.load_pem_private_key(d["ec_pem"].encode(), password=None)
         ed_key = serialization.load_pem_private_key(d["ed_pem"].encode(), password=None)
@@ -73,10 +74,10 @@ def load_or_create_keys():
     pem = lambda k: k.private_bytes(serialization.Encoding.PEM,
                                     serialization.PrivateFormat.PKCS8,
                                     serialization.NoEncryption()).decode()
-    json.dump({"rsa_pem": pem(rsa_key), "ec_pem": pem(ec_key), "ed_pem": pem(ed_key),
-               "hmac_secret_hex": hmac_secret.hex(),
-               "note": "SECRET jws_v0 material signing keys + demo HMAC secret. Never commit."},
-              open(KEY_PATH, "w", encoding="utf-8"), indent=2)
+    with open(KEY_PATH, "w", encoding="utf-8") as _fh:
+        json.dump({"rsa_pem": pem(rsa_key), "ec_pem": pem(ec_key), "ed_pem": pem(ed_key),
+                   "hmac_secret_hex": hmac_secret.hex(),
+                   "note": "SECRET jws_v0 material signing keys + demo HMAC secret. Never commit."}, _fh, indent=2)
     return rsa_key, ec_key, ed_key, hmac_secret, True
 
 

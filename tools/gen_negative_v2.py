@@ -74,7 +74,8 @@ def ecdsa_verdict(curve, msg_hex, pub_hex, sig_hex, strict) -> bool:
 
 
 def main() -> int:
-    d = json.load(open(V1, encoding="utf-8"))
+    with open(V1, encoding="utf-8") as _fh:
+        d = json.load(_fh)
     d["name"] = "rfc9421_negative_v2"
     d["description"] = ("Signed cross-language CORE negative battery for RFC 9421, v2. "
                         "Strict superset of rfc9421_negative_v1: adds fail-closed "
@@ -128,7 +129,8 @@ def main() -> int:
                  "note": note})
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    json.dump(d, open(OUT, "w", encoding="utf-8"), indent=1)
+    with open(OUT, "w", encoding="utf-8") as _fh:
+        json.dump(d, _fh, indent=1)
     counts = {k: len(x) for k, x in d.items() if isinstance(x, list)}
     print("wrote", OUT)
     print("counts:", counts, "total", sum(counts.values()))

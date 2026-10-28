@@ -92,7 +92,8 @@ def pycose_accepts(cbor_hex, key, ext_hex):
 
 
 def main() -> int:
-    data = json.load(open(ANCHORS, encoding="utf-8"))
+    with open(ANCHORS, encoding="utf-8") as _fh:
+        data = json.load(_fh)
     if data.get("standard", "").split()[0] != "RFC" or "9052" not in data.get("standard", ""):
         print("COSE interop gate: FAIL -- anchors are not RFC 9052 COSE_Sign1")
         return 1

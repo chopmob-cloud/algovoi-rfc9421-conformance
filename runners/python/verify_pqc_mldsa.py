@@ -40,7 +40,8 @@ def run(corpus):
 
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("ALGOVOI_PQC_MLDSA", DEFAULT)
-    corpus = json.load(open(path, encoding="utf-8"))
+    with open(path, encoding="utf-8") as _fh:
+        corpus = json.load(_fh)
     results = run(corpus)
     fails = [(s, n) for s, n, ok in results if not ok]
     for s, n in fails:

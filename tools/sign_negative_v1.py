@@ -87,7 +87,8 @@ def _restrict_perms(path: str) -> None:
 def load_or_create_key() -> tuple[LocalEd25519KeyProvider, str, bool]:
     path = os.environ.get(KEY_ENV, DEFAULT_KEY_PATH)
     if os.path.exists(path):
-        d = json.loads(open(path, encoding="utf-8").read())
+        with open(path, encoding="utf-8") as _fh:
+            d = json.loads(_fh.read())
         seed = bytes.fromhex(d["seed_hex"])
         return LocalEd25519KeyProvider.from_seed(seed, kid=d.get("kid")), path, False
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -120,7 +121,8 @@ def build_head(corpus: dict, raw_bytes: bytes) -> dict:
 
 
 def main() -> int:
-    raw = open(CORPUS, "rb").read()
+    with open(CORPUS, "rb") as _fh:
+        raw = _fh.read()
     corpus = json.loads(raw)
 
     key, key_path, created = load_or_create_key()
@@ -157,15 +159,17 @@ def main() -> int:
     recovered = verify_jws(head_jws, lambda kid: jwk, expected_typ=HEAD_TYP)
     assert recovered == head, "head JWS payload does not match head"
     # re-derive the digest from the freshly reloaded corpus (content binding)
-    assert digest(json.loads(open(CORPUS, "rb").read())) == head["corpus_digest"], \
+    with open(CORPUS, "rb") as _fh:
+        assert digest(json.loads(_fh.read())) == head["corpus_digest"], \
         "corpus digest drift"
     assert log.verify(), "provenance chain does not verify"
 
     mpath = os.path.join(CORPUS_DIR, "rfc9421_negative_v1.manifest.json")
     ppath = os.path.join(CORPUS_DIR, "rfc9421_negative_v1.provenance.json")
-    json.dump(manifest, open(mpath, "w", encoding="utf-8"), indent=2)
-    json.dump({"issuer_id": log.issuer_id, "records": log.records},
-              open(ppath, "w", encoding="utf-8"), indent=2)
+    with open(mpath, "w", encoding="utf-8") as _fh:
+        json.dump(manifest, _fh, indent=2)
+    with open(ppath, "w", encoding="utf-8") as _fh:
+        json.dump({"issuer_id": log.issuer_id, "records": log.records}, _fh, indent=2)
 
     print("signed corpus head:")
     print("  corpus_id     ", CORPUS_ID, VERSION)

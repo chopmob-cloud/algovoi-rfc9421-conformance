@@ -224,7 +224,8 @@ def build(m):
 
 
 def main() -> int:
-    m = json.load(open(MATERIAL, encoding="utf-8"))
+    with open(MATERIAL, encoding="utf-8") as _fh:
+        m = json.load(_fh)
     corpus = build(m)
 
     # Stamp every verdict from the oracle and assert the intended sign of each case,

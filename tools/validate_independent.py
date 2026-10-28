@@ -101,7 +101,8 @@ def b64_canonical(header: str) -> bool:
 
 
 def main() -> int:
-    c = json.load(open(CORPUS, encoding="utf-8"))
+    with open(CORPUS, encoding="utf-8") as _fh:
+        c = json.load(_fh)
     fails = []
 
     # Ed25519 (independent library: cryptography/OpenSSL)
