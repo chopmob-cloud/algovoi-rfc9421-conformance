@@ -68,7 +68,8 @@ def http_sfv_verdict(field_type, text):
 
 
 def main() -> int:
-    data = json.load(open(ANCHORS, encoding="utf-8"))
+    with open(ANCHORS, encoding="utf-8") as _fh:
+        data = json.load(_fh)
     if data.get("standard") != "RFC 8941":
         print("SFV interop gate: FAIL -- anchors are not RFC 8941")
         return 1

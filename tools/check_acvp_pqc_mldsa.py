@@ -61,7 +61,8 @@ def dilithium_accepts(pk: bytes, msg: bytes, sig: bytes, ctx: bytes) -> bool:
 
 
 def main() -> int:
-    data = json.load(open(ANCHORS, encoding="utf-8"))
+    with open(ANCHORS, encoding="utf-8") as _fh:
+        data = json.load(_fh)
     if data.get("mechanism") != "ML-DSA-65" or data.get("spec") != "FIPS204":
         print("ACVP gate: FAIL -- anchors are not ML-DSA-65 / FIPS204")
         return 1

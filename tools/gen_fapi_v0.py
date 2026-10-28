@@ -130,7 +130,8 @@ def build(m):
 
 
 def main() -> int:
-    m = json.load(open(MATERIAL, encoding="utf-8"))
+    with open(MATERIAL, encoding="utf-8") as _fh:
+        m = json.load(_fh)
     corpus = build(m)
     os.makedirs(OUT_DIR, exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as fh:

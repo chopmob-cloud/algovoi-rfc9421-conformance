@@ -256,8 +256,13 @@ def sections_of(corpus):
 
 
 def main() -> int:
-    m = json.load(open(MATERIAL, encoding="utf-8"))
-    acvp = json.load(open(ACVP, encoding="utf-8")) if os.path.exists(ACVP) else None
+    with open(MATERIAL, encoding="utf-8") as _fh:
+        m = json.load(_fh)
+    if os.path.exists(ACVP):
+        with open(ACVP, encoding="utf-8") as _fh:
+            acvp = json.load(_fh)
+    else:
+        acvp = None
     corpus = build(m, acvp)
 
     # Stamp every verdict from the oracle and assert the intended sign of each

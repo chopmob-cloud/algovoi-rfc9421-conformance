@@ -132,7 +132,8 @@ def sign1(protected_map: dict, unprotected_map: dict, payload: bytes, signer, ki
 
 def load_or_create_keys():
     if os.path.exists(KEY_PATH):
-        d = json.load(open(KEY_PATH, encoding="utf-8"))
+        with open(KEY_PATH, encoding="utf-8") as _fh:
+            d = json.load(_fh)
         ec_key = serialization.load_pem_private_key(d["ec_pem"].encode(), password=None)
         ed_key = serialization.load_pem_private_key(d["ed_pem"].encode(), password=None)
         rsa_key = serialization.load_pem_private_key(d["rsa_pem"].encode(), password=None)
@@ -144,9 +145,9 @@ def load_or_create_keys():
     pem = lambda k: k.private_bytes(serialization.Encoding.PEM,
                                     serialization.PrivateFormat.PKCS8,
                                     serialization.NoEncryption()).decode()
-    json.dump({"ec_pem": pem(ec_key), "ed_pem": pem(ed_key), "rsa_pem": pem(rsa_key),
-               "note": "SECRET cose_v0 material signing keys. Never commit."},
-              open(KEY_PATH, "w", encoding="utf-8"), indent=2)
+    with open(KEY_PATH, "w", encoding="utf-8") as _fh:
+        json.dump({"ec_pem": pem(ec_key), "ed_pem": pem(ed_key), "rsa_pem": pem(rsa_key),
+                   "note": "SECRET cose_v0 material signing keys. Never commit."}, _fh, indent=2)
     return ec_key, ed_key, rsa_key, True
 
 

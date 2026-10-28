@@ -69,7 +69,8 @@ def verify_case(c, base):
 
 
 def main() -> int:
-    data = json.load(open(ANCHORS, encoding="utf-8"))
+    with open(ANCHORS, encoding="utf-8") as _fh:
+        data = json.load(_fh)
     if data.get("standard", "").split()[0:2] != ["RFC", "9421"]:
         print("RFC 9421 App-B gate: FAIL -- anchors are not RFC 9421 Appendix B")
         return 1

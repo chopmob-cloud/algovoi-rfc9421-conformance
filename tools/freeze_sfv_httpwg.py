@@ -59,7 +59,9 @@ def main() -> int:
         path = os.path.join(args.src, stem + ".json")
         if not os.path.exists(path):
             raise SystemExit(f"missing source file: {path}")
-        for t in json.load(open(path, encoding="utf-8")):
+        with open(path, encoding="utf-8") as _fh:
+            _data = json.load(_fh)
+        for t in _data:
             tests.append({
                 "file": stem,
                 "name": t.get("name"),

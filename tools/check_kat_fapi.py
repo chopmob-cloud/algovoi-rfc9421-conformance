@@ -137,7 +137,8 @@ def main() -> int:
     file_sha = "sha256:" + hashlib.sha256(corpus_bytes).hexdigest()
 
     try:
-        manifest = json.load(open(MANIFEST, encoding="utf-8"))
+        with open(MANIFEST, encoding="utf-8") as _fh:
+            manifest = json.load(_fh)
         if manifest["head"].get("file_sha256") != file_sha:
             failures.append(f"corpus digest drift: manifest {manifest['head'].get('file_sha256')} != actual {file_sha}")
         failures.extend(verify_head_jws(manifest, file_sha))

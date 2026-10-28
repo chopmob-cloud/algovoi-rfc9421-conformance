@@ -52,8 +52,10 @@ def rsa_verdict(alg: str, base: bytes, sig: bytes, spki_der: bytes) -> bool:
 
 
 def main() -> int:
-    d = json.load(open(V2, encoding="utf-8"))
-    m = json.load(open(MATERIAL, encoding="utf-8"))
+    with open(V2, encoding="utf-8") as _fh:
+        d = json.load(_fh)
+    with open(MATERIAL, encoding="utf-8") as _fh:
+        m = json.load(_fh)
     d["name"] = "rfc9421_negative_v3"
     d["description"] = ("Signed cross-language negative battery for RFC 9421, v3. "
                         "Strict superset of rfc9421_negative_v2: adds the rsa_verify "
@@ -91,7 +93,8 @@ def main() -> int:
                                 "pub_spki_hex": pub_hex, "expect_valid": verdict, "note": note})
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    json.dump(d, open(OUT, "w", encoding="utf-8"), indent=1)
+    with open(OUT, "w", encoding="utf-8") as _fh:
+        json.dump(d, _fh, indent=1)
     counts = {k: len(v) for k, v in d.items() if isinstance(v, list)}
     print("wrote", OUT)
     print("counts:", counts, "total", sum(counts.values()))

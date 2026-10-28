@@ -100,7 +100,8 @@ def main() -> int:
 
     cases = []
     for stem, in_scope in COOKBOOK_CASES:
-        d = json.load(open(os.path.join(args.src, stem + ".json"), encoding="utf-8"))
+        with open(os.path.join(args.src, stem + ".json"), encoding="utf-8") as _fh:
+            d = json.load(_fh)
         alg = d["input"].get("alg") or d["input"]["key"].get("alg")
         cases.append({
             "source": f"RFC 7520 {stem.split('.')[0].replace('_', '.')}",

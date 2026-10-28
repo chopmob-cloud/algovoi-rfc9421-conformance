@@ -102,8 +102,10 @@ def main() -> int:
     ap.add_argument("--expected", required=True, help="ACVP ML-DSA-sigVer expectedResults.json")
     args = ap.parse_args()
 
-    prompt = json.load(open(args.prompt, encoding="utf-8"))
-    expected = json.load(open(args.expected, encoding="utf-8"))
+    with open(args.prompt, encoding="utf-8") as _fh:
+        prompt = json.load(_fh)
+    with open(args.expected, encoding="utf-8") as _fh:
+        expected = json.load(_fh)
     if prompt.get("algorithm") != "ML-DSA" or prompt.get("revision") != "FIPS204":
         raise SystemExit("source is not ML-DSA / FIPS204")
 

@@ -62,7 +62,8 @@ def jwcrypto_verifies(compact, jwk):
 
 
 def main() -> int:
-    data = json.load(open(ANCHORS, encoding="utf-8"))
+    with open(ANCHORS, encoding="utf-8") as _fh:
+        data = json.load(_fh)
     if "JWS" not in data.get("standard", ""):
         print("JWS interop gate: FAIL -- anchors are not JOSE JWS")
         return 1

@@ -22,4 +22,4 @@ hex = "0.4"
 sha2 = "0.10"
 num-bigint = "0.4"
 rsa = { version = "0.9", features = ["sha2"] }
-p256 = { version = "0.13", features = ["ecdsa", "arithmetic"] }
+p256 = { version = "0.14", features = ["ecdsa", "arithmetic"] }

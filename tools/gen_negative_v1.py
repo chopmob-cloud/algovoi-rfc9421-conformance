@@ -131,8 +131,10 @@ def non_canonical_b64_value(sig: bytes) -> str:
 
 
 def main():
-    v0 = json.load(open(REF_V0, encoding="utf-8"))
-    ev0 = json.load(open(REF_ECDSA, encoding="utf-8"))
+    with open(REF_V0, encoding="utf-8") as _fh:
+        v0 = json.load(_fh)
+    with open(REF_ECDSA, encoding="utf-8") as _fh:
+        ev0 = json.load(_fh)
 
     out = {
         "name": "rfc9421_negative_v1",
@@ -293,7 +295,8 @@ def main():
                   "same high-s signature accepted when strict-low-s OFF (control)")
 
     p = os.path.join(CORPUS_DIR, "rfc9421_negative_v1.json")
-    json.dump(out, open(p, "w", encoding="utf-8"), indent=1)
+    with open(p, "w", encoding="utf-8") as _fh:
+        json.dump(out, _fh, indent=1)
     counts = {k: len(v) for k, v in out.items() if isinstance(v, list)}
     print("wrote", p)
     print("counts:", counts, "total", sum(counts.values()))

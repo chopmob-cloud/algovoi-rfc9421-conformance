@@ -65,7 +65,8 @@ def main() -> int:
 
     cases = []
     for path in sorted(glob.glob(os.path.join(args.src, "*.json"))):
-        d = json.load(open(path, encoding="utf-8"))
+        with open(path, encoding="utf-8") as _fh:
+            d = json.load(_fh)
         name = os.path.splitext(os.path.basename(path))[0]
         s0 = d["input"]["sign0"]
         k = s0["key"]

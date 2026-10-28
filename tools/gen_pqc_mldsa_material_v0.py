@@ -108,7 +108,8 @@ def load_or_create_keys():
     import oqs
 
     if os.path.exists(KEY_PATH):
-        d = json.load(open(KEY_PATH, encoding="utf-8"))
+        with open(KEY_PATH, encoding="utf-8") as _fh:
+            d = json.load(_fh)
         pk = bytes.fromhex(d["public_key_hex"])
         sk = bytes.fromhex(d["secret_key_hex"])
         wrong_pk = bytes.fromhex(d["wrong_public_key_hex"])
@@ -174,7 +175,8 @@ def main() -> int:
         # The main frozen material (off-repo randomised signer) is preserved
         # exactly; only the deterministic domain-separation material is added if a
         # prior freeze predates it. Nothing that needs the off-repo key is touched.
-        material = json.load(open(OUT, encoding="utf-8"))
+        with open(OUT, encoding="utf-8") as _fh:
+            material = json.load(_fh)
         if "domain_separation" not in material:
             material["domain_separation"] = freeze_domain_sep(material["messages"]["primary"])
             with open(OUT, "w", encoding="utf-8", newline="\n") as fh:
