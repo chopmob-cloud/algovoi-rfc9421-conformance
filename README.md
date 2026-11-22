@@ -1,7 +1,3 @@
-> **AlgoVoi is available for acquisition** - [docs.algovoi.co.uk/acquisition](https://docs.algovoi.co.uk/acquisition)
-
----
-
 # algovoi-rfc9421-conformance
 
 [![12-way consensus](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/consensus.yml/badge.svg)](https://github.com/chopmob-cloud/algovoi-rfc9421-conformance/actions/workflows/consensus.yml)
