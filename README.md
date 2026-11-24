@@ -663,7 +663,7 @@ fail-open or echoing port. Candidate next stacks: **Clojure** (JVM),
 
 The corpus head is canonicalised (RFC 8785 JCS), EdDSA-signed (compact JWS) and
 recorded in a hash-chained provenance log by
-[algovoi-corpus-cm](https://github.com/chopmob-cloud/algovoi-corpus-cm). The
+`algovoi-corpus-cm` (private). The
 manifest carries only the public JWK; the signing key is a genuine secret held
 off-repo. `tools/check_kat.py` verifies the signature at runtime;
 `tools/validate_independent.py` is an independent oracle over different crypto
@@ -710,4 +710,4 @@ https://github.com/chopmob-cloud/algovoi-rfc9421-conformance
 - [AlgoVoi substrate hub](https://chopmob-cloud.github.io/): the open canonicalisation + HTTP-signature substrate for agentic payments
 - [algovoi-jcs-conformance-vectors](https://github.com/chopmob-cloud/algovoi-jcs-conformance-vectors): the L1 RFC 8785 (JCS) canonicalisation conformance corpus
 - [algovoi-keyhygiene-conformance](https://github.com/chopmob-cloud/algovoi-keyhygiene-conformance): the L0 RSA/EC key-hygiene and primality soundness conformance corpus
-- [algovoi-corpus-cm](https://github.com/chopmob-cloud/algovoi-corpus-cm): the change-management backbone that signs and versions these corpora
+- `algovoi-corpus-cm` (private): the change-management backbone that signs and versions these corpora
